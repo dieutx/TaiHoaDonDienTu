@@ -1,0 +1,42 @@
+name: Build and release XLSM
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version without the v prefix
+        required: true
+        default: 6.6.3
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: [self-hosted, windows, x64, excel-build]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $requestedVersion = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { '${{ inputs.version }}' }
+          $versionMatch = [regex]::Match($requestedVersion, '^v?(\d+\.\d+\.\d+)$')
+          if (-not $versionMatch.Success) { throw "Release version must use vX.X.X or X.X.X without a suffix: $requestedVersion" }
+          $version = $versionMatch.Groups[1].Value
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - name: Build and test
+        shell: pwsh
+        run: .\build\Build-Excel.ps1 -Version '${{ steps.version.outputs.version }}' -OutputPath '.\dist\TaiHoaDonDienTu_v${{ steps.version.outputs.version }}.xlsm'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TaiHoaDonDienTu_v${{ steps.version.outputs.version }}
+          path: dist/TaiHoaDonDienTu_v${{ steps.version.outputs.version }}.xlsm
+      - name: Create GitHub release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/TaiHoaDonDienTu_v${{ steps.version.outputs.version }}.xlsm

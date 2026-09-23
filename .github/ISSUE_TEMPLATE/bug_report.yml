@@ -1,0 +1,97 @@
+name: Báo lỗi
+description: Báo lỗi có thể tái hiện, không chứa credential hoặc dữ liệu hóa đơn thật
+title: "[Bug]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cảm ơn bạn đã báo lỗi. Không đăng username, password, token, cookie, Authorization header, mã số thuế thật hoặc dữ liệu hóa đơn thật.
+
+  - type: input
+    id: version
+    attributes:
+      label: Phiên bản project
+      description: Ví dụ v6.6.3
+      placeholder: vX.X.X
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Phiên bản Windows
+      placeholder: Windows 11 23H2
+    validations:
+      required: true
+
+  - type: input
+    id: excel
+    attributes:
+      label: Phiên bản Microsoft Excel
+      description: Ghi cả 32-bit/64-bit nếu biết
+      placeholder: Microsoft 365, 64-bit
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Khu vực gặp lỗi
+      options:
+        - Đăng nhập hoặc CAPTCHA
+        - Tra cứu hóa đơn mua vào
+        - Tra cứu hóa đơn bán ra
+        - Hóa đơn máy tính tiền
+        - Tải XML/HTML ZIP
+        - Trích xuất XML
+        - Báo cáo Excel
+        - Build hoặc kiểm thử
+        - Khác
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Các bước gây lỗi
+      description: Dùng dữ liệu giả hoặc đã che để mô tả từng bước.
+      placeholder: |
+        1. Mở...
+        2. Chọn...
+        3. Bấm...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Kết quả mong đợi
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Kết quả thực tế
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error message hoặc log đã sanitize
+      description: Xóa toàn bộ credential, token, cookie, MST, thông tin khách hàng và dữ liệu hóa đơn.
+      render: text
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Xác nhận bảo mật
+      options:
+        - label: Tôi đã xóa username, password, token, cookie và Authorization header.
+          required: true
+        - label: Tôi không đính kèm hóa đơn, XML/PDF/ZIP hoặc dữ liệu doanh nghiệp thật.
+          required: true
+        - label: Tôi đã kiểm tra release mới nhất và tài liệu troubleshooting.
+          required: true

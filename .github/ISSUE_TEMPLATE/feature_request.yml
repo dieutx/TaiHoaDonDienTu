@@ -1,0 +1,54 @@
+name: Đề xuất cải tiến
+description: Đề xuất tính năng hoặc cải thiện nhỏ, rõ phạm vi
+title: "[Feature]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Core hiện tại là stable baseline. Hãy mô tả nhu cầu và tránh đề xuất rewrite toàn bộ project nếu một thay đổi nhỏ có thể giải quyết vấn đề.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Vấn đề cần giải quyết
+      description: Mô tả workflow hoặc khó khăn hiện tại, không đăng dữ liệu hóa đơn thật.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Giải pháp đề xuất
+      description: Nêu behavior mong muốn và phạm vi ảnh hưởng.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Phương án khác đã cân nhắc
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Nhóm cải tiến
+      options:
+        - Documentation
+        - User experience
+        - Compatibility
+        - Testing
+        - Export hoặc báo cáo
+        - Khác
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Xác nhận
+      options:
+        - label: Đề xuất không chứa username, password, token, cookie hoặc dữ liệu hóa đơn thật.
+          required: true
+        - label: Tôi hiểu endpoint/authentication quan trọng cần được xác minh trước khi thay đổi.
+          required: true

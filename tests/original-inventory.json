@@ -1,0 +1,1124 @@
+{
+  "SchemaVersion": 1,
+  "CapturedAtUtc": "2026-09-22T12:36:16.2159534Z",
+  "Workbook": {
+    "FileName": "App_v6.4-ui.xlsm",
+    "FullPath": "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\App_v6.4-ui.xlsm",
+    "FileSize": 225241,
+    "FileSha256": "b73df64001a55c14a52d6f7f5886949fb83bb2360ac905c5bd3a3db1429fc442",
+    "ExcelVersion": "16.0",
+    "VBProjectName": "TaiHDDT",
+    "VBProjectProtection": 0
+  },
+  "Worksheets": [
+    {
+      "Name": "Thamkhao",
+      "CodeName": "Sheet7",
+      "Visibility": 0,
+      "Tables": [],
+      "Shapes": [],
+      "ActiveXControls": []
+    },
+    {
+      "Name": "MENU",
+      "CodeName": "Sheet9",
+      "Visibility": -1,
+      "Tables": [
+        {
+          "Name": "tblDanhSachMST",
+          "Range": "A6:E8"
+        }
+      ],
+      "Shapes": [
+        {
+          "Name": "Rounded Rectangle 1",
+          "Type": 1,
+          "OnAction": "'App_v6.4-ui.xlsm'!dangnhap",
+          "FormControlType": 0
+        },
+        {
+          "Name": "Rounded Rectangle 2",
+          "Type": 1,
+          "OnAction": "'App_v6.4-ui.xlsm'!TaiHoaDon",
+          "FormControlType": 0
+        },
+        {
+          "Name": "Rounded Rectangle 3",
+          "Type": 1,
+          "OnAction": "'App_v6.4-ui.xlsm'!moUFTrichXuat",
+          "FormControlType": 0
+        }
+      ],
+      "ActiveXControls": []
+    },
+    {
+      "Name": "TongHopHD_Mua",
+      "CodeName": "Sheet1",
+      "Visibility": -1,
+      "Tables": [],
+      "Shapes": [],
+      "ActiveXControls": []
+    },
+    {
+      "Name": "ChiTietHD_Mua",
+      "CodeName": "Sheet2",
+      "Visibility": -1,
+      "Tables": [],
+      "Shapes": [],
+      "ActiveXControls": []
+    },
+    {
+      "Name": "ChiTietHD_Mua_XML",
+      "CodeName": "Sheet6",
+      "Visibility": -1,
+      "Tables": [],
+      "Shapes": [],
+      "ActiveXControls": []
+    },
+    {
+      "Name": "TongHopHD_Ban",
+      "CodeName": "Sheet3",
+      "Visibility": -1,
+      "Tables": [],
+      "Shapes": [],
+      "ActiveXControls": []
+    },
+    {
+      "Name": "ChiTietHD_Ban",
+      "CodeName": "Sheet4",
+      "Visibility": -1,
+      "Tables": [],
+      "Shapes": [],
+      "ActiveXControls": []
+    },
+    {
+      "Name": "ChiTietHD_Ban_XML",
+      "CodeName": "Sheet8",
+      "Visibility": -1,
+      "Tables": [],
+      "Shapes": [],
+      "ActiveXControls": []
+    },
+    {
+      "Name": "LinkTraCuu",
+      "CodeName": "Sheet5",
+      "Visibility": -1,
+      "Tables": [],
+      "Shapes": [],
+      "ActiveXControls": []
+    }
+  ],
+  "NamedRanges": [
+    {
+      "Name": "LinkTraCuu!_FilterDatabase",
+      "RefersTo": "=LinkTraCuu!$A$1:$E$116",
+      "Visible": false
+    },
+    {
+      "Name": "TongHopHD_Ban!_FilterDatabase",
+      "RefersTo": "=TongHopHD_Ban!$A$2:$BA$2",
+      "Visible": false
+    },
+    {
+      "Name": "TongHopHD_Mua!_FilterDatabase",
+      "RefersTo": "=TongHopHD_Mua!$A$2:$BA$2",
+      "Visible": false
+    }
+  ],
+  "VbaReferences": [
+    {
+      "Name": "VBA",
+      "Description": "Visual Basic For Applications",
+      "Guid": "{000204EF-0000-0000-C000-000000000046}",
+      "Major": 4,
+      "Minor": 2,
+      "FullPath": "C:\\Program Files\\Common Files\\Microsoft Shared\\VBA\\VBA7.1\\VBE7.DLL",
+      "IsBroken": false
+    },
+    {
+      "Name": "Excel",
+      "Description": "Microsoft Excel 16.0 Object Library",
+      "Guid": "{00020813-0000-0000-C000-000000000046}",
+      "Major": 1,
+      "Minor": 9,
+      "FullPath": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE",
+      "IsBroken": false
+    },
+    {
+      "Name": "stdole",
+      "Description": "OLE Automation",
+      "Guid": "{00020430-0000-0000-C000-000000000046}",
+      "Major": 2,
+      "Minor": 0,
+      "FullPath": "C:\\Windows\\System32\\stdole2.tlb",
+      "IsBroken": false
+    },
+    {
+      "Name": "Office",
+      "Description": "Microsoft Office 16.0 Object Library",
+      "Guid": "{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}",
+      "Major": 2,
+      "Minor": 8,
+      "FullPath": "C:\\Program Files\\Common Files\\Microsoft Shared\\OFFICE16\\MSO.DLL",
+      "IsBroken": false
+    },
+    {
+      "Name": "MSForms",
+      "Description": "Microsoft Forms 2.0 Object Library",
+      "Guid": "{0D452EE1-E08F-101A-852E-02608C4D0BB4}",
+      "Major": 2,
+      "Minor": 0,
+      "FullPath": "C:\\WINDOWS\\system32\\FM20.DLL",
+      "IsBroken": false
+    },
+    {
+      "Name": "MSXML2",
+      "Description": "Microsoft XML, v6.0",
+      "Guid": "{F5078F18-C551-11D3-89B9-0000F81FE221}",
+      "Major": 6,
+      "Minor": 0,
+      "FullPath": "C:\\Windows\\System32\\msxml6.dll",
+      "IsBroken": false
+    },
+    {
+      "Name": "SHDocVw",
+      "Description": "Microsoft Internet Controls",
+      "Guid": "{EAB22AC0-30C1-11CF-A7EB-0000C05BAE0B}",
+      "Major": 1,
+      "Minor": 1,
+      "FullPath": "C:\\Windows\\System32\\ieframe.dll",
+      "IsBroken": false
+    },
+    {
+      "Name": "Scripting",
+      "Description": "Microsoft Scripting Runtime",
+      "Guid": "{420B2830-E718-11CF-893D-00A0C9054228}",
+      "Major": 1,
+      "Minor": 0,
+      "FullPath": "C:\\Windows\\System32\\scrrun.dll",
+      "IsBroken": false
+    },
+    {
+      "Name": "MSHTML",
+      "Description": "Microsoft HTML Object Library",
+      "Guid": "{3050F1C5-98B5-11CF-BB82-00AA00BDCE0B}",
+      "Major": 4,
+      "Minor": 0,
+      "FullPath": "C:\\Windows\\System32\\mshtml.tlb",
+      "IsBroken": false
+    }
+  ],
+  "VbaComponents": [
+    {
+      "Name": "ThisWorkbook",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 0,
+      "CodeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "Name": "JsonConverter",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 1050,
+      "CodeSha256": "b4284784c3b1aa33f63043d5715ac67417ce8ec3467cfc23366047f0801695c8"
+    },
+    {
+      "Name": "Sheet1",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 2,
+      "CodeSha256": "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991"
+    },
+    {
+      "Name": "modHTTPRequest",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 262,
+      "CodeSha256": "bf70ce695c064228634161006d044ccfacf624a4f18db970487d52a5ad207224"
+    },
+    {
+      "Name": "frmDangNhap",
+      "Type": 3,
+      "TypeName": "UserForm",
+      "LineCount": 214,
+      "CodeSha256": "ed67c8b726574a013ba7852ad4501664944e5d3cbfd4dadc9ce65e1070c1c843",
+      "Caption": "",
+      "Controls": [
+        {
+          "Name": "Label3",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cmdDangNhap",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtUser",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label1",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label2",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtPass",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label4",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtNhapCaptcha",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "LBL",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "lblThanhCong",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "lblThatBai",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cmdHienMK",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cmdDauMK",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "lsbUsers",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtTenDV",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "lblTenDV",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "lblCapNhatMK",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label6",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        }
+      ]
+    },
+    {
+      "Name": "modGhiExcel",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 376,
+      "CodeSha256": "625f70cfca0e5bef62271010243ae6f6f399bac4673e5e10747cbfb4056633e8"
+    },
+    {
+      "Name": "Sheet2",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 2,
+      "CodeSha256": "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991"
+    },
+    {
+      "Name": "modFunctions",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 262,
+      "CodeSha256": "18bebe551b7d0d6a525ea66d989ed413c69f928cea231c924e880343f99568f1"
+    },
+    {
+      "Name": "Sheet5",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 2,
+      "CodeSha256": "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991"
+    },
+    {
+      "Name": "frmTaiHoaDon",
+      "Type": 3,
+      "TypeName": "UserForm",
+      "LineCount": 689,
+      "CodeSha256": "24a5f92bd4405b17dec39cf8aca0ade4cf5255c47ef2bc68f3890da1ab1b74ab",
+      "Caption": "",
+      "Controls": [
+        {
+          "Name": "fraChonNgay",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtTuNgay",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label9",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtDenNgay",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label10",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "fraLoaiHD",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "optMua",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "optBan",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label7",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label12",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cmdTaiHoaDon",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label13",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cboTTHD",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cboKQKT",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label14",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label15",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "lblStatus",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "lblSaiNgay",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Frame1",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label11",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label16",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtXMLFolderPath",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cmdChonFolder",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "fraLoaiDuLieu",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label17",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "chkTH",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "chkXmlZip",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "chkCT",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label18",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtSleep",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label19",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label20",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cmdChiTietXML",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label21",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label22",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cboDonVi",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "lblTenDV",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        }
+      ]
+    },
+    {
+      "Name": "modGlobalVariables",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 19,
+      "CodeSha256": "2cd1008efd9534a39f2383a74fe3db3af51126919ad8456e8bf68f95cdff0616"
+    },
+    {
+      "Name": "modParseIso",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 131,
+      "CodeSha256": "251027634e68908e4fee171b8d2c0955533219d326c0d13510ea961e99a977db"
+    },
+    {
+      "Name": "frmCapNhatMK",
+      "Type": 3,
+      "TypeName": "UserForm",
+      "LineCount": 50,
+      "CodeSha256": "98502bf1e48aafe27634e235934e6e0a69eaa0bf4113d6e6186a170d08e466cc",
+      "Caption": "",
+      "Controls": [
+        {
+          "Name": "txtMKCu",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label1",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label2",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label3",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtMKMoi",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtNhapLaiMKMoi",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label4",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label5",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label6",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label7",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Frame1",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Frame2",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Frame3",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Frame4",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cmdCapNhat",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label8",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtMST",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtPass",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        }
+      ]
+    },
+    {
+      "Name": "modDetectCaptcha",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 121,
+      "CodeSha256": "8618d6ec38cd796e5a1b7eb0de90e5ef4fb8c8bebfa4f0b65905eea4219e24fa"
+    },
+    {
+      "Name": "Sheet6",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 9,
+      "CodeSha256": "abe3a3a077191b001359f1b542c82511c903e4b52ff3d112cc904b2e0befe1ef"
+    },
+    {
+      "Name": "Sheet7",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 0,
+      "CodeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "Name": "Sheet3",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 2,
+      "CodeSha256": "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991"
+    },
+    {
+      "Name": "Sheet4",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 2,
+      "CodeSha256": "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991"
+    },
+    {
+      "Name": "Sheet8",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 2,
+      "CodeSha256": "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991"
+    },
+    {
+      "Name": "Module1",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 212,
+      "CodeSha256": "c75c4b33c96c39d195381a4090f4a6240c3a2651e005bc22c654606823d7e17b"
+    },
+    {
+      "Name": "frmTrichXuatXML",
+      "Type": 3,
+      "TypeName": "UserForm",
+      "LineCount": 24,
+      "CodeSha256": "afb71d4d04f927e4e1af378b03970149dfddc576bdfb0473053eb1fd4d73f060",
+      "Caption": "",
+      "Controls": [
+        {
+          "Name": "fraLoaiHD",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "optMua",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "optBan",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label7",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Frame1",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label10",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cmdTrichXuat",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "txtXMLFolderPath",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "Label16",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        },
+        {
+          "Name": "cmdChonFolder",
+          "Type": "System.__ComObject",
+          "ProgId": ""
+        }
+      ]
+    },
+    {
+      "Name": "Sheet9",
+      "Type": 100,
+      "TypeName": "DocumentModule",
+      "LineCount": 2,
+      "CodeSha256": "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991"
+    },
+    {
+      "Name": "modMsgboxTV",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 71,
+      "CodeSha256": "d35520f458ab6d7bf26de57662b0377f27403984378c17969e38b6fa87e70f38"
+    },
+    {
+      "Name": "modCommands",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 18,
+      "CodeSha256": "848323e119bfdfde18376538fea7636fed82bafa89908a94762e441f2beacd9b"
+    },
+    {
+      "Name": "modcreateUUID",
+      "Type": 1,
+      "TypeName": "StandardModule",
+      "LineCount": 70,
+      "CodeSha256": "34061f27b600c7d840d43b86ba7ddad6a9a7a7eb90931e5d7a763006d2a0fc27"
+    },
+    {
+      "Name": "clsUiButtonHandler",
+      "Type": 2,
+      "TypeName": "ClassModule",
+      "LineCount": 7,
+      "CodeSha256": "31e2b3eb5c54f9942d9e7df21695f18bedd91f5264ff047c864eadae419ecace"
+    },
+    {
+      "Name": "frmDatePicker",
+      "Type": 3,
+      "TypeName": "UserForm",
+      "LineCount": 65,
+      "CodeSha256": "54d1a2047ee1176f9e307a7e011f24c781d5bb17776a075699c3aae3f9c44b1c",
+      "Caption": "",
+      "Controls": []
+    }
+  ],
+  "EntryPoints": [
+    {
+      "Component": "JsonConverter",
+      "Declaration": "Public Function ParseJSON",
+      "Name": ""
+    },
+    {
+      "Component": "JsonConverter",
+      "Declaration": "Public Function ConvertToJson",
+      "Name": ""
+    },
+    {
+      "Component": "JsonConverter",
+      "Declaration": "Public Function ParseUtc",
+      "Name": ""
+    },
+    {
+      "Component": "JsonConverter",
+      "Declaration": "Public Function ConvertToUtc",
+      "Name": ""
+    },
+    {
+      "Component": "JsonConverter",
+      "Declaration": "Public Function ParseIso",
+      "Name": ""
+    },
+    {
+      "Component": "JsonConverter",
+      "Declaration": "Public Function ConvertToIso",
+      "Name": ""
+    },
+    {
+      "Component": "modHTTPRequest",
+      "Declaration": "Function createXmlHttpObj",
+      "Name": ""
+    },
+    {
+      "Component": "modHTTPRequest",
+      "Declaration": "Function httpPost",
+      "Name": ""
+    },
+    {
+      "Component": "modHTTPRequest",
+      "Declaration": "Function httpGet",
+      "Name": ""
+    },
+    {
+      "Component": "modHTTPRequest",
+      "Declaration": "Function httpOption",
+      "Name": ""
+    },
+    {
+      "Component": "modHTTPRequest",
+      "Declaration": "Function httpGet_ex",
+      "Name": ""
+    },
+    {
+      "Component": "modHTTPRequest",
+      "Declaration": "Public Function validateInternetConnection",
+      "Name": ""
+    },
+    {
+      "Component": "modHTTPRequest",
+      "Declaration": "Public Function GetInternetConnectedState",
+      "Name": ""
+    },
+    {
+      "Component": "modHTTPRequest",
+      "Declaration": "Public Function ApiGet",
+      "Name": ""
+    },
+    {
+      "Component": "frmDangNhap",
+      "Declaration": "Function layCaptcha",
+      "Name": ""
+    },
+    {
+      "Component": "frmDangNhap",
+      "Declaration": "Sub layUserPass",
+      "Name": ""
+    },
+    {
+      "Component": "frmDangNhap",
+      "Declaration": "Sub saveUserPassToken",
+      "Name": ""
+    },
+    {
+      "Component": "modGhiExcel",
+      "Declaration": "Sub ghiExcel_TongHop",
+      "Name": ""
+    },
+    {
+      "Component": "modGhiExcel",
+      "Declaration": "Sub ghiExcel_ChiTiet",
+      "Name": ""
+    },
+    {
+      "Component": "modGhiExcel",
+      "Declaration": "Sub LinkTraCuu",
+      "Name": ""
+    },
+    {
+      "Component": "modGhiExcel",
+      "Declaration": "Sub tenCotTraCuu",
+      "Name": ""
+    },
+    {
+      "Component": "modGhiExcel",
+      "Declaration": "Sub CopyThongTinChung_CT",
+      "Name": ""
+    },
+    {
+      "Component": "modFunctions",
+      "Declaration": "Sub Unzip",
+      "Name": ""
+    },
+    {
+      "Component": "modFunctions",
+      "Declaration": "Sub parseXML",
+      "Name": ""
+    },
+    {
+      "Component": "modFunctions",
+      "Declaration": "Public Function isInArray",
+      "Name": ""
+    },
+    {
+      "Component": "modFunctions",
+      "Declaration": "Public Function getToken",
+      "Name": ""
+    },
+    {
+      "Component": "frmTaiHoaDon",
+      "Declaration": "Public Sub OpenStartDatePicker",
+      "Name": ""
+    },
+    {
+      "Component": "frmTaiHoaDon",
+      "Declaration": "Public Sub OpenEndDatePicker",
+      "Name": ""
+    },
+    {
+      "Component": "frmTaiHoaDon",
+      "Declaration": "Public Sub RefreshPickedDate",
+      "Name": ""
+    },
+    {
+      "Component": "frmTaiHoaDon",
+      "Declaration": "Function correctDate",
+      "Name": ""
+    },
+    {
+      "Component": "frmTaiHoaDon",
+      "Declaration": "Public Sub optMua_Change",
+      "Name": ""
+    },
+    {
+      "Component": "frmTaiHoaDon",
+      "Declaration": "Sub taiHoaDon_Total",
+      "Name": ""
+    },
+    {
+      "Component": "frmTaiHoaDon",
+      "Declaration": "Sub lietKeThoiGian",
+      "Name": ""
+    },
+    {
+      "Component": "frmTaiHoaDon",
+      "Declaration": "Sub ghiLog",
+      "Name": ""
+    },
+    {
+      "Component": "frmTaiHoaDon",
+      "Declaration": "Sub taiXML_zip",
+      "Name": ""
+    },
+    {
+      "Component": "modParseIso",
+      "Declaration": "Public Function ISODATE",
+      "Name": ""
+    },
+    {
+      "Component": "modParseIso",
+      "Declaration": "Public Function UTCToLocalTime",
+      "Name": ""
+    },
+    {
+      "Component": "modParseIso",
+      "Declaration": "Public Sub ISODateTest",
+      "Name": ""
+    },
+    {
+      "Component": "modParseIso",
+      "Declaration": "Sub AssertEqual",
+      "Name": ""
+    },
+    {
+      "Component": "frmCapNhatMK",
+      "Declaration": "Sub luuMatKhau",
+      "Name": ""
+    },
+    {
+      "Component": "modDetectCaptcha",
+      "Declaration": "Function detectSVGCaptcha",
+      "Name": ""
+    },
+    {
+      "Component": "modDetectCaptcha",
+      "Declaration": "Function listAllPathInSVG",
+      "Name": ""
+    },
+    {
+      "Component": "Module1",
+      "Declaration": "Public Function ExtractPdfPath",
+      "Name": ""
+    },
+    {
+      "Component": "Module1",
+      "Declaration": "Public Sub SaveInvoicePdf",
+      "Name": ""
+    },
+    {
+      "Component": "Module1",
+      "Declaration": "Public Sub SaveInvoicePdf_KnowPath",
+      "Name": ""
+    },
+    {
+      "Component": "Module1",
+      "Declaration": "Sub GetOnclickValue",
+      "Name": ""
+    },
+    {
+      "Component": "Module1",
+      "Declaration": "Sub layLinkTaiPDF",
+      "Name": ""
+    },
+    {
+      "Component": "modMsgboxTV",
+      "Declaration": "Public Function MsgBoxUni",
+      "Name": ""
+    },
+    {
+      "Component": "modMsgboxTV",
+      "Declaration": "Function UniConvert",
+      "Name": ""
+    },
+    {
+      "Component": "modCommands",
+      "Declaration": "Sub DangNhap",
+      "Name": ""
+    },
+    {
+      "Component": "modCommands",
+      "Declaration": "Sub moUFTrichXuat",
+      "Name": ""
+    },
+    {
+      "Component": "modCommands",
+      "Declaration": "Sub closeForm",
+      "Name": ""
+    },
+    {
+      "Component": "modCommands",
+      "Declaration": "Sub TaiHoaDon",
+      "Name": ""
+    },
+    {
+      "Component": "modcreateUUID",
+      "Declaration": "Public Function CreateRequestID",
+      "Name": ""
+    },
+    {
+      "Component": "frmDatePicker",
+      "Declaration": "Public Sub SetTarget",
+      "Name": ""
+    },
+    {
+      "Component": "frmDatePicker",
+      "Declaration": "Public Sub SelectToday",
+      "Name": ""
+    },
+    {
+      "Component": "frmDatePicker",
+      "Declaration": "Public Sub AcceptDate",
+      "Name": ""
+    },
+    {
+      "Component": "frmDatePicker",
+      "Declaration": "Public Sub CancelPicker",
+      "Name": ""
+    }
+  ],
+  "HardCodedWorkbookReferences": []
+}

@@ -1,0 +1,372 @@
+﻿{
+    "Status":  "PASS",
+    "BuiltWorkbook":  "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\TaiHoaDonDienTu_v6.6.3.xlsm",
+    "ReopenVerified":  true,
+    "Checks":  [
+                   {
+                       "Name":  "Worksheets",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "UnexpectedNewWorksheets",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "ExpectedAddedWorksheets",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "NamedRanges",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "ExpectedAddedNamedRanges",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ],
+                       "Explanation":  "AutoFilter on the added report sheet creates its hidden filter database name."
+                   },
+                   {
+                       "Name":  "UnexpectedNewNamedRanges",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "Tables",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "ShapesAndMacroAssignments",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "ActiveXControls",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "VbaReferences",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "VbaComponents",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "UnexpectedNewVbaComponents",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "ExpectedAddedVbaComponents",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ],
+                       "Explanation":  "Components added by the retry/error-report feature, plus the document module of the added worksheet."
+                   },
+                   {
+                       "Name":  "UserFormControls",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "ErrorReportSheet",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ],
+                       "DeclaredHeaders":  [
+                                               "STT",
+                                               "Thời gian ghi nhận",
+                                               "Loại hóa đơn",
+                                               "Nguồn API",
+                                               "Mã số thuế người bán",
+                                               "Ký hiệu mẫu số",
+                                               "Ký hiệu hóa đơn",
+                                               "Số hóa đơn",
+                                               "Ngày lập hóa đơn",
+                                               "Công đoạn lỗi",
+                                               "Endpoint",
+                                               "HTTP status",
+                                               "Nội dung lỗi",
+                                               "Số lần đã thử",
+                                               "Retry-After",
+                                               "Kết quả cuối",
+                                               "Ghi chú"
+                                           ],
+                       "ActualHeaders":  [
+                                             "STT",
+                                             "Thời gian ghi nhận",
+                                             "Loại hóa đơn",
+                                             "Nguồn API",
+                                             "Mã số thuế người bán",
+                                             "Ký hiệu mẫu số",
+                                             "Ký hiệu hóa đơn",
+                                             "Số hóa đơn",
+                                             "Ngày lập hóa đơn",
+                                             "Công đoạn lỗi",
+                                             "Endpoint",
+                                             "HTTP status",
+                                             "Nội dung lỗi",
+                                             "Số lần đã thử",
+                                             "Retry-After",
+                                             "Kết quả cuối",
+                                             "Ghi chú"
+                                         ]
+                   },
+                   {
+                       "Name":  "ErrorReportSheetFrozenHeader",
+                       "Pass":  true,
+                       "Differences":  [
+                                           "FreezePanes=True"
+                                       ]
+                   },
+                   {
+                       "Name":  "BuildScriptsEncodingSafe",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ],
+                       "Explanation":  "Windows PowerShell 5.1 reads a BOM-less script with the active ANSI code page, so a non-ASCII literal corrupts the script at parse time. Such scripts need a UTF-8 BOM."
+                   },
+                   {
+                       "Name":  "VbaCodeMatchesSource",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ],
+                       "Explanation":  "Every reimported module, class and form contains the source code, compared without case because VBIDE rewrites member casing on compile, and without module attributes because VBIDE hides them."
+                   }
+               ],
+    "BrokenReferences":  [
+
+                         ],
+    "UserFormSmokeTest":  {
+                              "Attempted":  true,
+                              "Pass":  true,
+                              "Results":  [
+                                              {
+                                                  "Name":  "frmCapNhatMK",
+                                                  "Pass":  true,
+                                                  "ExitCode":  0
+                                              },
+                                              {
+                                                  "Name":  "frmDangNhap",
+                                                  "Pass":  true,
+                                                  "ExitCode":  0
+                                              },
+                                              {
+                                                  "Name":  "frmDatePicker",
+                                                  "Pass":  true,
+                                                  "ExitCode":  0
+                                              },
+                                              {
+                                                  "Name":  "frmTaiHoaDon",
+                                                  "Pass":  true,
+                                                  "ExitCode":  0
+                                              },
+                                              {
+                                                  "Name":  "frmTrichXuatXML",
+                                                  "Pass":  true,
+                                                  "ExitCode":  0
+                                              }
+                                          ],
+                              "Note":  "Each UserForm was instantiated in an isolated Excel/PowerShell process using a temporary VBA test module and then unloaded."
+                          },
+    "ExpectedSerializationDifferences":  [
+                                             {
+                                                 "Category":  "Expected serialization difference",
+                                                 "Item":  "MENU/Rounded Rectangle 1",
+                                                 "Original":  "\u0027App_v6.4-ui.xlsm\u0027!dangnhap",
+                                                 "Built":  "TaiHoaDonDienTu_v6.6.3.xlsm!dangnhap",
+                                                 "Explanation":  "Excel rebound the workbook-qualified OnAction prefix to the new output filename; the macro target is unchanged."
+                                             },
+                                             {
+                                                 "Category":  "Expected serialization difference",
+                                                 "Item":  "MENU/Rounded Rectangle 2",
+                                                 "Original":  "\u0027App_v6.4-ui.xlsm\u0027!TaiHoaDon",
+                                                 "Built":  "TaiHoaDonDienTu_v6.6.3.xlsm!TaiHoaDon",
+                                                 "Explanation":  "Excel rebound the workbook-qualified OnAction prefix to the new output filename; the macro target is unchanged."
+                                             },
+                                             {
+                                                 "Category":  "Expected serialization difference",
+                                                 "Item":  "MENU/Rounded Rectangle 3",
+                                                 "Original":  "\u0027App_v6.4-ui.xlsm\u0027!moUFTrichXuat",
+                                                 "Built":  "TaiHoaDonDienTu_v6.6.3.xlsm!moUFTrichXuat",
+                                                 "Explanation":  "Excel rebound the workbook-qualified OnAction prefix to the new output filename; the macro target is unchanged."
+                                             }
+                                         ],
+    "CriticalBusinessMacroExecution":  {
+                                           "Status":  "NOT VERIFIED",
+                                           "Reason":  "Business macros perform external/network and workbook mutations; no safe representative inputs were supplied."
+                                       },
+    "VbaCompile":  {
+                       "Status":  "NOT VERIFIED (no supported compile API)",
+                       "Reason":  "Excel exposes no supported programmatic compile API, so compilation is only evidenced by running code: the workbook is reopened and every UserForm is instantiated.",
+                       "RuntimeEvidence":  "All 5 UserForms instantiated and unloaded in isolated processes."
+                   },
+    "ExpectedStructuralAdditions":  {
+                                        "Worksheets":  [
+                                                           "BaoCao_LoiTaiHD"
+                                                       ],
+                                        "VbaComponents":  [
+                                                              "modGdtRetry",
+                                                              "modGdtErrorReport",
+                                                              "clsGdtRequestResult",
+                                                              "clsGdtRetryItem",
+                                                              "Sheet10"
+                                                          ],
+                                        "NamedRanges":  [
+                                                            "BaoCao_LoiTaiHD!_FilterDatabase"
+                                                        ],
+                                        "Explanation":  "Feature-added worksheet. Sheet names, CodeNames, visibility, tables, shapes and controls of the original worksheets are still compared unchanged."
+                                    },
+    "CodeDifferencesVsMigrationBaseline":  [
+                                               {
+                                                   "InputObject":  "Sheet6|574fff9f4fdeaa6ca81f762a0b6bbf0f91df1f2e96315b9d7dcd6a51e1419a34",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "modFunctions|c46e70d54b520db4140e8405d833e0d12e6c8346c93afd64ba293139d758945e",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "modGhiExcel|d5ace26e296ee7322439dbdc80c1899c3fcdcca379f2905495c8b64511d95399",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "modHTTPRequest|8f680eb2e4491c828d543ecdac093dcc1f3861f60f4c4b2b15e773a30293e8b7",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "modParseIso|23fff8cab2038fe821f604168f831e9cfcb5dde362c1cce8a3d2a499ebd8a2a1",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "Module1|89ddc281dcb76c8a2e9e07c7b3e32df499d4dd4233e3c3e5afa93afa68b5f0c7",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "frmCapNhatMK|a953276744b2f6e6402bd388d75492962479d2e6f60e21aedc80f6d5f5100100",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "frmDangNhap|be5a11d791cbfe832cca711a4192a9a38b3a715ca5b8336478784300f3ead086",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "frmDatePicker|4a2748a825ec37731267de701b37331c8a2cddf1ecbdc2759b815dbd6d72088f",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "frmTaiHoaDon|438be5a11a5b52d866d90a4751c69dae0fe4855346421accb160c59c309370f2",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "frmTrichXuatXML|a0d6e68df34bed99b47c0d8b620645b8898e455e3be60dad62112e911202265e",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "modHTTPRequest|bf70ce695c064228634161006d044ccfacf624a4f18db970487d52a5ad207224",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "frmDangNhap|ed67c8b726574a013ba7852ad4501664944e5d3cbfd4dadc9ce65e1070c1c843",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "modGhiExcel|625f70cfca0e5bef62271010243ae6f6f399bac4673e5e10747cbfb4056633e8",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "modFunctions|18bebe551b7d0d6a525ea66d989ed413c69f928cea231c924e880343f99568f1",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "frmTaiHoaDon|24a5f92bd4405b17dec39cf8aca0ade4cf5255c47ef2bc68f3890da1ab1b74ab",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "modParseIso|251027634e68908e4fee171b8d2c0955533219d326c0d13510ea961e99a977db",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "frmCapNhatMK|98502bf1e48aafe27634e235934e6e0a69eaa0bf4113d6e6186a170d08e466cc",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "Sheet6|abe3a3a077191b001359f1b542c82511c903e4b52ff3d112cc904b2e0befe1ef",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "Module1|c75c4b33c96c39d195381a4090f4a6240c3a2651e005bc22c654606823d7e17b",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "frmTrichXuatXML|afb71d4d04f927e4e1af378b03970149dfddc576bdfb0473053eb1fd4d73f060",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "frmDatePicker|54d1a2047ee1176f9e307a7e011f24c781d5bb17776a075699c3aae3f9c44b1c",
+                                                   "SideIndicator":  "\u003c="
+                                               }
+                                           ],
+    "ErrorReportSheet":  {
+                             "Exists":  true,
+                             "Headers":  [
+                                             "STT",
+                                             "Thời gian ghi nhận",
+                                             "Loại hóa đơn",
+                                             "Nguồn API",
+                                             "Mã số thuế người bán",
+                                             "Ký hiệu mẫu số",
+                                             "Ký hiệu hóa đơn",
+                                             "Số hóa đơn",
+                                             "Ngày lập hóa đơn",
+                                             "Công đoạn lỗi",
+                                             "Endpoint",
+                                             "HTTP status",
+                                             "Nội dung lỗi",
+                                             "Số lần đã thử",
+                                             "Retry-After",
+                                             "Kết quả cuối",
+                                             "Ghi chú"
+                                         ],
+                             "AutoFilterMode":  true,
+                             "FreezePanes":  true
+                         }
+}

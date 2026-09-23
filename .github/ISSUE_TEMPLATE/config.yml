@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Hướng dẫn xử lý sự cố
+    url: https://github.com/dieutx/TaiHoaDonDienTu/blob/main/docs/TROUBLESHOOTING.md
+    about: Kiểm tra các lỗi phổ biến và cách thu thập log an toàn trước khi báo lỗi.
+  - name: Báo cáo bảo mật
+    url: https://github.com/dieutx/TaiHoaDonDienTu/security
+    about: Không đăng credential hoặc dữ liệu hóa đơn thật trong Issue công khai.

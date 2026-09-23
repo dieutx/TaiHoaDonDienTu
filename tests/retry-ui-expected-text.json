@@ -1,0 +1,33 @@
+{
+  "note": "Chuỗi tiếng Việt mong đợi cho tính năng retry/UI. Script kiểm tra tĩnh tái tạo UniConvert (Telex) từ modMsgboxTV.bas rồi so khớp với các literal trong modGdtErrorReport.bas, vì vậy file này giữ tiếng Việt thật còn script kiểm tra giữ ASCII.",
+  "reportHeaders": [
+    "STT",
+    "Thời gian ghi nhận",
+    "Loại hóa đơn",
+    "Nguồn API",
+    "Mã số thuế người bán",
+    "Ký hiệu mẫu số",
+    "Ký hiệu hóa đơn",
+    "Số hóa đơn",
+    "Ngày lập hóa đơn",
+    "Công đoạn lỗi",
+    "Endpoint",
+    "HTTP status",
+    "Nội dung lỗi",
+    "Số lần đã thử",
+    "Retry-After",
+    "Kết quả cuối",
+    "Ghi chú"
+  ],
+  "forbiddenFragments": [
+    "mâũ",
+    "Pảse",
+    "pảse",
+    "mucj",
+    "nesn",
+    "Ddã",
+    "yêeu",
+    "mơí"
+  ],
+  "forbiddenNote": "Các chuỗi này là kết quả decode sai đã từng xuất hiện trong literal Telex của code retry/UI. Nếu chúng xuất hiện lại thì một literal đã bị gõ sai."
+}

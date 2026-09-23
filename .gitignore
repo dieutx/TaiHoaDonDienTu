@@ -1,0 +1,5 @@
+dist/*.xlsm
+~$*.xlsm
+*.log
+*.tmp
+tests/*-run.log

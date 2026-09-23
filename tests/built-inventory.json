@@ -1,0 +1,1374 @@
+﻿{
+    "SchemaVersion":  1,
+    "CapturedAtUtc":  "2026-09-23T03:16:39.4375636Z",
+    "Workbook":  {
+                     "FileName":  "TaiHoaDonDienTu_v6.6.3.xlsm",
+                     "FullPath":  "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\TaiHoaDonDienTu_v6.6.3.xlsm",
+                     "FileSize":  273387,
+                     "FileSha256":  "2683a17a305f83b8e3eac02fa98550649c954dd33dd704ef0f942bb948f9f288",
+                     "ExcelVersion":  "16.0",
+                     "VBProjectName":  "TaiHDDT",
+                     "VBProjectProtection":  0
+                 },
+    "Worksheets":  [
+                       {
+                           "Name":  "Thamkhao",
+                           "CodeName":  "Sheet7",
+                           "Visibility":  0,
+                           "Tables":  [
+
+                                      ],
+                           "Shapes":  [
+
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       },
+                       {
+                           "Name":  "MENU",
+                           "CodeName":  "Sheet9",
+                           "Visibility":  -1,
+                           "Tables":  [
+                                          {
+                                              "Name":  "tblDanhSachMST",
+                                              "Range":  "A6:E8"
+                                          }
+                                      ],
+                           "Shapes":  [
+                                          {
+                                              "Name":  "Rounded Rectangle 1",
+                                              "Type":  1,
+                                              "OnAction":  "TaiHoaDonDienTu_v6.6.3.xlsm!dangnhap",
+                                              "FormControlType":  0
+                                          },
+                                          {
+                                              "Name":  "Rounded Rectangle 2",
+                                              "Type":  1,
+                                              "OnAction":  "TaiHoaDonDienTu_v6.6.3.xlsm!TaiHoaDon",
+                                              "FormControlType":  0
+                                          },
+                                          {
+                                              "Name":  "Rounded Rectangle 3",
+                                              "Type":  1,
+                                              "OnAction":  "TaiHoaDonDienTu_v6.6.3.xlsm!moUFTrichXuat",
+                                              "FormControlType":  0
+                                          }
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       },
+                       {
+                           "Name":  "TongHopHD_Mua",
+                           "CodeName":  "Sheet1",
+                           "Visibility":  -1,
+                           "Tables":  [
+
+                                      ],
+                           "Shapes":  [
+
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       },
+                       {
+                           "Name":  "ChiTietHD_Mua",
+                           "CodeName":  "Sheet2",
+                           "Visibility":  -1,
+                           "Tables":  [
+
+                                      ],
+                           "Shapes":  [
+
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       },
+                       {
+                           "Name":  "ChiTietHD_Mua_XML",
+                           "CodeName":  "Sheet6",
+                           "Visibility":  -1,
+                           "Tables":  [
+
+                                      ],
+                           "Shapes":  [
+
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       },
+                       {
+                           "Name":  "TongHopHD_Ban",
+                           "CodeName":  "Sheet3",
+                           "Visibility":  -1,
+                           "Tables":  [
+
+                                      ],
+                           "Shapes":  [
+
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       },
+                       {
+                           "Name":  "ChiTietHD_Ban",
+                           "CodeName":  "Sheet4",
+                           "Visibility":  -1,
+                           "Tables":  [
+
+                                      ],
+                           "Shapes":  [
+
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       },
+                       {
+                           "Name":  "ChiTietHD_Ban_XML",
+                           "CodeName":  "Sheet8",
+                           "Visibility":  -1,
+                           "Tables":  [
+
+                                      ],
+                           "Shapes":  [
+
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       },
+                       {
+                           "Name":  "LinkTraCuu",
+                           "CodeName":  "Sheet5",
+                           "Visibility":  -1,
+                           "Tables":  [
+
+                                      ],
+                           "Shapes":  [
+
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       },
+                       {
+                           "Name":  "BaoCao_LoiTaiHD",
+                           "CodeName":  "",
+                           "Visibility":  -1,
+                           "Tables":  [
+
+                                      ],
+                           "Shapes":  [
+
+                                      ],
+                           "ActiveXControls":  [
+
+                                               ]
+                       }
+                   ],
+    "NamedRanges":  [
+                        {
+                            "Name":  "BaoCao_LoiTaiHD!_FilterDatabase",
+                            "RefersTo":  "=BaoCao_LoiTaiHD!$A$1:$Q$1",
+                            "Visible":  false
+                        },
+                        {
+                            "Name":  "LinkTraCuu!_FilterDatabase",
+                            "RefersTo":  "=LinkTraCuu!$A$1:$E$116",
+                            "Visible":  false
+                        },
+                        {
+                            "Name":  "TongHopHD_Ban!_FilterDatabase",
+                            "RefersTo":  "=TongHopHD_Ban!$A$2:$BA$2",
+                            "Visible":  false
+                        },
+                        {
+                            "Name":  "TongHopHD_Mua!_FilterDatabase",
+                            "RefersTo":  "=TongHopHD_Mua!$A$2:$BA$2",
+                            "Visible":  false
+                        }
+                    ],
+    "VbaReferences":  [
+                          {
+                              "Name":  "VBA",
+                              "Description":  "Visual Basic For Applications",
+                              "Guid":  "{000204EF-0000-0000-C000-000000000046}",
+                              "Major":  4,
+                              "Minor":  2,
+                              "FullPath":  "C:\\Program Files\\Common Files\\Microsoft Shared\\VBA\\VBA7.1\\VBE7.DLL",
+                              "IsBroken":  false
+                          },
+                          {
+                              "Name":  "Excel",
+                              "Description":  "Microsoft Excel 16.0 Object Library",
+                              "Guid":  "{00020813-0000-0000-C000-000000000046}",
+                              "Major":  1,
+                              "Minor":  9,
+                              "FullPath":  "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE",
+                              "IsBroken":  false
+                          },
+                          {
+                              "Name":  "stdole",
+                              "Description":  "OLE Automation",
+                              "Guid":  "{00020430-0000-0000-C000-000000000046}",
+                              "Major":  2,
+                              "Minor":  0,
+                              "FullPath":  "C:\\Windows\\System32\\stdole2.tlb",
+                              "IsBroken":  false
+                          },
+                          {
+                              "Name":  "Office",
+                              "Description":  "Microsoft Office 16.0 Object Library",
+                              "Guid":  "{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}",
+                              "Major":  2,
+                              "Minor":  8,
+                              "FullPath":  "C:\\Program Files\\Common Files\\Microsoft Shared\\OFFICE16\\MSO.DLL",
+                              "IsBroken":  false
+                          },
+                          {
+                              "Name":  "MSForms",
+                              "Description":  "Microsoft Forms 2.0 Object Library",
+                              "Guid":  "{0D452EE1-E08F-101A-852E-02608C4D0BB4}",
+                              "Major":  2,
+                              "Minor":  0,
+                              "FullPath":  "C:\\WINDOWS\\system32\\FM20.DLL",
+                              "IsBroken":  false
+                          },
+                          {
+                              "Name":  "MSXML2",
+                              "Description":  "Microsoft XML, v6.0",
+                              "Guid":  "{F5078F18-C551-11D3-89B9-0000F81FE221}",
+                              "Major":  6,
+                              "Minor":  0,
+                              "FullPath":  "C:\\Windows\\System32\\msxml6.dll",
+                              "IsBroken":  false
+                          },
+                          {
+                              "Name":  "SHDocVw",
+                              "Description":  "Microsoft Internet Controls",
+                              "Guid":  "{EAB22AC0-30C1-11CF-A7EB-0000C05BAE0B}",
+                              "Major":  1,
+                              "Minor":  1,
+                              "FullPath":  "C:\\Windows\\System32\\ieframe.dll",
+                              "IsBroken":  false
+                          },
+                          {
+                              "Name":  "Scripting",
+                              "Description":  "Microsoft Scripting Runtime",
+                              "Guid":  "{420B2830-E718-11CF-893D-00A0C9054228}",
+                              "Major":  1,
+                              "Minor":  0,
+                              "FullPath":  "C:\\Windows\\System32\\scrrun.dll",
+                              "IsBroken":  false
+                          },
+                          {
+                              "Name":  "MSHTML",
+                              "Description":  "Microsoft HTML Object Library",
+                              "Guid":  "{3050F1C5-98B5-11CF-BB82-00AA00BDCE0B}",
+                              "Major":  4,
+                              "Minor":  0,
+                              "FullPath":  "C:\\Windows\\System32\\mshtml.tlb",
+                              "IsBroken":  false
+                          }
+                      ],
+    "VbaComponents":  [
+                          {
+                              "Name":  "ThisWorkbook",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  0,
+                              "CodeSha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                              "CodeSha256IgnoringCase":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                          },
+                          {
+                              "Name":  "Sheet1",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  2,
+                              "CodeSha256":  "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991",
+                              "CodeSha256IgnoringCase":  "8044ef472cc4e4ea626f5b18c670c5aea7af218a783b51a867f4cf93b36a54e9"
+                          },
+                          {
+                              "Name":  "Sheet2",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  2,
+                              "CodeSha256":  "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991",
+                              "CodeSha256IgnoringCase":  "8044ef472cc4e4ea626f5b18c670c5aea7af218a783b51a867f4cf93b36a54e9"
+                          },
+                          {
+                              "Name":  "Sheet5",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  2,
+                              "CodeSha256":  "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991",
+                              "CodeSha256IgnoringCase":  "8044ef472cc4e4ea626f5b18c670c5aea7af218a783b51a867f4cf93b36a54e9"
+                          },
+                          {
+                              "Name":  "Sheet6",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  9,
+                              "CodeSha256":  "574fff9f4fdeaa6ca81f762a0b6bbf0f91df1f2e96315b9d7dcd6a51e1419a34",
+                              "CodeSha256IgnoringCase":  "d4fd5c28957da5e566dafbbe83d72da3d524eb7620ec98529e07f64acc9becc8"
+                          },
+                          {
+                              "Name":  "Sheet7",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  0,
+                              "CodeSha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                              "CodeSha256IgnoringCase":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                          },
+                          {
+                              "Name":  "Sheet3",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  2,
+                              "CodeSha256":  "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991",
+                              "CodeSha256IgnoringCase":  "8044ef472cc4e4ea626f5b18c670c5aea7af218a783b51a867f4cf93b36a54e9"
+                          },
+                          {
+                              "Name":  "Sheet4",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  2,
+                              "CodeSha256":  "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991",
+                              "CodeSha256IgnoringCase":  "8044ef472cc4e4ea626f5b18c670c5aea7af218a783b51a867f4cf93b36a54e9"
+                          },
+                          {
+                              "Name":  "Sheet8",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  2,
+                              "CodeSha256":  "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991",
+                              "CodeSha256IgnoringCase":  "8044ef472cc4e4ea626f5b18c670c5aea7af218a783b51a867f4cf93b36a54e9"
+                          },
+                          {
+                              "Name":  "Sheet9",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  2,
+                              "CodeSha256":  "8ce8275c68e5d486d9598edf46be18204d34281f62c91f75550659b5d2d14991",
+                              "CodeSha256IgnoringCase":  "8044ef472cc4e4ea626f5b18c670c5aea7af218a783b51a867f4cf93b36a54e9"
+                          },
+                          {
+                              "Name":  "JsonConverter",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  1050,
+                              "CodeSha256":  "b4284784c3b1aa33f63043d5715ac67417ce8ec3467cfc23366047f0801695c8",
+                              "CodeSha256IgnoringCase":  "ddf00ebc571378522daa38dc926e1f8b01101d29089e30022785f6d8da78386c"
+                          },
+                          {
+                              "Name":  "modCommands",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  18,
+                              "CodeSha256":  "848323e119bfdfde18376538fea7636fed82bafa89908a94762e441f2beacd9b",
+                              "CodeSha256IgnoringCase":  "9f0657d6ffc6c7828421d6c243b497865447bbfc3a13617e7233c18fde6f1610"
+                          },
+                          {
+                              "Name":  "modcreateUUID",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  70,
+                              "CodeSha256":  "34061f27b600c7d840d43b86ba7ddad6a9a7a7eb90931e5d7a763006d2a0fc27",
+                              "CodeSha256IgnoringCase":  "11f93a24e8f47fa4cf0f7b047e165b595e299d995da922d37b98b3a063f65cba"
+                          },
+                          {
+                              "Name":  "modDetectCaptcha",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  121,
+                              "CodeSha256":  "8618d6ec38cd796e5a1b7eb0de90e5ef4fb8c8bebfa4f0b65905eea4219e24fa",
+                              "CodeSha256IgnoringCase":  "482090876b1aa28a93fd367bb80ac4c0f55b18b023f99aab8c9f4df1d8c6e7b0"
+                          },
+                          {
+                              "Name":  "modFunctions",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  262,
+                              "CodeSha256":  "c46e70d54b520db4140e8405d833e0d12e6c8346c93afd64ba293139d758945e",
+                              "CodeSha256IgnoringCase":  "4394c6d0a45b434651bc49f277d65fa838a9095b3ddfb0aba38ab5848fcf9083"
+                          },
+                          {
+                              "Name":  "modGdtErrorReport",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  250,
+                              "CodeSha256":  "2494bfbe2820fa91732e1827541c31802be9a7901b51ecb593eaca652e12ce90",
+                              "CodeSha256IgnoringCase":  "2186c4ccc3f11927a4709ac762c8545e767622eba5c24c46f566ce30a76d125f"
+                          },
+                          {
+                              "Name":  "modGdtRetry",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  357,
+                              "CodeSha256":  "4f90b793d3ced60f1a508cb756889568ec6b9145bfa6d11dc06e83ca5ca9bdea",
+                              "CodeSha256IgnoringCase":  "ae30dc1006c74e0813f80dd7b6ca84dbe844f925b91ead287c4edb0d799e62de"
+                          },
+                          {
+                              "Name":  "modGhiExcel",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  682,
+                              "CodeSha256":  "d5ace26e296ee7322439dbdc80c1899c3fcdcca379f2905495c8b64511d95399",
+                              "CodeSha256IgnoringCase":  "5e6a4082f719e8337eed27ef71ac14843ed1f3cb78440c636ae67b4f8ab2f7a9"
+                          },
+                          {
+                              "Name":  "modGlobalVariables",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  19,
+                              "CodeSha256":  "2cd1008efd9534a39f2383a74fe3db3af51126919ad8456e8bf68f95cdff0616",
+                              "CodeSha256IgnoringCase":  "8c578fe1af0354e620331e8cdf4aadd9963b46f29fb4678043eac9ec9cac03d3"
+                          },
+                          {
+                              "Name":  "modHTTPRequest",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  266,
+                              "CodeSha256":  "8f680eb2e4491c828d543ecdac093dcc1f3861f60f4c4b2b15e773a30293e8b7",
+                              "CodeSha256IgnoringCase":  "aaf416e84fd7f4cdc81b0a96c53fee302c4414fc3e4e22424b1bf7ce1857bfa1"
+                          },
+                          {
+                              "Name":  "modMsgboxTV",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  71,
+                              "CodeSha256":  "d35520f458ab6d7bf26de57662b0377f27403984378c17969e38b6fa87e70f38",
+                              "CodeSha256IgnoringCase":  "9c2efb7f951199b5b9e5ec724fea1f21e8adbbabd12b868b2f42a4c98bab9d92"
+                          },
+                          {
+                              "Name":  "modParseIso",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  129,
+                              "CodeSha256":  "23fff8cab2038fe821f604168f831e9cfcb5dde362c1cce8a3d2a499ebd8a2a1",
+                              "CodeSha256IgnoringCase":  "2950d76da8b1b35a6897578ec991f1335a0aa9c7d2f9602db5409b0ff14a7861"
+                          },
+                          {
+                              "Name":  "Module1",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  212,
+                              "CodeSha256":  "89ddc281dcb76c8a2e9e07c7b3e32df499d4dd4233e3c3e5afa93afa68b5f0c7",
+                              "CodeSha256IgnoringCase":  "f38ed55bab3b975ba04eef38a64338cd37a5069b7e699d2514095a866ed11eda"
+                          },
+                          {
+                              "Name":  "clsGdtRequestResult",
+                              "Type":  2,
+                              "TypeName":  "ClassModule",
+                              "LineCount":  13,
+                              "CodeSha256":  "87647542df84641a1b3a918d5311363fa9d1eb711d0eedab19731e8a76490ae4",
+                              "CodeSha256IgnoringCase":  "0131df73c5be81851747b0689fb4454d0549849142929c23da609524fd502dd2"
+                          },
+                          {
+                              "Name":  "clsGdtRetryItem",
+                              "Type":  2,
+                              "TypeName":  "ClassModule",
+                              "LineCount":  20,
+                              "CodeSha256":  "da324eb91bd38d525a8bbb1c1af9c964f76d5b671bd97bb847e63fb67c322351",
+                              "CodeSha256IgnoringCase":  "836b2c592779d60705e86dfa0b54ab516bda7134f3afb5beaa7838682441901e"
+                          },
+                          {
+                              "Name":  "clsUiButtonHandler",
+                              "Type":  2,
+                              "TypeName":  "ClassModule",
+                              "LineCount":  7,
+                              "CodeSha256":  "31e2b3eb5c54f9942d9e7df21695f18bedd91f5264ff047c864eadae419ecace",
+                              "CodeSha256IgnoringCase":  "43090d39ab47b52262e37fda5bb29268dc7accf8e5f5af1701e9fb9da82e13a8"
+                          },
+                          {
+                              "Name":  "frmCapNhatMK",
+                              "Type":  3,
+                              "TypeName":  "UserForm",
+                              "LineCount":  51,
+                              "CodeSha256":  "a953276744b2f6e6402bd388d75492962479d2e6f60e21aedc80f6d5f5100100",
+                              "CodeSha256IgnoringCase":  "6f55f089459f5959ad1821c7a57d2d3af376bfec2a670b1c04583d9540a5c8bf",
+                              "Caption":  "",
+                              "Controls":  [
+                                               {
+                                                   "Name":  "txtMKCu",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label1",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label2",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label3",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtMKMoi",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtNhapLaiMKMoi",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label4",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label5",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label6",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label7",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Frame1",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Frame2",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Frame3",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Frame4",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdCapNhat",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label8",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtMST",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtPass",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               }
+                                           ]
+                          },
+                          {
+                              "Name":  "frmDangNhap",
+                              "Type":  3,
+                              "TypeName":  "UserForm",
+                              "LineCount":  215,
+                              "CodeSha256":  "be5a11d791cbfe832cca711a4192a9a38b3a715ca5b8336478784300f3ead086",
+                              "CodeSha256IgnoringCase":  "72736a017ca99ba30f249b5a0a91940fb70904d6edc3c6c5ef801de4e625920e",
+                              "Caption":  "",
+                              "Controls":  [
+                                               {
+                                                   "Name":  "Label3",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdDangNhap",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtUser",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label1",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label2",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtPass",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label4",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtNhapCaptcha",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "LBL",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblThanhCong",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblThatBai",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdHienMK",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdDauMK",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lsbUsers",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtTenDV",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblTenDV",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblCapNhatMK",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label6",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               }
+                                           ]
+                          },
+                          {
+                              "Name":  "frmDatePicker",
+                              "Type":  3,
+                              "TypeName":  "UserForm",
+                              "LineCount":  67,
+                              "CodeSha256":  "4a2748a825ec37731267de701b37331c8a2cddf1ecbdc2759b815dbd6d72088f",
+                              "CodeSha256IgnoringCase":  "bdf14e43a9f7e0f629ff6b2aaedb39191de1efaa5737cc59bf82143fc6f13dd1",
+                              "Caption":  "",
+                              "Controls":  [
+
+                                           ]
+                          },
+                          {
+                              "Name":  "frmTaiHoaDon",
+                              "Type":  3,
+                              "TypeName":  "UserForm",
+                              "LineCount":  1252,
+                              "CodeSha256":  "438be5a11a5b52d866d90a4751c69dae0fe4855346421accb160c59c309370f2",
+                              "CodeSha256IgnoringCase":  "3dc0e8e9bba71777cfd3b624d5bc97455260d1b77a52681080737f424b432e39",
+                              "Caption":  "",
+                              "Controls":  [
+                                               {
+                                                   "Name":  "fraChonNgay",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtTuNgay",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label9",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtDenNgay",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label10",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "fraLoaiHD",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "optMua",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "optBan",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label7",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label12",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdTaiHoaDon",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label13",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cboTTHD",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cboKQKT",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label14",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label15",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblStatus",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblSaiNgay",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Frame1",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label11",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label16",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtXMLFolderPath",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdChonFolder",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "fraLoaiDuLieu",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label17",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "chkTH",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "chkXmlZip",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "chkCT",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label18",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtSleep",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label19",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label20",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdChiTietXML",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label21",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label22",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cboDonVi",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblTenDV",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               }
+                                           ]
+                          },
+                          {
+                              "Name":  "frmTrichXuatXML",
+                              "Type":  3,
+                              "TypeName":  "UserForm",
+                              "LineCount":  25,
+                              "CodeSha256":  "a0d6e68df34bed99b47c0d8b620645b8898e455e3be60dad62112e911202265e",
+                              "CodeSha256IgnoringCase":  "c8cd8e2478afc9a7f6344683ab5a41430e2732ec72ce688201fe61b9171df156",
+                              "Caption":  "",
+                              "Controls":  [
+                                               {
+                                                   "Name":  "fraLoaiHD",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "optMua",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "optBan",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label7",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Frame1",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label10",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdTrichXuat",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "txtXMLFolderPath",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "Label16",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdChonFolder",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               }
+                                           ]
+                          },
+                          {
+                              "Name":  "Sheet10",
+                              "Type":  100,
+                              "TypeName":  "DocumentModule",
+                              "LineCount":  0,
+                              "CodeSha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                              "CodeSha256IgnoringCase":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                          }
+                      ],
+    "EntryPoints":  [
+                        {
+                            "Component":  "JsonConverter",
+                            "Declaration":  "Public Function ParseJSON",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "JsonConverter",
+                            "Declaration":  "Public Function ConvertToJson",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "JsonConverter",
+                            "Declaration":  "Public Function ParseUtc",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "JsonConverter",
+                            "Declaration":  "Public Function ConvertToUtc",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "JsonConverter",
+                            "Declaration":  "Public Function ParseIso",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "JsonConverter",
+                            "Declaration":  "Public Function ConvertToIso",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modCommands",
+                            "Declaration":  "Sub DangNhap",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modCommands",
+                            "Declaration":  "Sub moUFTrichXuat",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modCommands",
+                            "Declaration":  "Sub closeForm",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modCommands",
+                            "Declaration":  "Sub TaiHoaDon",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modcreateUUID",
+                            "Declaration":  "Public Function CreateRequestID",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modDetectCaptcha",
+                            "Declaration":  "Function detectSVGCaptcha",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modDetectCaptcha",
+                            "Declaration":  "Function listAllPathInSVG",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modFunctions",
+                            "Declaration":  "Sub Unzip",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modFunctions",
+                            "Declaration":  "Sub parseXML",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modFunctions",
+                            "Declaration":  "Public Function isInArray",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modFunctions",
+                            "Declaration":  "Public Function getToken",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtErrorReport",
+                            "Declaration":  "Public Function EnsureGdtErrorReportSheet",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtErrorReport",
+                            "Declaration":  "Public Sub UpsertGdtErrorReport",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtErrorReport",
+                            "Declaration":  "Public Sub MarkGdtRetrySuccess",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtErrorReport",
+                            "Declaration":  "Public Function BuildGdtErrorKey",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Sub ResetGdtRequestSession",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function ExecuteGdtRequest",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function ExecuteGdtBinaryRequest",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function IsSuccessfulGdtStatus",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function ShouldQueueGdtFinalRetry",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function TryReadGdtResponse",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function IsRetryableGdtStatus",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function CalculateGdtRetrySeconds",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Sub WaitGdtSeconds",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Sub WaitGdtMilliseconds",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Sub WaitForFinalGdtRetry",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Sub ResetGdtStatusBar",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Sub ghiExcel_TongHop",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Sub WriteRelativeInvoiceData",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Sub WriteRelatedInformationResponse",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Sub WriteNoRelativeInvoiceData",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Sub ghiExcel_ChiTiet",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Sub LinkTraCuu",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Sub tenCotTraCuu",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Sub CopyThongTinChung_CT",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
+                            "Declaration":  "Function createXmlHttpObj",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
+                            "Declaration":  "Function httpPost",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
+                            "Declaration":  "Function httpGet",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
+                            "Declaration":  "Function httpOption",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
+                            "Declaration":  "Function httpGet_ex",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
+                            "Declaration":  "Public Function validateInternetConnection",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
+                            "Declaration":  "Public Function GetInternetConnectedState",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
+                            "Declaration":  "Public Function ApiGet",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
+                            "Declaration":  "Public Sub PublishLastGdtResult",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modMsgboxTV",
+                            "Declaration":  "Public Function MsgBoxUni",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modMsgboxTV",
+                            "Declaration":  "Function UniConvert",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modParseIso",
+                            "Declaration":  "Public Function ISODATE",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modParseIso",
+                            "Declaration":  "Public Function UTCToLocalTime",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modParseIso",
+                            "Declaration":  "Public Sub ISODateTest",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modParseIso",
+                            "Declaration":  "Sub AssertEqual",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "Module1",
+                            "Declaration":  "Public Function ExtractPdfPath",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "Module1",
+                            "Declaration":  "Public Sub SaveInvoicePdf",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "Module1",
+                            "Declaration":  "Public Sub SaveInvoicePdf_KnowPath",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "Module1",
+                            "Declaration":  "Sub GetOnclickValue",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "Module1",
+                            "Declaration":  "Sub layLinkTaiPDF",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "clsGdtRetryItem",
+                            "Declaration":  "Public Function UniqueKey",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmCapNhatMK",
+                            "Declaration":  "Sub luuMatKhau",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmDangNhap",
+                            "Declaration":  "Function layCaptcha",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmDangNhap",
+                            "Declaration":  "Sub layUserPass",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmDangNhap",
+                            "Declaration":  "Sub saveUserPassToken",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmDatePicker",
+                            "Declaration":  "Public Sub SetTarget",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmDatePicker",
+                            "Declaration":  "Public Sub SelectToday",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmDatePicker",
+                            "Declaration":  "Public Sub AcceptDate",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmDatePicker",
+                            "Declaration":  "Public Sub CancelPicker",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub OpenStartDatePicker",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub OpenEndDatePicker",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub RefreshPickedDate",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Function correctDate",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub optMua_Change",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub ReportRetryProgress",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Sub taiHoaDon_Total",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Function lietKeThoiGian",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Sub ghiLog",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Sub taiXML_zip",
+                            "Name":  ""
+                        }
+                    ],
+    "HardCodedWorkbookReferences":  [
+
+                                    ]
+}

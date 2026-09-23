@@ -1,0 +1,16 @@
+﻿{
+    "Pass":  true,
+    "ResolvedErrorRemoved":  true,
+    "RelativeLineCount":  6,
+    "ContainsInvoice18510":  true,
+    "ContainsInvoice9996":  true,
+    "FirstLineIsNewest":  true,
+    "LastLineIsCurrent":  true,
+    "EmptyRelatedHandled":  true,
+    "StatusSixSkipsRelative":  true,
+    "QueryNoticeLineCount":  1,
+    "ScoNoticeLineCount":  3,
+    "ScoHasAcceptedAndRejected":  true,
+    "QueryPreview":  "Hóa đơn có Thong bao query ngày 18/01/2024. Tính chất Hủy, lý do Ly do query. Cơ quan thuế tiếp nhận.",
+    "ScoPreview":  "Hóa đơn có Thong bao sco ngày 05/07/2024. Tính chất Hủy, lý do Ly do sco. Cơ quan thuế không tiếp nhận.\r\nHóa đơn có Thong bao sco ngày 05/07/2024. Tính chất Hủy, lý do Ly do sco. Cơ quan thuế không tiếp nhận.\r\nHóa đơn có Thong bao sco ngày 05/07/2024. Tính chất Hủy, lý do Ly do sco. Cơ quan thuế tiếp nhận."
+}
