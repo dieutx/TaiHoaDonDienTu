@@ -1,6 +1,6 @@
 # Bao cao kiem tra retry/UI
 
-Ngay chay: 23/09/2026 14:33:14
+Ngay chay: 23/09/2026 14:41:02
 
 | # | Tinh huong | Ket qua | Bang chung |
 |---:|---|---|---|
@@ -34,7 +34,7 @@ Ngay chay: 23/09/2026 14:33:14
 | 16 | Literal Telex khong con sai | PASS_STATIC | Da decode 172 literal UniConvert; khong con chuoi sai da biet. |
 | 17 | Script build parse duoc | PASS_STATIC | Moi script build parse duoc va khong co literal non-ASCII thieu BOM. |
 | 18 | Khoi VBA can bang | PASS_STATIC | Khoi Sub/Function/If/With/Select/For/Do can bang trong 21 file nguon. |
-| 13 | Mo lai khong repair | PASS_RUNTIME | Build da mo lai workbook trong Excel COM instance moi: PASS, 18 check, 0 check loi, file TaiHoaDonDienTu_v6.7.0.xlsm. |
+| 13 | Mo lai khong repair | PASS_RUNTIME | Build da mo lai workbook trong Excel COM instance moi: PASS, 18 check, 0 check loi, file TaiHoaDonDienTu_v6.7.1.xlsm. |
 | 14 | Compile VBAProject | PASS_RUNTIME | Excel khong co API compile; bang chung runtime: 5 UserForm instantiate thanh cong trong tien trinh rieng (frmCapNhatMK, frmDangNhap, frmDatePicker, frmTaiHoaDon, frmTrichXuatXML). |
 
 Luu y: `PASS_STATIC` chi xac nhan nhanh code va cau hinh hien dien; `PASS_RUNTIME` lay tu tests/comparison-report.json do build/Build-Excel.ps1 tao ra. Muc 13 va 14 la bang chung Excel; muc 17 va 18 la bang chung tinh khong can Excel.

@@ -183,7 +183,7 @@
     "id": 13,
     "name": "Mo lai khong repair",
     "status": "PASS_RUNTIME",
-    "evidence": "Build da mo lai workbook trong Excel COM instance moi: PASS, 18 check, 0 check loi, file TaiHoaDonDienTu_v6.7.0.xlsm."
+    "evidence": "Build da mo lai workbook trong Excel COM instance moi: PASS, 18 check, 0 check loi, file TaiHoaDonDienTu_v6.7.1.xlsm."
   },
   {
     "id": 14,

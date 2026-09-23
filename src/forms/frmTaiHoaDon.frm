@@ -817,7 +817,7 @@ Private Sub EnsureRuntimeControls()
     Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me: handler.ActionName = "OpenEndDatePicker": mUiHandlers.Add handler
 
     Set ctl = Me.Controls.Add("Forms.Label.1", "lblProgressMessage", True)
-    ctl.caption = UniConvert("Sawxn safng"): ctl.Left = 15: ctl.Top = 378: ctl.Width = 752: ctl.Height = 18: ctl.Font.Bold = True
+    ctl.caption = UniConvert("Sawxn safng"): ctl.Left = 15: ctl.Top = 378: ctl.Width = 515: ctl.Height = 24: ctl.Font.Bold = True
     Set ctl = Me.Controls.Add("Forms.Label.1", "lblProgressBack", True)
     ctl.caption = "": ctl.Left = 15: ctl.Top = 399: ctl.Width = 752: ctl.Height = 18: ctl.BackColor = RGB(217, 217, 217): ctl.SpecialEffect = 1
     Set ctl = Me.Controls.Add("Forms.Label.1", "lblProgressFill", True)
@@ -829,12 +829,12 @@ Private Sub EnsureRuntimeControls()
     ctl.MultiLine = True: ctl.WordWrap = True: ctl.ScrollBars = 2: ctl.Locked = True: ctl.TabStop = False
 
     Set ctl = Me.Controls.Add("Forms.CommandButton.1", "cmdPauseResume", True)
-    ctl.caption = UniConvert("Tajm duwfng"): ctl.Left = 780: ctl.Top = 378: ctl.Width = 105: ctl.Height = 24: ctl.Enabled = False
+    ctl.caption = UniConvert("Tajm duwfng"): ctl.Left = 545: ctl.Top = 375: ctl.Width = 100: ctl.Height = 24: ctl.Enabled = False
     ctl.ControlTipText = UniConvert("Tajm duwfng hoawjc tieesp tujc sau request hieejn taji")
     Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me: handler.ActionName = "TogglePauseDownload": mUiHandlers.Add handler
 
     Set ctl = Me.Controls.Add("Forms.CommandButton.1", "cmdStopDownload", True)
-    ctl.caption = UniConvert("Duwfng"): ctl.Left = 892: ctl.Top = 378: ctl.Width = 105: ctl.Height = 24: ctl.Enabled = False
+    ctl.caption = UniConvert("Duwfng"): ctl.Left = 652: ctl.Top = 375: ctl.Width = 100: ctl.Height = 24: ctl.Enabled = False
     ctl.ControlTipText = UniConvert("Duwfng an toafn sau request hieejn taji")
     Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me: handler.ActionName = "RequestStopDownload": mUiHandlers.Add handler
 End Sub

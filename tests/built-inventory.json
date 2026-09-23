@@ -1,11 +1,11 @@
 ﻿{
     "SchemaVersion":  1,
-    "CapturedAtUtc":  "2026-09-23T07:32:07.5512670Z",
+    "CapturedAtUtc":  "2026-09-23T07:39:43.3329423Z",
     "Workbook":  {
-                     "FileName":  "TaiHoaDonDienTu_v6.7.0.xlsm",
-                     "FullPath":  "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\TaiHoaDonDienTu_v6.7.0.xlsm",
-                     "FileSize":  281797,
-                     "FileSha256":  "1490fe03b95d99013e874a5216ad33cbf339ce2e9157ff8b0c73c63ef76f9faa",
+                     "FileName":  "TaiHoaDonDienTu_v6.7.1.xlsm",
+                     "FullPath":  "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\TaiHoaDonDienTu_v6.7.1.xlsm",
+                     "FileSize":  281875,
+                     "FileSha256":  "9fe808264b18b963560568c93fbeb439b7f3c8cc5f5933dc02e54b43a6f02bd1",
                      "ExcelVersion":  "16.0",
                      "VBProjectName":  "TaiHDDT",
                      "VBProjectProtection":  0
@@ -39,19 +39,19 @@
                                           {
                                               "Name":  "Rounded Rectangle 1",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.0.xlsm!dangnhap",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.1.xlsm!dangnhap",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 2",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.0.xlsm!TaiHoaDon",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.1.xlsm!TaiHoaDon",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 3",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.0.xlsm!moUFTrichXuat",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.1.xlsm!moUFTrichXuat",
                                               "FormControlType":  0
                                           }
                                       ],
@@ -705,8 +705,8 @@
                               "Type":  3,
                               "TypeName":  "UserForm",
                               "LineCount":  1465,
-                              "CodeSha256":  "ecc90c7880da616e9c17f8d0aa3ceaf09b6acee1f151453775ea24efc4e57209",
-                              "CodeSha256IgnoringCase":  "c5c1fa3633ba31a03a22faefef6d596e0aae4c9691d604e191e3f3a9d4233bae",
+                              "CodeSha256":  "d6d011d10782825b67da4610f85c9e4c979bb25de407df084c8e5af10576a220",
+                              "CodeSha256IgnoringCase":  "8412ccd1f0897f490d03bbd7b06c63daaf823751b6233395e133dbb7a6f24614",
                               "Caption":  "",
                               "Controls":  [
                                                {
