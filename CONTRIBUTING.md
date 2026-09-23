@@ -56,9 +56,9 @@ Chọn bài test phù hợp với thay đổi:
 
 ```powershell
 .\tests\Test-RetryUiStatic.ps1
-.\build\Build-Excel.ps1 -Version '6.6.3' -OutputPath '.\dist\TaiHoaDonDienTu_v6.6.3.xlsm'
-.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.6.3.xlsm' -RunUserFormInstantiation
-.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.6.3.xlsm'
+.\build\Build-Excel.ps1 -Version '6.7.0' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.0.xlsm'
+.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.0.xlsm' -RunUserFormInstantiation
+.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.0.xlsm'
 ```
 
 Nếu không thể chạy Excel COM, hãy ghi rõ bài test nào chưa chạy và lý do trong PR.

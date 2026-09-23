@@ -2,9 +2,9 @@
 
 File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondientu.gdt.gov.vn`.
 
-**Phiên bản mới nhất: v6.6.3**
+**Phiên bản mới nhất: v6.7.0**
 
-[Tải TaiHoaDonDienTu_v6.6.3.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.6.3.xlsm)
+[Tải TaiHoaDonDienTu_v6.7.0.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.0.xlsm)
 
 ![Giao diện tải hóa đơn](docs/images/giao-dien-tai-hoa-don.png)
 
@@ -21,15 +21,17 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 2. Chọn ngày bằng lịch hoặc nhập theo định dạng `dd/mm/yyyy`.
 3. Chọn dữ liệu cần tải: tổng hợp, chi tiết hoặc XML/HTML.
 4. Chọn trạng thái hóa đơn và kết quả kiểm tra nếu cần lọc.
-5. Bấm **Tải hóa đơn** và theo dõi phần trăm cùng log trên form.
-6. Xem kết quả tại các sheet tổng hợp, chi tiết và `BaoCao_LoiTaiHD`.
+5. Bấm **Tải hóa đơn** và theo dõi kỳ, nguồn API, trang, HTTP, số hóa đơn cùng thời gian phản hồi trong log.
+6. Có thể bấm **Tạm dừng/Tiếp tục** hoặc **Dừng**; dữ liệu đã tải trước khi dừng vẫn được giữ lại.
+7. Xem kết quả tại các sheet tổng hợp, chi tiết và `BaoCao_LoiTaiHD`.
 
 ## Tính năng chính
 
 - Tải hóa đơn mua vào và bán ra.
 - Hỗ trợ hóa đơn thông thường và hóa đơn từ máy tính tiền.
 - Chọn ngày bằng date picker hoặc nhập trực tiếp.
-- Hiển thị tiến độ, công đoạn hiện tại và log ngắn.
+- Hiển thị tiến độ và log chi tiết từng kỳ/trang `query` và `sco-query`.
+- Tạm dừng, tiếp tục hoặc dừng an toàn sau request hiện tại.
 - Retry khi gặp lỗi tạm thời hoặc HTTP 429/500.
 - Tải dữ liệu tổng hợp, chi tiết và ZIP XML/HTML.
 - Lấy chuỗi hóa đơn thay thế/điều chỉnh và thông tin sai sót liên quan.
@@ -53,10 +55,10 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 Source VBA nằm trong `src`, template workbook nằm trong `template` và script build nằm trong `build`.
 
 ```powershell
-.\build\Build-Excel.ps1 -Version '6.6.3' -OutputPath '.\dist\TaiHoaDonDienTu_v6.6.3.xlsm'
+.\build\Build-Excel.ps1 -Version '6.7.0' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.0.xlsm'
 .\tests\Test-RetryUiStatic.ps1
-.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.6.3.xlsm' -RunUserFormInstantiation
-.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.6.3.xlsm'
+.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.0.xlsm' -RunUserFormInstantiation
+.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.0.xlsm'
 ```
 
 Đọc [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md) trước khi gửi thay đổi.

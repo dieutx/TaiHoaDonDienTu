@@ -1,6 +1,6 @@
 ﻿{
     "Status":  "PASS",
-    "BuiltWorkbook":  "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\TaiHoaDonDienTu_v6.6.3.xlsm",
+    "BuiltWorkbook":  "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\TaiHoaDonDienTu_v6.7.0.xlsm",
     "ReopenVerified":  true,
     "Checks":  [
                    {
@@ -212,21 +212,21 @@
                                                  "Category":  "Expected serialization difference",
                                                  "Item":  "MENU/Rounded Rectangle 1",
                                                  "Original":  "\u0027App_v6.4-ui.xlsm\u0027!dangnhap",
-                                                 "Built":  "TaiHoaDonDienTu_v6.6.3.xlsm!dangnhap",
+                                                 "Built":  "TaiHoaDonDienTu_v6.7.0.xlsm!dangnhap",
                                                  "Explanation":  "Excel rebound the workbook-qualified OnAction prefix to the new output filename; the macro target is unchanged."
                                              },
                                              {
                                                  "Category":  "Expected serialization difference",
                                                  "Item":  "MENU/Rounded Rectangle 2",
                                                  "Original":  "\u0027App_v6.4-ui.xlsm\u0027!TaiHoaDon",
-                                                 "Built":  "TaiHoaDonDienTu_v6.6.3.xlsm!TaiHoaDon",
+                                                 "Built":  "TaiHoaDonDienTu_v6.7.0.xlsm!TaiHoaDon",
                                                  "Explanation":  "Excel rebound the workbook-qualified OnAction prefix to the new output filename; the macro target is unchanged."
                                              },
                                              {
                                                  "Category":  "Expected serialization difference",
                                                  "Item":  "MENU/Rounded Rectangle 3",
                                                  "Original":  "\u0027App_v6.4-ui.xlsm\u0027!moUFTrichXuat",
-                                                 "Built":  "TaiHoaDonDienTu_v6.6.3.xlsm!moUFTrichXuat",
+                                                 "Built":  "TaiHoaDonDienTu_v6.7.0.xlsm!moUFTrichXuat",
                                                  "Explanation":  "Excel rebound the workbook-qualified OnAction prefix to the new output filename; the macro target is unchanged."
                                              }
                                          ],
@@ -269,7 +269,7 @@
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
-                                                   "InputObject":  "modHTTPRequest|8f680eb2e4491c828d543ecdac093dcc1f3861f60f4c4b2b15e773a30293e8b7",
+                                                   "InputObject":  "modHTTPRequest|f4f493437dd9d64433d65ac573fb9326c08d58c2aef547ba18003b0dae226766",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
@@ -293,7 +293,7 @@
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
-                                                   "InputObject":  "frmTaiHoaDon|438be5a11a5b52d866d90a4751c69dae0fe4855346421accb160c59c309370f2",
+                                                   "InputObject":  "frmTaiHoaDon|ecc90c7880da616e9c17f8d0aa3ceaf09b6acee1f151453775ea24efc4e57209",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {

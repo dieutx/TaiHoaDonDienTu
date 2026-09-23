@@ -18,7 +18,23 @@ try {
     $workbook = $excel.Workbooks.Open($BuiltWorkbook, 0, $false)
     $testModule = $workbook.VBProject.VBComponents.Add(1)
     $testModule.Name = 'modCodexBuildSmokeTest'
-    $code = @('Option Explicit', 'Public Function CodexInstantiateForm(ByVal formName As String) As Boolean', 'On Error GoTo Failed', 'Dim frm As Object', 'Set frm = VBA.UserForms.Add(formName)', 'Unload frm', 'CodexInstantiateForm = True', 'Exit Function', 'Failed:', 'CodexInstantiateForm = False', 'End Function') -join "`r`n"
+    $code = @(
+        'Option Explicit',
+        'Public Function CodexInstantiateForm(ByVal formName As String) As Boolean',
+        'On Error GoTo Failed',
+        'Dim frm As Object',
+        'Set frm = VBA.UserForms.Add(formName)',
+        'If formName = "frmTaiHoaDon" Then',
+        '    If frm.Controls("cmdPauseResume").Enabled Then GoTo Failed',
+        '    If frm.Controls("cmdStopDownload").Enabled Then GoTo Failed',
+        'End If',
+        'Unload frm',
+        'CodexInstantiateForm = True',
+        'Exit Function',
+        'Failed:',
+        'CodexInstantiateForm = False',
+        'End Function'
+    ) -join "`r`n"
     $testModule.CodeModule.AddFromString($code)
     $ok = [bool]$excel.Run("'$($workbook.Name)'!CodexInstantiateForm", $FormName)
     $workbook.VBProject.VBComponents.Remove($testModule)

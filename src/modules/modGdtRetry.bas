@@ -13,6 +13,33 @@ Public Const GDT_HTTP_TIMEOUT_SECONDS As Long = 90
 Private Const GDT_USER_AGENT As String = "Mozilla/5.0 ExcelVBA-HDDT"
 Private mRandomized As Boolean
 Public GdtAuthenticationFailed As Boolean
+Public GdtStopRequested As Boolean
+Public GdtPauseRequested As Boolean
+
+Public Sub ResetGdtOperationControl()
+    GdtStopRequested = False
+    GdtPauseRequested = False
+End Sub
+
+Public Sub RequestGdtStop()
+    GdtStopRequested = True
+    GdtPauseRequested = False
+End Sub
+
+Public Sub SetGdtPaused(ByVal paused As Boolean)
+    If GdtStopRequested Then
+        GdtPauseRequested = False
+    Else
+        GdtPauseRequested = paused
+    End If
+End Sub
+
+Public Function WaitForGdtControl() As Boolean
+    Do While GdtPauseRequested And Not GdtStopRequested
+        DoEvents
+    Loop
+    WaitForGdtControl = Not GdtStopRequested
+End Function
 
 Public Sub ResetGdtRequestSession()
     GdtAuthenticationFailed = False
@@ -46,6 +73,13 @@ Public Function ExecuteGdtRequest( _
     If maxAttempts < 1 Then maxAttempts = 1
 
     For attempt = 1 To maxAttempts
+        If Not WaitForGdtControl() Then
+            result.Attempts = attempt - 1
+            result.ErrorMessage = UniConvert("DDax duwfng theo yeeu caafu.")
+            result.ShouldQueueFinalRetry = False
+            Set ExecuteGdtRequest = result
+            Exit Function
+        End If
         Set http = Nothing
         transportError = False
         transportMessage = vbNullString
@@ -268,6 +302,7 @@ Public Sub WaitGdtSeconds(ByVal seconds As Long)
     If seconds > GDT_RETRY_MAX_SECONDS Then seconds = GDT_RETRY_MAX_SECONDS
     deadline = DateAdd("s", seconds, Now)
     Do While Now < deadline
+        If Not WaitForGdtControl() Then Exit Sub
         DoEvents
     Loop
 End Sub
@@ -279,6 +314,7 @@ Public Sub WaitGdtMilliseconds(ByVal milliseconds As Long)
     If milliseconds <= 0 Then Exit Sub
     started = Timer
     Do
+        If Not WaitForGdtControl() Then Exit Sub
         DoEvents
         elapsed = Timer - started
         If elapsed < 0 Then elapsed = elapsed + 86400#

@@ -1,11 +1,11 @@
 ﻿{
     "SchemaVersion":  1,
-    "CapturedAtUtc":  "2026-09-23T03:16:39.4375636Z",
+    "CapturedAtUtc":  "2026-09-23T07:32:07.5512670Z",
     "Workbook":  {
-                     "FileName":  "TaiHoaDonDienTu_v6.6.3.xlsm",
-                     "FullPath":  "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\TaiHoaDonDienTu_v6.6.3.xlsm",
-                     "FileSize":  273387,
-                     "FileSha256":  "2683a17a305f83b8e3eac02fa98550649c954dd33dd704ef0f942bb948f9f288",
+                     "FileName":  "TaiHoaDonDienTu_v6.7.0.xlsm",
+                     "FullPath":  "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\TaiHoaDonDienTu_v6.7.0.xlsm",
+                     "FileSize":  281797,
+                     "FileSha256":  "1490fe03b95d99013e874a5216ad33cbf339ce2e9157ff8b0c73c63ef76f9faa",
                      "ExcelVersion":  "16.0",
                      "VBProjectName":  "TaiHDDT",
                      "VBProjectProtection":  0
@@ -39,19 +39,19 @@
                                           {
                                               "Name":  "Rounded Rectangle 1",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.6.3.xlsm!dangnhap",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.0.xlsm!dangnhap",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 2",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.6.3.xlsm!TaiHoaDon",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.0.xlsm!TaiHoaDon",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 3",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.6.3.xlsm!moUFTrichXuat",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.0.xlsm!moUFTrichXuat",
                                               "FormControlType":  0
                                           }
                                       ],
@@ -410,9 +410,9 @@
                               "Name":  "modGdtRetry",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  357,
-                              "CodeSha256":  "4f90b793d3ced60f1a508cb756889568ec6b9145bfa6d11dc06e83ca5ca9bdea",
-                              "CodeSha256IgnoringCase":  "ae30dc1006c74e0813f80dd7b6ca84dbe844f925b91ead287c4edb0d799e62de"
+                              "LineCount":  393,
+                              "CodeSha256":  "72cb7ab6c431ce6d3998b8dce965361f2163d3160dd5aa576ebc4ebcfeaef3c0",
+                              "CodeSha256IgnoringCase":  "c9eea3d46dca77aafbe3b12bfa8fd67c4ddc6eae46a48e286ad5ee0cbcb2e6f4"
                           },
                           {
                               "Name":  "modGhiExcel",
@@ -434,9 +434,9 @@
                               "Name":  "modHTTPRequest",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  266,
-                              "CodeSha256":  "8f680eb2e4491c828d543ecdac093dcc1f3861f60f4c4b2b15e773a30293e8b7",
-                              "CodeSha256IgnoringCase":  "aaf416e84fd7f4cdc81b0a96c53fee302c4414fc3e4e22424b1bf7ce1857bfa1"
+                              "LineCount":  267,
+                              "CodeSha256":  "f4f493437dd9d64433d65ac573fb9326c08d58c2aef547ba18003b0dae226766",
+                              "CodeSha256IgnoringCase":  "1d8d6006e0c1c74db7771a91bed957767bee2febce1f35c06b55797636797510"
                           },
                           {
                               "Name":  "modMsgboxTV",
@@ -704,9 +704,9 @@
                               "Name":  "frmTaiHoaDon",
                               "Type":  3,
                               "TypeName":  "UserForm",
-                              "LineCount":  1252,
-                              "CodeSha256":  "438be5a11a5b52d866d90a4751c69dae0fe4855346421accb160c59c309370f2",
-                              "CodeSha256IgnoringCase":  "3dc0e8e9bba71777cfd3b624d5bc97455260d1b77a52681080737f424b432e39",
+                              "LineCount":  1465,
+                              "CodeSha256":  "ecc90c7880da616e9c17f8d0aa3ceaf09b6acee1f151453775ea24efc4e57209",
+                              "CodeSha256IgnoringCase":  "c5c1fa3633ba31a03a22faefef6d596e0aae4c9691d604e191e3f3a9d4233bae",
                               "Caption":  "",
                               "Controls":  [
                                                {
@@ -1074,6 +1074,26 @@
                         },
                         {
                             "Component":  "modGdtRetry",
+                            "Declaration":  "Public Sub ResetGdtOperationControl",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Sub RequestGdtStop",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Sub SetGdtPaused",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function WaitForGdtControl",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
                             "Declaration":  "Public Sub ResetGdtRequestSession",
                             "Name":  ""
                         },
@@ -1335,6 +1355,16 @@
                         {
                             "Component":  "frmTaiHoaDon",
                             "Declaration":  "Function correctDate",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub TogglePauseDownload",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub RequestStopDownload",
                             "Name":  ""
                         },
                         {

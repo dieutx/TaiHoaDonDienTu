@@ -230,7 +230,7 @@ Public Function GetInternetConnectedState() As Boolean
     GetInternetConnectedState = InternetGetConnectedState(0&, 0&)
 End Function
 
-Public Function ApiGet(ByVal urlPath As String) As String
+Public Function ApiGet(ByVal urlPath As String, Optional ByVal statusPrefix As String = vbNullString) As String
     Dim requestResult As clsGdtRequestResult
 
     If GdtAuthenticationFailed Then
@@ -246,7 +246,8 @@ Public Function ApiGet(ByVal urlPath As String) As String
 
     Set requestResult = ExecuteGdtRequest("GET", urlPath, getToken(), _
                                           vbNullString, "application/json", _
-                                          "application/json, text/plain, */*", False)
+                                          "application/json, text/plain, */*", False, _
+                                          GDT_MAX_RETRIES, statusPrefix)
     PublishLastGdtResult requestResult
 
     If requestResult.AuthenticationFailure Then GdtAuthenticationFailed = True

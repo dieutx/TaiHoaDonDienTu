@@ -24,6 +24,7 @@ Dim mFinalRetryQueue As Collection
 Dim mFinalRetryCooldownDone As Boolean
 Dim mInvoiceWorkTotal As Long
 Dim mInvoiceWorkDone As Long
+Dim mDownloadRunning As Boolean
 
 Private Sub cboDonVi_Change()
     Me.lblTenDV.caption = Me.cboDonVi.Column(2)
@@ -206,6 +207,8 @@ Private Sub QueueFinalRetry( _
     Dim existing As clsGdtRetryItem
     Dim finalResult As String
 
+    If GdtStopRequested Then Exit Sub
+
     If LastGdtAuthFailed Then
         finalResult = UniConvert("Token heest hajn")
     ElseIf Not LastGdtShouldQueue Then
@@ -244,6 +247,7 @@ Private Sub QueueFinalRetry( _
 End Sub
 
 Private Sub EnsureFinalRetryCooldown()
+    If GdtStopRequested Then Exit Sub
     If mFinalRetryCooldownDone Or mFinalRetryQueue Is Nothing Then Exit Sub
     If mFinalRetryQueue.Count = 0 Then Exit Sub
     ReportRetryProgress UniConvert("Chowf ") & GDT_FINAL_RETRY_COOLDOWN_SECONDS & UniConvert(" giaay ddeer thuwr laji cuoosi phieen...")
@@ -301,15 +305,24 @@ Private Sub ProcessQueuedListRetries( _
     Dim parsed As Object, dataItem As Object
     Dim currentEndpoint As String, hasMore As Boolean
     Dim batchStartRow As Long, pageIndex As Long
+    Dim seenStates As Object, nextState As String
+    Dim retryPageNumber As Long, retryCount As Long, retryStarted As Double
 
     If mFinalRetryQueue Is Nothing Then Exit Sub
     EnsureFinalRetryCooldown
     For Each queued In mFinalRetryQueue
+        If Not WaitForGdtControl() Then Exit Sub
         If queued.ResponseKind = "LIST" Then
             currentEndpoint = queued.Endpoint
+            Set seenStates = CreateObject("Scripting.Dictionary")
+            retryPageNumber = 1
+            retryCount = 0
             Do
+                If Not WaitForGdtControl() Then Exit Sub
                 hasMore = False
-                SetProgress 9, UniConvert("Thuwr laji danh sasch: ") & queued.ApiSource, True
+                SetProgress 9, UniConvert("Thuwr laji danh sasch ") & queued.ApiSource & _
+                    UniConvert(" - trang ") & retryPageNumber, True
+                retryStarted = Timer
                 Set requestResult = ExecuteGdtRequest("GET", currentEndpoint, getToken(), _
                     vbNullString, "application/json", "application/json, text/plain, */*", False, 1, "LIST")
                 PublishLastGdtResult requestResult
@@ -335,12 +348,19 @@ Private Sub ProcessQueuedListRetries( _
                         invoiceBuffer(invoiceCount, 7) = CLng(Val(dataItem("tthai") & vbNullString))
                         invoiceCount = invoiceCount + 1
                     Next dataItem
+                    retryCount = retryCount + pageIndex
                     MarkGdtRetrySuccess queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                         queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.Stage, _
                         queued.Attempts + requestResult.Attempts, UniConvert("Danh sasch ddax tari thafnh coong")
-                    If Not IsNull(parsed("state")) Then
-                        currentEndpoint = NextStateEndpoint(currentEndpoint, CStr(parsed("state")))
-                        hasMore = True
+                    nextState = vbNullString
+                    hasMore = TryRegisterNextListState(parsed, seenStates, queued.ApiSource, nextState)
+                    AppendSimpleLog UniConvert("Thuwr laji danh sasch ") & queued.ApiSource & _
+                        UniConvert(" - trang ") & retryPageNumber & ": HTTP " & requestResult.StatusCode & _
+                        UniConvert(", nhaajn ") & pageIndex & UniConvert(" HDD, toorng ") & retryCount & _
+                        ", " & Format(ElapsedTimerSeconds(retryStarted), "0.0") & UniConvert(" giaay")
+                    If hasMore Then
+                        retryPageNumber = retryPageNumber + 1
+                        currentEndpoint = NextStateEndpoint(currentEndpoint, nextState)
                     End If
                 Else
                     UpsertGdtErrorReport queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
@@ -349,8 +369,8 @@ Private Sub ProcessQueuedListRetries( _
                         queued.Attempts + requestResult.Attempts, requestResult.RetryAfterSeconds, _
                         IIf(requestResult.AuthenticationFailure, UniConvert("Token heest hajn"), UniConvert("Khoong tari dduwowjc"))
                 End If
-                Sleep GetSleepDelayMs()
-            Loop While hasMore And Not GdtAuthenticationFailed
+                WaitGdtMilliseconds GetSleepDelayMs()
+            Loop While hasMore And Not GdtAuthenticationFailed And Not GdtStopRequested
         End If
     Next queued
 End Sub
@@ -419,6 +439,7 @@ Private Sub ProcessRelatedInvoiceApis( _
     'The summary list is already in memory for the report. Filter it locally so
     'we do not download and paginate the same list again for every status/date.
     For invoiceIndex = 0 To invoiceCount - 1
+        If Not WaitForGdtControl() Then Exit For
         invoiceStatus = CLng(Val(invoiceBuffer(invoiceIndex, 7) & vbNullString))
         If invoiceStatus >= 2 And invoiceStatus <= 6 Then
             apiSource = IIf(invoiceBuffer(invoiceIndex, 4) = 1, "query", "sco-query")
@@ -426,10 +447,10 @@ Private Sub ProcessRelatedInvoiceApis( _
                 WriteNoRelativeInvoiceData invoiceType, CLng(invoiceBuffer(invoiceIndex, 6))
             Else
                 ProcessOneRelationRequest invoiceBuffer, invoiceIndex, invoiceType, apiSource, "relative"
-                If GdtAuthenticationFailed Then Exit For
+                If GdtAuthenticationFailed Or GdtStopRequested Then Exit For
             End If
             ProcessOneRelationRequest invoiceBuffer, invoiceIndex, invoiceType, apiSource, "related"
-            If GdtAuthenticationFailed Then Exit For
+            If GdtAuthenticationFailed Or GdtStopRequested Then Exit For
         End If
     Next invoiceIndex
 End Sub
@@ -445,6 +466,8 @@ Private Sub ProcessOneRelationRequest( _
     Dim requestResult As clsGdtRequestResult
     Dim parsed As Object
     Dim progressMessage As String
+
+    If Not WaitForGdtControl() Then Exit Sub
 
     endpoint = BuildRelationEndpoint(apiSource, endpointName, CStr(invoiceBuffer(invoiceIndex, 0)), _
         CStr(invoiceBuffer(invoiceIndex, 3)), CStr(invoiceBuffer(invoiceIndex, 1)), _
@@ -492,7 +515,7 @@ Private Sub ProcessOneRelationRequest( _
     End If
 
     AdvanceInvoiceWork UniConvert("DDax xuwr lys ") & endpointName & ": " & invoiceBuffer(invoiceIndex, 2)
-    Sleep GetSleepDelayMs()
+    WaitGdtMilliseconds GetSleepDelayMs()
 End Sub
 
 Private Sub ProcessQueuedRelationRetries(ByVal invoiceType As Long)
@@ -502,6 +525,7 @@ Private Sub ProcessQueuedRelationRetries(ByVal invoiceType As Long)
     If mFinalRetryQueue Is Nothing Then Exit Sub
     EnsureFinalRetryCooldown
     For Each queued In mFinalRetryQueue
+        If Not WaitForGdtControl() Then Exit Sub
         If queued.ResponseKind = "RELATIVE" Or queued.ResponseKind = "RELATED" Then
             ShowInvoiceWork UniConvert("Thuwr laji ") & LCase$(queued.ResponseKind) & ": " & queued.InvoiceNumber, True
             Set requestResult = ExecuteGdtRequest("GET", queued.Endpoint, getToken(), vbNullString, _
@@ -536,7 +560,7 @@ Private Sub ProcessQueuedRelationRetries(ByVal invoiceType As Long)
                     queued.Attempts + requestResult.Attempts, requestResult.RetryAfterSeconds, _
                     IIf(requestResult.AuthenticationFailure, UniConvert("Token heest hajn"), UniConvert("Khoong tari dduwowjc"))
             End If
-            Sleep GetSleepDelayMs()
+            WaitGdtMilliseconds GetSleepDelayMs()
             If requestResult.AuthenticationFailure Then Exit For
         End If
     Next queued
@@ -547,6 +571,7 @@ Private Sub ProcessQueuedDetailRetries(ByRef detailRow As Long)
     If mFinalRetryQueue Is Nothing Then Exit Sub
     EnsureFinalRetryCooldown
     For Each queued In mFinalRetryQueue
+        If Not WaitForGdtControl() Then Exit Sub
         If queued.ResponseKind = "DETAIL" Then
             ShowInvoiceWork UniConvert("Thuwr laji chi tieest: ") & queued.InvoiceNumber, True
             Set requestResult = ExecuteGdtRequest("GET", queued.Endpoint, getToken(), _
@@ -568,7 +593,7 @@ Private Sub ProcessQueuedDetailRetries(ByRef detailRow As Long)
                     queued.Attempts + requestResult.Attempts, requestResult.RetryAfterSeconds, _
                     IIf(requestResult.AuthenticationFailure, UniConvert("Token heest hajn"), UniConvert("Khoong tari dduwowjc"))
             End If
-            Sleep GetSleepDelayMs()
+            WaitGdtMilliseconds GetSleepDelayMs()
         End If
         If GdtAuthenticationFailed Then Exit For
     Next queued
@@ -579,6 +604,7 @@ Private Sub ResetProgressUI()
     Me.Controls("lblProgressPercent").caption = "0%"
     Me.Controls("lblProgressMessage").caption = UniConvert("Sawxn safng")
     Me.Controls("txtSimpleLog").Value = vbNullString
+    SetDownloadControlState False
 End Sub
 
 Private Sub SetProgress(ByVal percentComplete As Long, ByVal message As String, Optional ByVal addToLog As Boolean = False)
@@ -631,6 +657,120 @@ Private Sub AppendSimpleLog(ByVal message As String)
     End If
     If Len(Me.Controls("txtSimpleLog").Value) > 5000 Then Me.Controls("txtSimpleLog").Value = Right$(Me.Controls("txtSimpleLog").Value, 4000)
     Me.Controls("txtSimpleLog").SelStart = Len(Me.Controls("txtSimpleLog").Value)
+End Sub
+
+Private Function ElapsedTimerSeconds(ByVal started As Double) As Double
+    ElapsedTimerSeconds = Timer - started
+    If ElapsedTimerSeconds < 0 Then ElapsedTimerSeconds = ElapsedTimerSeconds + 86400#
+End Function
+
+Private Function ListPageLabel( _
+    ByVal periodIndex As Long, _
+    ByVal periodTotal As Long, _
+    ByVal apiSource As String, _
+    ByVal pageNumber As Long) As String
+
+    ListPageLabel = UniConvert("Kyf ") & periodIndex & "/" & periodTotal & _
+        " (" & Format(arrDate(periodIndex, 1), "dd/mm/yyyy") & "-" & _
+        Format(arrDate(periodIndex, 2), "dd/mm/yyyy") & ") - " & apiSource & _
+        UniConvert(" - trang ") & pageNumber
+End Function
+
+Private Sub ReportListPageStart( _
+    ByVal periodIndex As Long, _
+    ByVal periodTotal As Long, _
+    ByVal apiSource As String, _
+    ByVal pageNumber As Long)
+
+    SetProgress 4 + CLng((periodIndex / periodTotal) * 5), _
+        ListPageLabel(periodIndex, periodTotal, apiSource, pageNumber) & _
+        UniConvert(": ddang guwri yeeu caafu; timeout ") & GDT_HTTP_TIMEOUT_SECONDS & UniConvert(" giaay"), True
+End Sub
+
+Private Sub ReportListPageComplete( _
+    ByVal periodIndex As Long, _
+    ByVal periodTotal As Long, _
+    ByVal apiSource As String, _
+    ByVal pageNumber As Long, _
+    ByVal pageCount As Long, _
+    ByVal cumulativeCount As Long, _
+    ByVal started As Double, _
+    ByVal hasMore As Boolean)
+
+    Dim message As String
+    message = ListPageLabel(periodIndex, periodTotal, apiSource, pageNumber) & _
+        ": HTTP " & LastGdtStatus & UniConvert(", nhaajn ") & pageCount & _
+        UniConvert(" HDD, toorng ") & cumulativeCount & ", " & _
+        Format(ElapsedTimerSeconds(started), "0.0") & UniConvert(" giaay")
+    If hasMore Then message = message & UniConvert(", cos trang tieesp") Else message = message & UniConvert(", heest trang")
+    AppendSimpleLog message
+End Sub
+
+Private Sub ReportListPageFailure( _
+    ByVal periodIndex As Long, _
+    ByVal periodTotal As Long, _
+    ByVal apiSource As String, _
+    ByVal pageNumber As Long, _
+    ByVal started As Double)
+
+    AppendSimpleLog ListPageLabel(periodIndex, periodTotal, apiSource, pageNumber) & _
+        ": HTTP " & LastGdtStatus & UniConvert(", thaast baji sau ") & _
+        LastGdtAttempts & UniConvert(" laafn, ") & _
+        Format(ElapsedTimerSeconds(started), "0.0") & UniConvert(" giaay")
+End Sub
+
+Private Function TryRegisterNextListState( _
+    ByVal parsed As Object, _
+    ByVal seenStates As Object, _
+    ByVal apiSource As String, _
+    ByRef nextState As String) As Boolean
+
+    On Error GoTo NoNextState
+    If IsNull(parsed("state")) Then Exit Function
+    nextState = Trim$(CStr(parsed("state")))
+    If Len(nextState) = 0 Then
+        AppendSimpleLog apiSource & UniConvert(": state rooxng; duwfng phaan trang.")
+        Exit Function
+    End If
+    If seenStates.Exists(nextState) Then
+        AppendSimpleLog apiSource & UniConvert(": API trar laji state cux; duwfng ddeer trasnh lawjp voo hajn.")
+        Exit Function
+    End If
+    seenStates.Add nextState, True
+    TryRegisterNextListState = True
+NoNextState:
+    Err.Clear
+End Function
+
+Private Sub SetDownloadControlState(ByVal running As Boolean)
+    mDownloadRunning = running
+    On Error Resume Next
+    Me.Controls("cmdPauseResume").Enabled = running
+    Me.Controls("cmdPauseResume").caption = UniConvert("Tajm duwfng")
+    Me.Controls("cmdStopDownload").Enabled = running
+    On Error GoTo 0
+End Sub
+
+Public Sub TogglePauseDownload()
+    If Not mDownloadRunning Or GdtStopRequested Then Exit Sub
+    SetGdtPaused Not GdtPauseRequested
+    If GdtPauseRequested Then
+        Me.Controls("cmdPauseResume").caption = UniConvert("Tieesp tujc")
+        AppendSimpleLog UniConvert("DDax tajm duwfng. Baasm Tieesp tujc ddeer chajy tieesp.")
+    Else
+        Me.Controls("cmdPauseResume").caption = UniConvert("Tajm duwfng")
+        AppendSimpleLog UniConvert("Tieesp tujc xuwr lys.")
+    End If
+    DoEvents
+End Sub
+
+Public Sub RequestStopDownload()
+    If Not mDownloadRunning Then Exit Sub
+    RequestGdtStop
+    Me.Controls("cmdPauseResume").Enabled = False
+    Me.Controls("cmdStopDownload").Enabled = False
+    AppendSimpleLog UniConvert("DDax yeeu caafu duwfng; chowf request hieejn taji keest thusc.")
+    DoEvents
 End Sub
 
 Private Sub EnsureInvoiceBufferCapacity(ByRef buffer As Variant, ByVal targetIndex As Long)
@@ -687,6 +827,16 @@ Private Sub EnsureRuntimeControls()
     Set ctl = Me.Controls.Add("Forms.TextBox.1", "txtSimpleLog", True)
     ctl.Left = 15: ctl.Top = 423: ctl.Width = 752: ctl.Height = 84
     ctl.MultiLine = True: ctl.WordWrap = True: ctl.ScrollBars = 2: ctl.Locked = True: ctl.TabStop = False
+
+    Set ctl = Me.Controls.Add("Forms.CommandButton.1", "cmdPauseResume", True)
+    ctl.caption = UniConvert("Tajm duwfng"): ctl.Left = 780: ctl.Top = 378: ctl.Width = 105: ctl.Height = 24: ctl.Enabled = False
+    ctl.ControlTipText = UniConvert("Tajm duwfng hoawjc tieesp tujc sau request hieejn taji")
+    Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me: handler.ActionName = "TogglePauseDownload": mUiHandlers.Add handler
+
+    Set ctl = Me.Controls.Add("Forms.CommandButton.1", "cmdStopDownload", True)
+    ctl.caption = UniConvert("Duwfng"): ctl.Left = 892: ctl.Top = 378: ctl.Width = 105: ctl.Height = 24: ctl.Enabled = False
+    ctl.ControlTipText = UniConvert("Duwfng an toafn sau request hieejn taji")
+    Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me: handler.ActionName = "RequestStopDownload": mUiHandlers.Add handler
 End Sub
 
 Public Sub optMua_Change()
@@ -712,6 +862,7 @@ End Sub
 Private Sub cmdTaiHoaDon_Click()
     On Error GoTo DownloadFailed
     Application.ScreenUpdating = False
+    ResetGdtOperationControl
     ResetGdtRequestSession
     Set mFinalRetryQueue = New Collection
     mFinalRetryCooldownDone = False
@@ -761,6 +912,7 @@ Private Sub cmdTaiHoaDon_Click()
     Dim bd As Single, kt As Single
     bd = Timer
     SetProgress 3, UniConvert("DDang chuaarn bij tari hosa ddown..."), True
+    SetDownloadControlState True
     '----------------
     
     If ret = vbYes Then
@@ -792,8 +944,14 @@ Private Sub cmdTaiHoaDon_Click()
     '----------------------
     Me.lblStatus.caption = s
     Me.lblStatus.Visible = True
-    SetProgress 100, UniConvert("Hoafn taast. ") & Trim$(s), True
-    
+    If GdtStopRequested Then
+        Me.Controls("lblProgressMessage").caption = UniConvert("DDax duwfng theo yeeu caafu. Duwx lieeju ddax tari vaaxn dduwowjc giuwx laji.")
+        AppendSimpleLog Me.Controls("lblProgressMessage").caption
+    Else
+        SetProgress 100, UniConvert("Hoafn taast. ") & Trim$(s), True
+    End If
+
+    SetDownloadControlState False
     Application.ScreenUpdating = True
     Application.StatusBar = False
     
@@ -805,6 +963,7 @@ Private Sub cmdTaiHoaDon_Click()
 DownloadFailed:
     AppendSimpleLog UniConvert("Looxi: ") & Err.Description
     MsgBoxUni UniConvert("Cos looxi phast sinh. Vui lofng kieerm tra BaoCao_LoiTaiHD."), vbExclamation, UniConvert("Thoong baso")
+    SetDownloadControlState False
     Application.ScreenUpdating = True
     Application.StatusBar = False
 End Sub
@@ -819,6 +978,10 @@ Sub taiHoaDon_Total(Optional rowTotalstart As Long = 3, Optional rowDetailStart 
     Dim row As Long, row_ct As Long, stt As Long, n As Long
     Dim k As Long, j As Long, i As Long, loaiHD As Long, ret As Boolean
     Dim batchStartRow As Long, pageIndex As Long, relatedCallCount As Long
+    Dim queryPageNumber As Long, scoPageNumber As Long
+    Dim queryCount As Long, scoCount As Long
+    Dim requestStarted As Double, hasNextPage As Boolean, nextState As String
+    Dim seenQueryStates As Object, seenScoStates As Object
     Dim item As Object
     Dim arrHDChiTiet_tmp As Variant
     ReDim arrHDChiTiet_tmp(0 To 10000, 0 To 7)
@@ -861,7 +1024,16 @@ Sub taiHoaDon_Total(Optional rowTotalstart As Long = 3, Optional rowDetailStart 
     n = 0   'n: so luong HD
     'Duyet tung khoan thoi gian de trich xuat hoa don
     For k = 1 To UBound(arrDate)
-        SetProgress 4 + CLng((k / UBound(arrDate)) * 5), UniConvert("DDang laasy danh sasch kyf ") & k & "/" & UBound(arrDate), True
+        If Not WaitForGdtControl() Then GoTo cleanup
+        SetProgress 4 + CLng((k / UBound(arrDate)) * 5), _
+            UniConvert("Chuaarn bij kyf ") & k & "/" & UBound(arrDate) & " (" & _
+            Format(arrDate(k, 1), "dd/mm/yyyy") & "-" & Format(arrDate(k, 2), "dd/mm/yyyy") & ")", True
+        queryPageNumber = 1
+        scoPageNumber = 1
+        queryCount = 0
+        scoCount = 0
+        Set seenQueryStates = CreateObject("Scripting.Dictionary")
+        Set seenScoStates = CreateObject("Scripting.Dictionary")
         If tthai = "All" Then 'Tat ca
             'Hd mua va ban giong nhau
             If ttxly = "All" Then  'Tat ca
@@ -879,22 +1051,31 @@ Sub taiHoaDon_Total(Optional rowTotalstart As Long = 3, Optional rowDetailStart 
         url2 = url & sort & "&size=" & size & "&search=" & search
         
 nextPage:
-        res = ApiGet(url2)
+        If Not WaitForGdtControl() Then GoTo cleanup
+        ReportListPageStart k, UBound(arrDate), "query", queryPageNumber
+        requestStarted = Timer
+        res = ApiGet(url2, ListPageLabel(k, UBound(arrDate), "query", queryPageNumber))
         If Len(res) = 0 Then
+            ReportListPageFailure k, UBound(arrDate), "query", queryPageNumber, requestStarted
+            If GdtStopRequested Then GoTo cleanup
             errMsg = errMsg & UniConvert("Looxi tari hoas ddown toorng howjp ngafy: ") & arrDate(k, 1) & " - " & arrDate(k, 2) & vbCrLf
             QueueFinalRetry "query", vbNullString, vbNullString, vbNullString, vbNullString, _
                 arrDate(k, 1), UniConvert("Laasy danh sasch"), url2, "LIST"
             'If getStatus = 429 Or getStatus = 500 Then GoTo errLog
             'GoTo nextDatePeriod 'Khi co loi phat sinh --> tiep tuc lay du lieu khoang thoi gian ke tiep
-            GoTo nextPage_sco
+            GoTo startSco
         End If
         
         If InStr(1, res, "error") > 0 Then
+            ReportListPageFailure k, UBound(arrDate), "query", queryPageNumber, requestStarted
             TryParseGdtJson res, js, "query", url2, , , , , arrDate(k, 1)
-            GoTo nextPage_sco
+            GoTo startSco
         End If
         
-        If Not TryParseGdtJson(res, js, "query", url2, , , , , arrDate(k, 1)) Then GoTo nextPage_sco
+        If Not TryParseGdtJson(res, js, "query", url2, , , , , arrDate(k, 1)) Then
+            ReportListPageFailure k, UBound(arrDate), "query", queryPageNumber, requestStarted
+            GoTo startSco
+        End If
         MarkGdtRetrySuccess CurrentDirectionName(), "query", vbNullString, vbNullString, vbNullString, _
             vbNullString, UniConvert("Laasy danh sasch"), LastGdtAttempts
         MarkGdtRetrySuccess CurrentDirectionName(), "query", vbNullString, vbNullString, vbNullString, _
@@ -918,19 +1099,30 @@ nextPage:
             arrHDChiTiet_tmp(n, 7) = CLng(Val(item("tthai") & vbNullString))
             n = n + 1
         Next
+        queryCount = queryCount + pageIndex
         
         'Tai nhieu trang
-        If IsNull(js("state")) = False Then
-            url2 = url & sort & "&size=" & size & "&state=" & js("state") & "&search=" & search
+        nextState = vbNullString
+        hasNextPage = TryRegisterNextListState(js, seenQueryStates, "query", nextState)
+        ReportListPageComplete k, UBound(arrDate), "query", queryPageNumber, pageIndex, queryCount, requestStarted, hasNextPage
+        If hasNextPage Then
+            queryPageNumber = queryPageNumber + 1
+            url2 = url & sort & "&size=" & size & "&state=" & nextState & "&search=" & search
             GoTo nextPage 'Quay lai lay du lieu tiep trang 2 (>50)...
         End If
         
            '******************************************
         '// Chay sco query de lay hd tu may tinh tien
+startSco:
         url2 = url_sco & sort & "&size=" & size & "&search=" & search
 nextPage_sco:
-        res = ApiGet(url2)
+        If Not WaitForGdtControl() Then GoTo cleanup
+        ReportListPageStart k, UBound(arrDate), "sco-query", scoPageNumber
+        requestStarted = Timer
+        res = ApiGet(url2, ListPageLabel(k, UBound(arrDate), "sco-query", scoPageNumber))
         If Len(res) = 0 Then
+            ReportListPageFailure k, UBound(arrDate), "sco-query", scoPageNumber, requestStarted
+            If GdtStopRequested Then GoTo cleanup
             errMsg = errMsg & UniConvert("Looxi tari hoas ddown toorng howjp - Tuwf masy tisnh tieefn ngafy: ") & arrDate(k, 1) & " - " & arrDate(k, 2) & vbCrLf
             QueueFinalRetry "sco-query", vbNullString, vbNullString, vbNullString, vbNullString, _
                 arrDate(k, 1), UniConvert("Laasy danh sasch"), url2, "LIST"
@@ -939,11 +1131,15 @@ nextPage_sco:
         End If
         
         If InStr(1, res, "error") > 0 Then
+            ReportListPageFailure k, UBound(arrDate), "sco-query", scoPageNumber, requestStarted
             TryParseGdtJson res, js, "sco-query", url2, , , , , arrDate(k, 1)
             GoTo nextDatePeriod
         End If
         
-        If Not TryParseGdtJson(res, js, "sco-query", url2, , , , , arrDate(k, 1)) Then GoTo nextDatePeriod
+        If Not TryParseGdtJson(res, js, "sco-query", url2, , , , , arrDate(k, 1)) Then
+            ReportListPageFailure k, UBound(arrDate), "sco-query", scoPageNumber, requestStarted
+            GoTo nextDatePeriod
+        End If
         MarkGdtRetrySuccess CurrentDirectionName(), "sco-query", vbNullString, vbNullString, vbNullString, _
             vbNullString, UniConvert("Laasy danh sasch"), LastGdtAttempts
         MarkGdtRetrySuccess CurrentDirectionName(), "sco-query", vbNullString, vbNullString, vbNullString, _
@@ -967,19 +1163,29 @@ nextPage_sco:
             arrHDChiTiet_tmp(n, 7) = CLng(Val(item("tthai") & vbNullString))
             n = n + 1
         Next
+        scoCount = scoCount + pageIndex
         
         'Tai nhieu trang
-        If IsNull(js("state")) = False Then
-            url2 = url_sco & sort & "&size=" & size & "&state=" & js("state") & "&search=" & search
+        nextState = vbNullString
+        hasNextPage = TryRegisterNextListState(js, seenScoStates, "sco-query", nextState)
+        ReportListPageComplete k, UBound(arrDate), "sco-query", scoPageNumber, pageIndex, scoCount, requestStarted, hasNextPage
+        If hasNextPage Then
+            scoPageNumber = scoPageNumber + 1
+            url2 = url_sco & sort & "&size=" & size & "&state=" & nextState & "&search=" & search
             GoTo nextPage_sco
         End If
         
         '++++++++++++++++++++++++++++++++
         
 nextDatePeriod: 'arrDate ke tiep
+        AppendSimpleLog UniConvert("Hoafn taast kyf ") & k & "/" & UBound(arrDate) & _
+            ": query=" & queryCount & ", sco-query=" & scoCount & _
+            UniConvert(", toorng ddax ghi=") & n
     Next k
 
+    If GdtStopRequested Then GoTo cleanup
     ProcessQueuedListRetries arrHDChiTiet_tmp, n, row, stt, loaiHD
+    If GdtStopRequested Then GoTo cleanup
     
     '/Resize mang arrHDChiTiet()
     ReDim arrHDChiTiet(n, 7)
@@ -992,7 +1198,9 @@ nextDatePeriod: 'arrDate ke tiep
     relatedCallCount = CountRelatedApiCalls(arrHDChiTiet, n)
     BeginInvoiceProgress n, relatedCallCount
     ProcessRelatedInvoiceApis arrHDChiTiet, n, loaiHD
+    If GdtStopRequested Then GoTo cleanup
     ProcessQueuedRelationRetries loaiHD
+    If GdtStopRequested Then GoTo cleanup
     
     
     If Me.chkCT = False Then GoTo taiXML
@@ -1000,6 +1208,7 @@ nextDatePeriod: 'arrDate ke tiep
     '------------------------------------------
     'Ghi chi tiet hoa don
     For j = 0 To n - 1 'UBound(arrHDChiTiet) - 1
+        If Not WaitForGdtControl() Then Exit For
         ShowInvoiceWork UniConvert("DDang tari chi tieest ") & (j + 1) & "/" & n, ((j Mod 10) = 0 Or j = n - 1)
         If arrHDChiTiet(j, 4) = 1 Then
             url_ct = "https://hoadondientu.gdt.gov.vn/api/query/invoices/detail?"
@@ -1007,7 +1216,7 @@ nextDatePeriod: 'arrDate ke tiep
             url_ct = "https://hoadondientu.gdt.gov.vn/api/sco-query/invoices/detail?"
         End If
         url_ct = url_ct & "nbmst=" & arrHDChiTiet(j, 0) & "&khhdon=" & arrHDChiTiet(j, 1) & "&shdon=" & arrHDChiTiet(j, 2) & "&khmshdon=" & arrHDChiTiet(j, 3)
-        res = ApiGet(url_ct)
+        res = ApiGet(url_ct, "DETAIL " & (j + 1) & "/" & n)
         
         If Len(res) = 0 Then
             errMsg = errMsg & UniConvert("Looxi tari hoas ddown chi tieest: ") & arrHDChiTiet(j, 1) & "_" & arrHDChiTiet(j, 2) & UniConvert(" ngafy ") & Format(arrHDChiTiet(j, 5), "dd/mm/yyyy") & vbCrLf
@@ -1043,9 +1252,11 @@ nextDatePeriod: 'arrDate ke tiep
         
 nextInvoice:                                    'arrHDChiTiet
         AdvanceInvoiceWork UniConvert("DDax xuwr lys chi tieest ") & (j + 1) & "/" & n
-        Sleep GetSleepDelayMs()
+        WaitGdtMilliseconds GetSleepDelayMs()
     Next j
+    If GdtStopRequested Then GoTo cleanup
     ProcessQueuedDetailRetries row_ct
+    If GdtStopRequested Then GoTo cleanup
     
 taiXML:
     If Me.chkXmlZip = True Then
@@ -1064,7 +1275,7 @@ errLog:
     Application.ScreenUpdating = True
     Application.StatusBar = False
     
-    MsgBox "Xong."
+    If Not GdtStopRequested Then MsgBox "Xong."
 
 cleanup:
     Erase arrDate
@@ -1169,6 +1380,7 @@ Sub taiXML_zip(soHD As Long)
     Application.Cursor = xlWait
     
     For m = 0 To soHD - 1
+        If Not WaitForGdtControl() Then Exit For
         If arrHDChiTiet(m, 4) = 1 Then  'query
             urlXml = "https://hoadondientu.gdt.gov.vn/api/query/invoices/export-xml?"
             apiSource = "query"
@@ -1203,7 +1415,7 @@ Sub taiXML_zip(soHD As Long)
         
 nextInvoice:
         AdvanceInvoiceWork UniConvert("DDax xuwr lys XML ") & (m + 1) & "/" & soHD
-        Sleep GetSleepDelayMs()
+        WaitGdtMilliseconds GetSleepDelayMs()
     Next m
     ProcessQueuedXmlRetries
 
@@ -1239,6 +1451,7 @@ Private Sub ProcessQueuedXmlRetries()
     If mFinalRetryQueue Is Nothing Then Exit Sub
     EnsureFinalRetryCooldown
     For Each queued In mFinalRetryQueue
+        If Not WaitForGdtControl() Then Exit Sub
         If queued.ResponseKind = "XML" Then
             ShowInvoiceWork UniConvert("Thuwr laji XML: ") & queued.InvoiceNumber, True
             Set requestResult = ExecuteGdtBinaryRequest(queued.Endpoint, getToken(), 1, "XML")
@@ -1256,7 +1469,7 @@ Private Sub ProcessQueuedXmlRetries()
                     IIf(requestResult.NoXml, UniConvert("Khoong cos XML"), _
                         IIf(requestResult.AuthenticationFailure, UniConvert("Token heest hajn"), UniConvert("Khoong tari dduwowjc")))
             End If
-            Sleep GetSleepDelayMs()
+            WaitGdtMilliseconds GetSleepDelayMs()
             If requestResult.AuthenticationFailure Then Exit For
         End If
     Next queued

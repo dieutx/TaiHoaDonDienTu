@@ -1,182 +1,194 @@
-﻿[
-    {
-        "id":  1,
-        "name":  "Thanh cong o lan dau",
-        "status":  "PASS_STATIC",
-        "evidence":  "Nhanh 2xx tra Success ngay."
-    },
-    {
-        "id":  2,
-        "name":  "429 co Retry-After",
-        "status":  "PASS_STATIC",
-        "evidence":  "429 retryable va uu tien header so."
-    },
-    {
-        "id":  3,
-        "name":  "429 khong co header",
-        "status":  "PASS_STATIC",
-        "evidence":  "Backoff 2^n va jitter/cap."
-    },
-    {
-        "id":  4,
-        "name":  "500 roi thanh cong",
-        "status":  "PASS_STATIC",
-        "evidence":  "500 nam trong vong retry."
-    },
-    {
-        "id":  5,
-        "name":  "Timeout roi thanh cong",
-        "status":  "PASS_STATIC",
-        "evidence":  "Transport error/status 0 quay lai vong retry."
-    },
-    {
-        "id":  6,
-        "name":  "Het luot dua vao queue",
-        "status":  "PASS_STATIC",
-        "evidence":  "Exhausted retry duoc danh dau va queue khong trung."
-    },
-    {
-        "id":  7,
-        "name":  "Retry cuoi thanh cong",
-        "status":  "PASS_STATIC",
-        "evidence":  "List/detail/XML/relative/related deu co nhanh success."
-    },
-    {
-        "id":  8,
-        "name":  "Retry cuoi that bai",
-        "status":  "PASS_STATIC",
-        "evidence":  "That bai cuoi upsert Khong tai duoc."
-    },
-    {
-        "id":  9,
-        "name":  "401/403 dung request",
-        "status":  "PASS_STATIC",
-        "evidence":  "Co auth toan phien chan request moi."
-    },
-    {
-        "id":  10,
-        "name":  "Upsert khong trung",
-        "status":  "PASS_STATIC",
-        "evidence":  "Tim khoa truoc khi ghi."
-    },
-    {
-        "id":  11,
-        "name":  "Bao cao mua/ban",
-        "status":  "PASS_STATIC",
-        "evidence":  "Direction dung Mua vao/Ban ra."
-    },
-    {
-        "id":  12,
-        "name":  "Context query/sco-query",
-        "status":  "PASS_STATIC",
-        "evidence":  "Queue giu nguon API va dinh danh."
-    },
-    {
-        "id":  19,
-        "name":  "Bang ky thoi gian tao lai luc tai",
-        "status":  "PASS_STATIC",
-        "evidence":  "taiHoaDon_Total tao lai bang ky thoi gian truoc vong lap; arrDate khong con phu thuoc AfterUpdate cua o ngay."
-    },
-    {
-        "id":  20,
-        "name":  "O ngay trong khong lam loi form",
-        "status":  "PASS_STATIC",
-        "evidence":  "txtDenNgay_AfterUpdate chi so sanh ngay khi ca hai o da co gia tri."
-    },
-    {
-        "id":  21,
-        "name":  "Loi chi tiet khong truy cap arrDate(k)",
-        "status":  "PASS_STATIC",
-        "evidence":  "Loi tai chi tiet ghi nhan ky hieu, so va ngay hoa don tu arrHDChiTiet(j), khong truy cap arrDate(k)."
-    },
-    {
-        "id":  22,
-        "name":  "Tu dong mo rong buffer hoa don",
-        "status":  "PASS_STATIC",
-        "evidence":  "Co ham EnsureInvoiceBufferCapacity mo rong buffer dong, GetSleepDelayMs an toan va dat lai n luc tai."
-    },
-    {
-        "id":  23,
-        "name":  "Tien do theo so hoa don thuc te",
-        "status":  "PASS_STATIC",
-        "evidence":  "Danh sach chiem 0-10%; 88% tiep theo gom ca relative, related, chi tiet va XML."
-    },
-    {
-        "id":  24,
-        "name":  "Goi API hoa don lien quan",
-        "status":  "PASS_STATIC",
-        "evidence":  "Trang thai 2-5 goi relative va related; trang thai 6 chi goi related."
-    },
-    {
-        "id":  25,
-        "name":  "Header API lien quan",
-        "status":  "PASS_STATIC",
-        "evidence":  "Request dung token phien hien tai, action, end-point va khong luu cookie vao source."
-    },
-    {
-        "id":  26,
-        "name":  "Bao cao chuoi lien quan",
-        "status":  "PASS_STATIC",
-        "evidence":  "Ket qua relative thanh chuoi nhieu dong; related ghi rieng va chap nhan response rong."
-    },
-    {
-        "id":  27,
-        "name":  "Chuoi mau 18510",
-        "status":  "PASS_RUNTIME",
-        "evidence":  "Mau 18510 tao 6 dong; status 6 bo relative; query tao 1 thong bao, sco-query tao 3 thong bao; loi da xu ly duoc xoa."
-    },
-    {
-        "id":  28,
-        "name":  "Dinh dang thong bao related",
-        "status":  "PASS_STATIC",
-        "evidence":  "Parse ca response query va sco-query thanh cau thong bao tieng Viet."
-    },
-    {
-        "id":  29,
-        "name":  "Ngay ISO khong phu thuoc locale",
-        "status":  "PASS_STATIC",
-        "evidence":  "Tao ngay bang DateSerial/TimeSerial, khong ghep chuoi roi CDate theo locale."
-    },
-    {
-        "id":  30,
-        "name":  "Chi giu loi chua xu ly",
-        "status":  "PASS_STATIC",
-        "evidence":  "Tai thanh cong xoa dong loi cung khoa va danh lai STT; ap dung ca lan dau va retry."
-    },
-    {
-        "id":  15,
-        "name":  "Tieu de bao cao dung tieng Viet",
-        "status":  "PASS_STATIC",
-        "evidence":  "UniConvert duoc tai tao tu modMsgboxTV.bas; 17 tieu de khop retry-ui-expected-text.json"
-    },
-    {
-        "id":  16,
-        "name":  "Literal Telex khong con sai",
-        "status":  "PASS_STATIC",
-        "evidence":  "Da decode 138 literal UniConvert; khong con chuoi sai da biet."
-    },
-    {
-        "id":  17,
-        "name":  "Script build parse duoc",
-        "status":  "PASS_STATIC",
-        "evidence":  "Moi script build parse duoc va khong co literal non-ASCII thieu BOM."
-    },
-    {
-        "id":  18,
-        "name":  "Khoi VBA can bang",
-        "status":  "PASS_STATIC",
-        "evidence":  "Khoi Sub/Function/If/With/Select/For/Do can bang trong 21 file nguon."
-    },
-    {
-        "id":  13,
-        "name":  "Mo lai khong repair",
-        "status":  "PASS_RUNTIME",
-        "evidence":  "Build da mo lai workbook trong Excel COM instance moi: PASS, 18 check, 0 check loi, file TaiHoaDonDienTu_v6.6.3.xlsm."
-    },
-    {
-        "id":  14,
-        "name":  "Compile VBAProject",
-        "status":  "PASS_RUNTIME",
-        "evidence":  "Excel khong co API compile; bang chung runtime: 5 UserForm instantiate thanh cong trong tien trinh rieng (frmCapNhatMK, frmDangNhap, frmDatePicker, frmTaiHoaDon, frmTrichXuatXML)."
-    }
+[
+  {
+    "id": 1,
+    "name": "Thanh cong o lan dau",
+    "status": "PASS_STATIC",
+    "evidence": "Nhanh 2xx tra Success ngay."
+  },
+  {
+    "id": 2,
+    "name": "429 co Retry-After",
+    "status": "PASS_STATIC",
+    "evidence": "429 retryable va uu tien header so."
+  },
+  {
+    "id": 3,
+    "name": "429 khong co header",
+    "status": "PASS_STATIC",
+    "evidence": "Backoff 2^n va jitter/cap."
+  },
+  {
+    "id": 4,
+    "name": "500 roi thanh cong",
+    "status": "PASS_STATIC",
+    "evidence": "500 nam trong vong retry."
+  },
+  {
+    "id": 5,
+    "name": "Timeout roi thanh cong",
+    "status": "PASS_STATIC",
+    "evidence": "Transport error/status 0 quay lai vong retry."
+  },
+  {
+    "id": 6,
+    "name": "Het luot dua vao queue",
+    "status": "PASS_STATIC",
+    "evidence": "Exhausted retry duoc danh dau va queue khong trung."
+  },
+  {
+    "id": 7,
+    "name": "Retry cuoi thanh cong",
+    "status": "PASS_STATIC",
+    "evidence": "List/detail/XML/relative/related deu co nhanh success."
+  },
+  {
+    "id": 8,
+    "name": "Retry cuoi that bai",
+    "status": "PASS_STATIC",
+    "evidence": "That bai cuoi upsert Khong tai duoc."
+  },
+  {
+    "id": 9,
+    "name": "401/403 dung request",
+    "status": "PASS_STATIC",
+    "evidence": "Co auth toan phien chan request moi."
+  },
+  {
+    "id": 10,
+    "name": "Upsert khong trung",
+    "status": "PASS_STATIC",
+    "evidence": "Tim khoa truoc khi ghi."
+  },
+  {
+    "id": 11,
+    "name": "Bao cao mua/ban",
+    "status": "PASS_STATIC",
+    "evidence": "Direction dung Mua vao/Ban ra."
+  },
+  {
+    "id": 12,
+    "name": "Context query/sco-query",
+    "status": "PASS_STATIC",
+    "evidence": "Queue giu nguon API va dinh danh."
+  },
+  {
+    "id": 19,
+    "name": "Bang ky thoi gian tao lai luc tai",
+    "status": "PASS_STATIC",
+    "evidence": "taiHoaDon_Total tao lai bang ky thoi gian truoc vong lap; arrDate khong con phu thuoc AfterUpdate cua o ngay."
+  },
+  {
+    "id": 20,
+    "name": "O ngay trong khong lam loi form",
+    "status": "PASS_STATIC",
+    "evidence": "txtDenNgay_AfterUpdate chi so sanh ngay khi ca hai o da co gia tri."
+  },
+  {
+    "id": 21,
+    "name": "Loi chi tiet khong truy cap arrDate(k)",
+    "status": "PASS_STATIC",
+    "evidence": "Loi tai chi tiet ghi nhan ky hieu, so va ngay hoa don tu arrHDChiTiet(j), khong truy cap arrDate(k)."
+  },
+  {
+    "id": 22,
+    "name": "Tu dong mo rong buffer hoa don",
+    "status": "PASS_STATIC",
+    "evidence": "Co ham EnsureInvoiceBufferCapacity mo rong buffer dong, GetSleepDelayMs an toan va dat lai n luc tai."
+  },
+  {
+    "id": 23,
+    "name": "Tien do theo so hoa don thuc te",
+    "status": "PASS_STATIC",
+    "evidence": "Danh sach chiem 0-10%; 88% tiep theo gom ca relative, related, chi tiet va XML."
+  },
+  {
+    "id": 24,
+    "name": "Goi API hoa don lien quan",
+    "status": "PASS_STATIC",
+    "evidence": "Trang thai 2-5 goi relative va related; trang thai 6 chi goi related."
+  },
+  {
+    "id": 25,
+    "name": "Header API lien quan",
+    "status": "PASS_STATIC",
+    "evidence": "Request dung token phien hien tai, action, end-point va khong luu cookie vao source."
+  },
+  {
+    "id": 26,
+    "name": "Bao cao chuoi lien quan",
+    "status": "PASS_STATIC",
+    "evidence": "Ket qua relative thanh chuoi nhieu dong; related ghi rieng va chap nhan response rong."
+  },
+  {
+    "id": 27,
+    "name": "Chuoi mau 18510",
+    "status": "PASS_RUNTIME",
+    "evidence": "Mau 18510 tao 6 dong; status 6 bo relative; query tao 1 thong bao, sco-query tao 3 thong bao; loi da xu ly duoc xoa."
+  },
+  {
+    "id": 28,
+    "name": "Dinh dang thong bao related",
+    "status": "PASS_STATIC",
+    "evidence": "Parse ca response query va sco-query thanh cau thong bao tieng Viet."
+  },
+  {
+    "id": 29,
+    "name": "Ngay ISO khong phu thuoc locale",
+    "status": "PASS_STATIC",
+    "evidence": "Tao ngay bang DateSerial/TimeSerial, khong ghep chuoi roi CDate theo locale."
+  },
+  {
+    "id": 30,
+    "name": "Chi giu loi chua xu ly",
+    "status": "PASS_STATIC",
+    "evidence": "Tai thanh cong xoa dong loi cung khoa va danh lai STT; ap dung ca lan dau va retry."
+  },
+  {
+    "id": 31,
+    "name": "Log chi tiet phan trang danh sach",
+    "status": "PASS_STATIC",
+    "evidence": "Log neu ky, nguon query/sco-query, trang, HTTP, so hoa don, tong luy ke, thoi gian va chan state lap."
+  },
+  {
+    "id": 32,
+    "name": "Tam dung tiep tuc va dung an toan",
+    "status": "PASS_STATIC",
+    "evidence": "Hai nut runtime dieu khien co-operative; cac vong request va thoi gian cho deu kiem tra pause/stop."
+  },
+  {
+    "id": 15,
+    "name": "Tieu de bao cao dung tieng Viet",
+    "status": "PASS_STATIC",
+    "evidence": "UniConvert duoc tai tao tu modMsgboxTV.bas; 17 tieu de khop retry-ui-expected-text.json"
+  },
+  {
+    "id": 16,
+    "name": "Literal Telex khong con sai",
+    "status": "PASS_STATIC",
+    "evidence": "Da decode 172 literal UniConvert; khong con chuoi sai da biet."
+  },
+  {
+    "id": 17,
+    "name": "Script build parse duoc",
+    "status": "PASS_STATIC",
+    "evidence": "Moi script build parse duoc va khong co literal non-ASCII thieu BOM."
+  },
+  {
+    "id": 18,
+    "name": "Khoi VBA can bang",
+    "status": "PASS_STATIC",
+    "evidence": "Khoi Sub/Function/If/With/Select/For/Do can bang trong 21 file nguon."
+  },
+  {
+    "id": 13,
+    "name": "Mo lai khong repair",
+    "status": "PASS_RUNTIME",
+    "evidence": "Build da mo lai workbook trong Excel COM instance moi: PASS, 18 check, 0 check loi, file TaiHoaDonDienTu_v6.7.0.xlsm."
+  },
+  {
+    "id": 14,
+    "name": "Compile VBAProject",
+    "status": "PASS_RUNTIME",
+    "evidence": "Excel khong co API compile; bang chung runtime: 5 UserForm instantiate thanh cong trong tien trinh rieng (frmCapNhatMK, frmDangNhap, frmDatePicker, frmTaiHoaDon, frmTrichXuatXML)."
+  }
 ]

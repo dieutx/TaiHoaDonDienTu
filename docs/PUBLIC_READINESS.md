@@ -2,7 +2,7 @@
 
 **Trạng thái: READY**
 
-Trước khi chuyển repository sang public, bản v6.6.3 đã được xử lý như sau:
+Trước khi phát hành công khai, bản v6.7.0 đã được xử lý như sau:
 
 - Xóa token phiên và định danh đăng nhập được lưu trong template.
 - Xóa danh sách đơn vị/MST được cache trong `LinkTraCuu`.
