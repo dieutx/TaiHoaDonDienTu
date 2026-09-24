@@ -1,6 +1,9 @@
 ﻿{
     "Pass":  true,
     "ResolvedErrorRemoved":  true,
+    "RelationErrorsVisible":  true,
+    "LegacyRelatedColumnRemoved":  true,
+    "DetailFillDownWithoutClipboard":  true,
     "RelativeLineCount":  6,
     "ContainsInvoice18510":  true,
     "ContainsInvoice9996":  true,

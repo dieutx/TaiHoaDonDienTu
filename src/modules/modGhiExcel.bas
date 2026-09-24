@@ -160,8 +160,7 @@ Private Sub EnsureRelatedInvoiceHeaders(ByVal ws As Worksheet)
     ws.Cells(2, 61).Value = UniConvert("Soos HDD goosc")
     ws.Cells(2, 62).Value = UniConvert("Ngafy laajp HDD goosc")
     ws.Cells(2, 63).Value = UniConvert("Ghi chus HDD goosc")
-    ws.Cells(2, 64).Value = UniConvert("Cos HDD lieen quan")
-    ws.Cells(2, 65).Value = UniConvert("Thoong tin lieen quan")
+    ws.Cells(2, 64).Value = UniConvert("Thoong tin lieen quan")
 End Sub
 
 Private Sub WriteRelatedInvoiceInfo(ByVal invoice As Object, ByVal ws As Worksheet, ByVal targetRow As Long)
@@ -177,7 +176,6 @@ Private Sub WriteRelatedInvoiceInfo(ByVal invoice As Object, ByVal ws As Workshe
     ws.Cells(targetRow, 60).Value = SafeJsonText(invoice, "khhdgoc")
     ws.Cells(targetRow, 61).Value = SafeJsonText(invoice, "shdgoc")
     ws.Cells(targetRow, 63).Value = SafeJsonText(invoice, "gchdgoc")
-    ws.Cells(targetRow, 64).Value = SafeJsonText(invoice, "tthdclquan")
 
     If Len(SafeJsonText(invoice, "tdlhdgoc")) > 0 Then
         ws.Cells(targetRow, 62).Value = ISODATE(SafeJsonText(invoice, "tdlhdgoc"))
@@ -322,8 +320,48 @@ KeepRawJson:
     End If
 
     If Len(normalized) > 32000 Then normalized = Left$(normalized, 32000)
-    ws.Cells(targetRow, 65).Value = normalized
-    ws.Cells(targetRow, 65).WrapText = True
+    ws.Cells(targetRow, 64).Value = normalized
+    ws.Cells(targetRow, 64).WrapText = True
+    ws.Rows(targetRow).AutoFit
+    If ws.Rows(targetRow).RowHeight > 150 Then ws.Rows(targetRow).RowHeight = 150
+End Sub
+
+Public Sub WriteRelationRequestError( _
+    ByVal responseKind As String, _
+    ByVal loaiHD As Long, _
+    ByVal targetRow As Long, _
+    ByVal statusCode As Long, _
+    ByVal errorMessage As String, _
+    ByVal totalAttempts As Long)
+
+    Dim ws As Worksheet
+    Dim targetColumn As Long
+    Dim displayText As String
+
+    Select Case loaiHD
+        Case 1: Set ws = ThisWorkbook.Sheets("TongHopHD_Mua")
+        Case 2: Set ws = ThisWorkbook.Sheets("TongHopHD_Ban")
+        Case Else: Exit Sub
+    End Select
+
+    If UCase$(responseKind) = "RELATIVE" Then
+        targetColumn = 57
+        displayText = UniConvert("Looxi: Khoong theer laasy chuooxi hosa ddown lieen quan")
+    ElseIf UCase$(responseKind) = "RELATED" Then
+        targetColumn = 64
+        displayText = UniConvert("Looxi: Khoong theer laasy thoong tin lieen quan")
+    Else
+        Exit Sub
+    End If
+
+    If totalAttempts > 0 Then _
+        displayText = displayText & UniConvert(" sau ") & totalAttempts & UniConvert(" laafn thuwr")
+    If statusCode > 0 Then displayText = displayText & ". HTTP " & statusCode
+    If Len(Trim$(errorMessage)) > 0 Then displayText = displayText & ". " & Trim$(errorMessage)
+    If Len(displayText) > 32000 Then displayText = Left$(displayText, 32000)
+
+    ws.Cells(targetRow, targetColumn).Value = displayText
+    ws.Cells(targetRow, targetColumn).WrapText = True
     ws.Rows(targetRow).AutoFit
     If ws.Rows(targetRow).RowHeight > 150 Then ws.Rows(targetRow).RowHeight = 150
 End Sub
@@ -670,14 +708,11 @@ Sub tenCotTraCuu()
 End Sub
 
 Sub CopyThongTinChung_CT(shtName As String, frow As Long, lrow As Long)
-    Dim ws As Worksheet, sourceRange As Range, targetRange As Range
+    Dim ws As Worksheet, fillRange As Range
     
+    If lrow <= frow Then Exit Sub
     Set ws = ThisWorkbook.Sheets(shtName)
-    Set sourceRange = ws.Range("A" & frow & ":N" & frow)
-    Set targetRange = ws.Range("A" & frow + 1 & ":N" & lrow)
-    sourceRange.Copy Destination:=targetRange
-    ' Clear the clipboard
-    Application.CutCopyMode = False
-    'MsgBox "Copy thanh cong", vbInformation
+    Set fillRange = ws.Range("A" & frow & ":N" & lrow)
+    fillRange.FillDown
 End Sub
 

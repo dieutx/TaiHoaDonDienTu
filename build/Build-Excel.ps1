@@ -132,17 +132,18 @@ try {
     Write-Host 'Error report sheet ready; saving workbook...'
 
     $relatedHeaders = Get-GdtRelatedInvoiceHeaders -RepositoryRoot $RepositoryRoot
-    if ($relatedHeaders.Count -ne 9) { throw "Expected 9 related-invoice headings in modGhiExcel, found $($relatedHeaders.Count)." }
+    if ($relatedHeaders.Count -ne 8) { throw "Expected 8 related-invoice headings in modGhiExcel, found $($relatedHeaders.Count)." }
     foreach ($summarySheetName in @('TongHopHD_Mua', 'TongHopHD_Ban')) {
         $summarySheet = $workbook.Worksheets.Item($summarySheetName)
         $formatSource = $summarySheet.Range('BA2')
-        $relatedHeaderRange = $summarySheet.Range('BE2:BM2')
+        $relatedHeaderRange = $summarySheet.Range('BE2:BL2')
         $formatSource.Copy() | Out-Null
         $relatedHeaderRange.PasteSpecial(-4122) | Out-Null # xlPasteFormats
         foreach ($column in $relatedHeaders.Keys) { $summarySheet.Cells.Item(2, [int]$column).Value2 = $relatedHeaders[$column] }
+        $summarySheet.Columns.Item(65).Clear() | Out-Null
         $summarySheet.Columns.Item(57).ColumnWidth = 32
-        for ($column = 58; $column -le 64; $column++) { $summarySheet.Columns.Item($column).ColumnWidth = 18 }
-        $summarySheet.Columns.Item(65).ColumnWidth = 45
+        for ($column = 58; $column -le 63; $column++) { $summarySheet.Columns.Item($column).ColumnWidth = 18 }
+        $summarySheet.Columns.Item(64).ColumnWidth = 45
         $summarySheet.Columns.Item(62).NumberFormat = 'dd/mm/yyyy'
         Release-ComObject $relatedHeaderRange; Release-ComObject $formatSource; Release-ComObject $summarySheet
     }

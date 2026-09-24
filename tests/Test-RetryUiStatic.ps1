@@ -10,6 +10,7 @@ $report = Get-Content -Raw (Join-Path $RepositoryRoot 'src\modules\modGdtErrorRe
 $form = Get-Content -Raw (Join-Path $RepositoryRoot 'src\forms\frmTaiHoaDon.frm')
 $http = Get-Content -Raw (Join-Path $RepositoryRoot 'src\modules\modHTTPRequest.bas')
 $writeExcel = Get-Content -Raw (Join-Path $RepositoryRoot 'src\modules\modGhiExcel.bas')
+$build = Get-Content -Raw (Join-Path $RepositoryRoot 'build\Build-Excel.ps1')
 
 function Result([int]$id, [string]$name, [string]$status, [string]$evidence) {
     [pscustomobject]@{ id=$id; name=$name; status=$status; evidence=$evidence }
@@ -209,9 +210,9 @@ $relatedRuntime = $null
 if (Test-Path -LiteralPath $relatedRuntimePath) {
     $relatedRuntime = Get-Content -LiteralPath $relatedRuntimePath -Raw | ConvertFrom-Json
 }
-$relatedRuntimeStatus = if ($null -ne $relatedRuntime -and $relatedRuntime.Pass -and $relatedRuntime.ResolvedErrorRemoved -and $relatedRuntime.FirstLineIsNewest -and $relatedRuntime.LastLineIsCurrent -and $relatedRuntime.EmptyRelatedHandled -and $relatedRuntime.StatusSixSkipsRelative -and $relatedRuntime.QueryNoticeLineCount -eq 1 -and $relatedRuntime.ScoNoticeLineCount -eq 3) { 'PASS_RUNTIME' } else { 'NOT_VERIFIED' }
+$relatedRuntimeStatus = if ($null -ne $relatedRuntime -and $relatedRuntime.Pass -and $relatedRuntime.ResolvedErrorRemoved -and $relatedRuntime.RelationErrorsVisible -and $relatedRuntime.LegacyRelatedColumnRemoved -and $relatedRuntime.DetailFillDownWithoutClipboard -and $relatedRuntime.FirstLineIsNewest -and $relatedRuntime.LastLineIsCurrent -and $relatedRuntime.EmptyRelatedHandled -and $relatedRuntime.StatusSixSkipsRelative -and $relatedRuntime.QueryNoticeLineCount -eq 1 -and $relatedRuntime.ScoNoticeLineCount -eq 3) { 'PASS_RUNTIME' } else { 'NOT_VERIFIED' }
 $relatedRuntimeEvidence = if ($relatedRuntimeStatus -eq 'PASS_RUNTIME') {
-    'Mau 18510 tao 6 dong; status 6 bo relative; query tao 1 thong bao, sco-query tao 3 thong bao; loi da xu ly duoc xoa.'
+    'Mau 18510 tao 6 dong; loi API hien thi dung cot; cot cu da bo; FillDown chi tiet khong dung clipboard.'
 } else {
     'Chay build/Test-RelatedInvoiceRuntime.ps1 de kiem tra chuoi mau 18510.'
 }
@@ -239,6 +240,9 @@ $results = @(
     (Result 26 'Bao cao chuoi lien quan' $(if((Has $writeExcel 'WriteRelativeInvoiceData') -and (Has $writeExcel 'Hosa ddown cos lieen quan') -and (Has $writeExcel 'Hosa ddown ddang tra cuwsu') -and (Has $writeExcel 'WriteRelatedInformationResponse')){'PASS_STATIC'}else{'FAIL'}) 'Ket qua relative thanh chuoi nhieu dong; related ghi rieng va chap nhan response rong.'),
     (Result 27 'Chuoi mau 18510' $relatedRuntimeStatus $relatedRuntimeEvidence),
     (Result 28 'Dinh dang thong bao related' $(if((Has $writeExcel 'mtthdtbssrs') -and (Has $writeExcel 'hdtbssrses') -and (Has $writeExcel 'kqtnhan') -and (Has $writeExcel 'Cow quan thuees khoong tieesp nhaajn')){'PASS_STATIC'}else{'FAIL'}) 'Parse ca response query va sco-query thanh cau thong bao tieng Viet.'),
+    (Result 33 'Loi API lien quan hien thi tai dong hoa don' $(if((Has $writeExcel 'Public Sub WriteRelationRequestError') -and (Has $form 'WriteRelationRequestError queued\.ResponseKind[\s\S]*queued\.Attempts \+ requestResult\.Attempts')){'PASS_STATIC'}else{'FAIL'}) 'Relative ghi loi vao Chuoi hoa don lien quan; related ghi loi vao Thong tin lien quan sau lan thu cuoi.'),
+    (Result 34 'Bo cot Co HD lien quan' $(if((Has $writeExcel 'Cells\(2, 64\)\.Value = UniConvert\("Thoong tin lieen quan"\)') -and (-not (Has $writeExcel 'Cos HDD lieen quan|tthdclquan|Cells\(targetRow, 65\)')) -and (Has $build 'Columns\.Item\(65\)\.Clear\(\)')){'PASS_STATIC'}else{'FAIL'}) 'Thong tin lien quan chuyen sang cot 64; build xoa cot cu va khong con du lieu Co HD lien quan.'),
+    (Result 35 'Khong chiem dung clipboard khi ghi chi tiet' $(if((Has $writeExcel 'Set fillRange = ws\.Range\("A" & frow & ":N" & lrow\)[\s\S]*fillRange\.FillDown') -and (-not (Has $writeExcel 'sourceRange\.Copy|Application\.CutCopyMode'))){'PASS_STATIC'}else{'FAIL'}) 'Du lieu chung duoc FillDown noi bo, khong Copy va khong xoa clipboard Windows.'),
     (Result 29 'Ngay ISO khong phu thuoc locale' $(if(Has (Get-Content -LiteralPath (Join-Path $RepositoryRoot 'src\modules\modParseIso.bas') -Raw) 'UTCToLocalTime = DateSerial\(outsys\.wYear, outsys\.wMonth, outsys\.wDay\)'){'PASS_STATIC'}else{'FAIL'}) 'Tao ngay bang DateSerial/TimeSerial, khong ghep chuoi roi CDate theo locale.'),
     (Result 30 'Chi giu loi chua xu ly' $(if((Has $report 'ws\.Rows\(targetRow\)\.Delete Shift:=xlUp') -and (Has $report 'RenumberGdtErrorRows ws') -and (Has $form 'MarkGdtRetrySuccess CurrentDirectionName\(\)')){'PASS_STATIC'}else{'FAIL'}) 'Tai thanh cong xoa dong loi cung khoa va danh lai STT; ap dung ca lan dau va retry.'),
     (Result 31 'Log chi tiet phan trang danh sach' $(if((Has $form 'ReportListPageStart') -and (Has $form 'ReportListPageComplete') -and (Has $form 'queryPageNumber') -and (Has $form 'scoPageNumber') -and (Has $form 'LastGdtStatus') -and (Has $form 'TryRegisterNextListState')){'PASS_STATIC'}else{'FAIL'}) 'Log neu ky, nguon query/sco-query, trang, HTTP, so hoa don, tong luy ke, thoi gian va chan state lap.'),

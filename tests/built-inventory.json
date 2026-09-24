@@ -1,11 +1,11 @@
 ﻿{
     "SchemaVersion":  1,
-    "CapturedAtUtc":  "2026-09-23T07:39:43.3329423Z",
+    "CapturedAtUtc":  "2026-09-24T02:42:50.6740341Z",
     "Workbook":  {
-                     "FileName":  "TaiHoaDonDienTu_v6.7.1.xlsm",
-                     "FullPath":  "E:\\software\\vs code\\codex\\hddt-xlsm-source\\dist\\TaiHoaDonDienTu_v6.7.1.xlsm",
-                     "FileSize":  281875,
-                     "FileSha256":  "9fe808264b18b963560568c93fbeb439b7f3c8cc5f5933dc02e54b43a6f02bd1",
+                     "FileName":  "TaiHoaDonDienTu_v6.7.2.xlsm",
+                     "FullPath":  "C:\\Users\\dieut\\TaiHoaDonDienTu\\dist\\TaiHoaDonDienTu_v6.7.2.xlsm",
+                     "FileSize":  282735,
+                     "FileSha256":  "c356f497a943b78f1cf4eafb7bfedb511f4811b241e3797be5468662609cb695",
                      "ExcelVersion":  "16.0",
                      "VBProjectName":  "TaiHDDT",
                      "VBProjectProtection":  0
@@ -39,19 +39,19 @@
                                           {
                                               "Name":  "Rounded Rectangle 1",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.1.xlsm!dangnhap",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.2.xlsm!dangnhap",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 2",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.1.xlsm!TaiHoaDon",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.2.xlsm!TaiHoaDon",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 3",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.1.xlsm!moUFTrichXuat",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.2.xlsm!moUFTrichXuat",
                                               "FormControlType":  0
                                           }
                                       ],
@@ -418,9 +418,9 @@
                               "Name":  "modGhiExcel",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  682,
-                              "CodeSha256":  "d5ace26e296ee7322439dbdc80c1899c3fcdcca379f2905495c8b64511d95399",
-                              "CodeSha256IgnoringCase":  "5e6a4082f719e8337eed27ef71ac14843ed1f3cb78440c636ae67b4f8ab2f7a9"
+                              "LineCount":  717,
+                              "CodeSha256":  "e9f180425fedcf943f83c109013f76a021bc69f6455cba34fd625aabd501285f",
+                              "CodeSha256IgnoringCase":  "134b86bc2f5c9405c0bf7d6edc82520c1e83b620f4b2717a0c81b558d7badcc2"
                           },
                           {
                               "Name":  "modGlobalVariables",
@@ -704,9 +704,9 @@
                               "Name":  "frmTaiHoaDon",
                               "Type":  3,
                               "TypeName":  "UserForm",
-                              "LineCount":  1465,
-                              "CodeSha256":  "d6d011d10782825b67da4610f85c9e4c979bb25de407df084c8e5af10576a220",
-                              "CodeSha256IgnoringCase":  "8412ccd1f0897f490d03bbd7b06c63daaf823751b6233395e133dbb7a6f24614",
+                              "LineCount":  1480,
+                              "CodeSha256":  "9dbb1cc383aaacb04b92ac6e7a38316873a641f7a3d6c6a338e630d9dfc4e152",
+                              "CodeSha256IgnoringCase":  "bd611e96ad88e82ec5ce154d984bb4b6db4c07b356d818af51c62061e7ac0815",
                               "Caption":  "",
                               "Controls":  [
                                                {
@@ -1165,6 +1165,11 @@
                         {
                             "Component":  "modGhiExcel",
                             "Declaration":  "Public Sub WriteRelatedInformationResponse",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Sub WriteRelationRequestError",
                             "Name":  ""
                         },
                         {

@@ -31,6 +31,7 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 
 - Kiểm tra kết nối và trạng thái hệ thống nguồn.
 - Để ứng dụng hoàn thành cơ chế retry/backoff.
+- Với API `relative`/`related`, xem lỗi cuối cùng ngay tại cột **Chuỗi hóa đơn liên quan** hoặc **Thông tin liên quan**.
 - Kiểm tra `BaoCao_LoiTaiHD` và chỉ chia sẻ log đã sanitize.
 
 ## Lỗi request-id hoặc API thay đổi

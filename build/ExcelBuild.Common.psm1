@@ -79,7 +79,7 @@ function Get-GdtRelatedInvoiceHeaders {
     $headers = [ordered]@{}
     foreach ($match in [regex]::Matches($source, 'Cells\(2,\s*(\d+)\)\.Value\s*=\s*UniConvert\("([^"]*)"\)')) {
         $column = [int]$match.Groups[1].Value
-        if ($column -ge 57 -and $column -le 65) {
+        if ($column -ge 57 -and $column -le 64) {
             $headers[[string]$column] = ConvertFrom-TelexSource $match.Groups[2].Value $tables
         }
     }

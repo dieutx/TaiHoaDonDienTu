@@ -11,6 +11,8 @@ $reportRange = $null
 $relatedRange = $null
 $queryRelatedRange = $null
 $scoRelatedRange = $null
+$informationHeaderRange = $null
+$legacyHeaderRange = $null
 try {
     $excel = New-ExcelApplication
     $excel.Visible = $false
@@ -78,8 +80,8 @@ try {
         'WriteNoRelativeInvoiceData 2, 5',
         'WriteRelatedInformationResponse queryJson, 2, 5',
         'WriteRelatedInformationResponse scoJson, 2, 6',
-        'queryText = CStr(ThisWorkbook.Sheets("TongHopHD_Ban").Range("BM5").Value)',
-        'scoText = CStr(ThisWorkbook.Sheets("TongHopHD_Ban").Range("BM6").Value)',
+        'queryText = CStr(ThisWorkbook.Sheets("TongHopHD_Ban").Range("BL5").Value)',
+        'scoText = CStr(ThisWorkbook.Sheets("TongHopHD_Ban").Range("BL6").Value)',
         'CodexTestStatusSixRelated = _',
         '    (ThisWorkbook.Sheets("TongHopHD_Ban").Range("BE5").Value = UniConvert("Khoong cos thoong tin hieen thij")) And _',
         '    (UBound(Split(queryText, vbCrLf)) = 0) And _',
@@ -120,10 +122,48 @@ try {
         '    (UBound(Split(reportText, vbCrLf)) = 5) And _',
         '    (InStr(1, reportLines(0), "9996", vbTextCompare) > 0) And _',
         '    (InStr(1, reportLines(5), "18510", vbTextCompare) > 0) And _',
-        '    (Len(ThisWorkbook.Sheets("TongHopHD_Ban").Range("BM3").Value) > 0)',
+        '    (Len(ThisWorkbook.Sheets("TongHopHD_Ban").Range("BL3").Value) > 0)',
         'Exit Function',
         'Failed:',
         'CodexTestRelatedInvoice = False',
+        'End Function',
+        'Public Function CodexTestRelationErrors() As Boolean',
+        'On Error GoTo Failed',
+        'Dim relativeText As String',
+        'Dim relatedText As String',
+        'WriteRelationRequestError "RELATIVE", 2, 7, 503, "fixture relative", 4',
+        'WriteRelationRequestError "RELATED", 2, 7, 504, "fixture related", 5',
+        'relativeText = CStr(ThisWorkbook.Sheets("TongHopHD_Ban").Range("BE7").Value)',
+        'relatedText = CStr(ThisWorkbook.Sheets("TongHopHD_Ban").Range("BL7").Value)',
+        'CodexTestRelationErrors = _',
+        '    (InStr(1, relativeText, "HTTP 503", vbTextCompare) > 0) And _',
+        '    (InStr(1, relativeText, "fixture relative", vbTextCompare) > 0) And _',
+        '    (InStr(1, relatedText, "HTTP 504", vbTextCompare) > 0) And _',
+        '    (InStr(1, relatedText, "fixture related", vbTextCompare) > 0)',
+        'Exit Function',
+        'Failed:',
+        'CodexTestRelationErrors = False',
+        'End Function',
+        'Public Function CodexTestDetailFillDown() As Boolean',
+        'On Error GoTo Failed',
+        'Dim ws As Worksheet',
+        'Set ws = ThisWorkbook.Sheets("ChiTietHD_Ban")',
+        'ws.Range("A200:N202").ClearContents',
+        'ws.Range("A200").Value = "fixture detail"',
+        'ws.Range("N200").Value = 42',
+        'CopyThongTinChung_CT "ChiTietHD_Ban", 200, 202',
+        'ws.Range("A204").Value = "single detail"',
+        'ws.Range("A205").Value = "untouched"',
+        'CopyThongTinChung_CT "ChiTietHD_Ban", 204, 204',
+        'CodexTestDetailFillDown = _',
+        '    (CStr(ws.Range("A201").Value) = "fixture detail") And _',
+        '    (CStr(ws.Range("A202").Value) = "fixture detail") And _',
+        '    (CLng(ws.Range("N201").Value) = 42) And _',
+        '    (CLng(ws.Range("N202").Value) = 42) And _',
+        '    (CStr(ws.Range("A205").Value) = "untouched")',
+        'Exit Function',
+        'Failed:',
+        'CodexTestDetailFillDown = False',
         'End Function'
     )
     $code = $codeLines -join "`r`n"
@@ -138,19 +178,28 @@ try {
     if (-not $relatedEmptyOk) { throw 'Empty related writer failed.' }
     $ok = [bool]$excel.Run("'$($workbook.Name)'!CodexTestRelatedInvoice")
     $statusSixOk = [bool]$excel.Run("'$($workbook.Name)'!CodexTestStatusSixRelated")
+    $relationErrorsOk = [bool]$excel.Run("'$($workbook.Name)'!CodexTestRelationErrors")
+    $detailFillDownOk = [bool]$excel.Run("'$($workbook.Name)'!CodexTestDetailFillDown")
     $sheet = $workbook.Worksheets.Item('TongHopHD_Ban')
     $reportRange = $sheet.Range('BE3')
-    $relatedRange = $sheet.Range('BM3')
-    $queryRelatedRange = $sheet.Range('BM5')
-    $scoRelatedRange = $sheet.Range('BM6')
+    $relatedRange = $sheet.Range('BL3')
+    $queryRelatedRange = $sheet.Range('BL5')
+    $scoRelatedRange = $sheet.Range('BL6')
+    $informationHeaderRange = $sheet.Range('BL2')
+    $legacyHeaderRange = $sheet.Range('BM2')
     $reportText = [string]$reportRange.Value2
     $relatedText = [string]$relatedRange.Value2
     $queryRelatedText = [string]$queryRelatedRange.Value2
     $scoRelatedText = [string]$scoRelatedRange.Value2
+    $informationHeaderText = [string]$informationHeaderRange.Value2
+    $legacyHeaderText = [string]$legacyHeaderRange.Value2
+    $legacyColumnRemoved = -not [string]::IsNullOrWhiteSpace($informationHeaderText) -and [string]::IsNullOrWhiteSpace($legacyHeaderText)
     Release-ComObject $reportRange; $reportRange = $null
     Release-ComObject $relatedRange; $relatedRange = $null
     Release-ComObject $queryRelatedRange; $queryRelatedRange = $null
     Release-ComObject $scoRelatedRange; $scoRelatedRange = $null
+    Release-ComObject $informationHeaderRange; $informationHeaderRange = $null
+    Release-ComObject $legacyHeaderRange; $legacyHeaderRange = $null
     Release-ComObject $sheet; $sheet = $null
 
     $workbook.VBProject.VBComponents.Remove($testModule)
@@ -158,8 +207,11 @@ try {
     $workbook.Close($false); Release-ComObject $workbook; $workbook = $null
 
     [ordered]@{
-        Pass = ($ok -and $statusSixOk -and $resolvedErrorRemoved)
+        Pass = ($ok -and $statusSixOk -and $resolvedErrorRemoved -and $relationErrorsOk -and $legacyColumnRemoved -and $detailFillDownOk)
         ResolvedErrorRemoved = $resolvedErrorRemoved
+        RelationErrorsVisible = $relationErrorsOk
+        LegacyRelatedColumnRemoved = $legacyColumnRemoved
+        DetailFillDownWithoutClipboard = $detailFillDownOk
         RelativeLineCount = @($reportText -split "`r?`n").Count
         ContainsInvoice18510 = $reportText.Contains('18510')
         ContainsInvoice9996 = $reportText.Contains('9996')
@@ -174,12 +226,13 @@ try {
         ScoPreview = $scoRelatedText
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path (Split-Path $PSScriptRoot -Parent) 'tests\related-runtime-result.json') -Encoding utf8
 
-    if (-not ($ok -and $statusSixOk -and $resolvedErrorRemoved)) { throw 'Related-invoice runtime smoke test failed.' }
+    if (-not ($ok -and $statusSixOk -and $resolvedErrorRemoved -and $relationErrorsOk -and $legacyColumnRemoved -and $detailFillDownOk)) { throw 'Related-invoice runtime smoke test failed.' }
     Write-Host 'RELATED-INVOICE RUNTIME TEST PASSED'
 } finally {
     if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }
     if ($null -ne $excel) { try { $excel.Quit() } catch {} }
-    Release-ComObject $reportRange; Release-ComObject $relatedRange; Release-ComObject $queryRelatedRange; Release-ComObject $scoRelatedRange; Release-ComObject $sheet
+    Release-ComObject $reportRange; Release-ComObject $relatedRange; Release-ComObject $queryRelatedRange; Release-ComObject $scoRelatedRange
+    Release-ComObject $informationHeaderRange; Release-ComObject $legacyHeaderRange; Release-ComObject $sheet
     Release-ComObject $testModule; Release-ComObject $workbook; Release-ComObject $excel
     [GC]::Collect(); [GC]::WaitForPendingFinalizers(); [GC]::Collect(); [GC]::WaitForPendingFinalizers()
 }

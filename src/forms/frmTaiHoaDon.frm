@@ -500,6 +500,9 @@ Private Sub ProcessOneRelationRequest( _
                 MarkGdtRetrySuccess CurrentDirectionName(), apiSource, CStr(invoiceBuffer(invoiceIndex, 0)), _
                     CStr(invoiceBuffer(invoiceIndex, 3)), CStr(invoiceBuffer(invoiceIndex, 1)), _
                     CStr(invoiceBuffer(invoiceIndex, 2)), "Parse " & UniConvert("duwx lieeju"), requestResult.Attempts
+            Else
+                WriteRelationRequestError "RELATIVE", invoiceType, CLng(invoiceBuffer(invoiceIndex, 6)), _
+                    requestResult.StatusCode, UniConvert("Pharn hoofi API khoong howjp leej"), requestResult.Attempts
             End If
         Else
             WriteRelatedInformationResponse requestResult.ResponseText, invoiceType, CLng(invoiceBuffer(invoiceIndex, 6))
@@ -512,6 +515,11 @@ Private Sub ProcessOneRelationRequest( _
             CStr(invoiceBuffer(invoiceIndex, 3)), CStr(invoiceBuffer(invoiceIndex, 1)), _
             CStr(invoiceBuffer(invoiceIndex, 2)), invoiceBuffer(invoiceIndex, 5), stageName, _
             endpoint, UCase$(endpointName), CLng(invoiceBuffer(invoiceIndex, 6)), actionHeader
+        If Not LastGdtShouldQueue Or LastGdtAuthFailed Then
+            WriteRelationRequestError UCase$(endpointName), invoiceType, _
+                CLng(invoiceBuffer(invoiceIndex, 6)), requestResult.StatusCode, _
+                requestResult.ErrorMessage, requestResult.Attempts
+        End If
     End If
 
     AdvanceInvoiceWork UniConvert("DDax xuwr lys ") & endpointName & ": " & invoiceBuffer(invoiceIndex, 2)
@@ -542,6 +550,10 @@ Private Sub ProcessQueuedRelationRetries(ByVal invoiceType As Long)
                         WriteRelativeInvoiceData parsed, invoiceType, queued.TargetRow, queued.TemplateCode, _
                             queued.InvoiceSeries, queued.InvoiceNumber
                         writeSucceeded = True
+                    Else
+                        WriteRelationRequestError queued.ResponseKind, invoiceType, queued.TargetRow, _
+                            requestResult.StatusCode, UniConvert("Pharn hoofi API khoong howjp leej"), _
+                            queued.Attempts + requestResult.Attempts
                     End If
                 Else
                     WriteRelatedInformationResponse requestResult.ResponseText, invoiceType, queued.TargetRow
@@ -554,6 +566,9 @@ Private Sub ProcessQueuedRelationRetries(ByVal invoiceType As Long)
                         queued.Attempts + requestResult.Attempts
                 End If
             Else
+                WriteRelationRequestError queued.ResponseKind, invoiceType, queued.TargetRow, _
+                    requestResult.StatusCode, requestResult.ErrorMessage, _
+                    queued.Attempts + requestResult.Attempts
                 UpsertGdtErrorReport queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                     queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.InvoiceDate, _
                     queued.Stage, queued.Endpoint, requestResult.StatusCode, requestResult.ErrorMessage, _
