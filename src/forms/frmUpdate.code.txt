@@ -1,0 +1,76 @@
+Option Explicit
+
+Private mDownloadUrl As String
+
+Private Function UnicodeText(ByVal encoded As String) As String
+    Dim pos As Long, code As String
+    pos = 1
+    Do While pos <= Len(encoded)
+        If Mid$(encoded, pos, 2) = "\u" And pos + 5 <= Len(encoded) Then
+            code = Mid$(encoded, pos + 2, 4)
+            UnicodeText = UnicodeText & ChrW$(CLng("&H" & code))
+            pos = pos + 6
+        Else
+            UnicodeText = UnicodeText & Mid$(encoded, pos, 1)
+            pos = pos + 1
+        End If
+    Loop
+End Function
+
+Private Sub UserForm_Initialize()
+    ' MSForms converts a UserForm title through the system code page.
+    ' Keep the window title ASCII and show the Unicode heading in a Label.
+    Me.Caption = APP_NAME
+    Me.Controls("lblHeader").Caption = UnicodeText("C\u00f3 phi\u00ean b\u1ea3n m\u1edbi")
+    Me.Controls("lblCurrentTitle").Caption = UnicodeText("Phi\u00ean b\u1ea3n hi\u1ec7n t\u1ea1i:")
+    Me.Controls("lblNewTitle").Caption = UnicodeText("Phi\u00ean b\u1ea3n m\u1edbi:")
+    Me.Controls("lblDateTitle").Caption = UnicodeText("Ng\u00e0y ph\u00e1t h\u00e0nh:")
+    Me.Controls("lblNotesTitle").Caption = UnicodeText("N\u1ed9i dung c\u1eadp nh\u1eadt:")
+    Me.Controls("lblQuestion").Caption = UnicodeText("B\u1ea1n c\u00f3 mu\u1ed1n t\u1ea3i phi\u00ean b\u1ea3n m\u1edbi?")
+    Me.Controls("cmdDownload").Caption = UnicodeText("T\u1ea2I B\u1ea2N M\u1edaI")
+    Me.Controls("cmdContinue").Caption = UnicodeText("TI\u1ebeP T\u1ee4C D\u00d9NG B\u1ea2N HI\u1ec6N T\u1ea0I")
+    Me.Controls("lblCurrent").Caption = CURRENT_VERSION
+End Sub
+
+Public Sub SetUpdateInfo(ByVal newVersion As String, _
+                         ByVal releaseDate As String, _
+                         ByVal downloadUrl As String, _
+                         ByVal releaseNotes As Object)
+    Dim item As Variant, noteText As String
+    Me.Controls("lblNew").Caption = newVersion
+    Me.Controls("lblDate").Caption = FormatReleaseDate(releaseDate)
+    mDownloadUrl = downloadUrl
+    If Not releaseNotes Is Nothing Then
+        For Each item In releaseNotes
+            If Len(noteText) > 0 Then noteText = noteText & vbCrLf
+            noteText = noteText & ChrW$(10003) & " " & CStr(item)
+        Next item
+    End If
+    Me.Controls("lblNotes").Caption = noteText
+End Sub
+
+Private Function FormatReleaseDate(ByVal isoDate As String) As String
+    If Len(isoDate) = 10 And Mid$(isoDate, 5, 1) = "-" And _
+       Mid$(isoDate, 8, 1) = "-" Then
+        FormatReleaseDate = Mid$(isoDate, 9, 2) & "/" & _
+                            Mid$(isoDate, 6, 2) & "/" & Left$(isoDate, 4)
+    Else
+        FormatReleaseDate = isoDate
+    End If
+End Function
+
+Private Sub cmdDownload_Click()
+    On Error GoTo OpenFailed
+    If Len(mDownloadUrl) = 0 Then Exit Sub
+    ThisWorkbook.FollowHyperlink Address:=mDownloadUrl
+    MsgBoxUni UnicodeText("Tr\u00ecnh duy\u1ec7t s\u1ebd m\u1edf trang t\u1ea3i phi\u00ean b\u1ea3n m\u1edbi.") & vbCrLf & _
+              UnicodeText("Vui l\u00f2ng \u0111\u00f3ng phi\u00ean b\u1ea3n hi\u1ec7n t\u1ea1i v\u00e0 m\u1edf file m\u1edbi sau khi t\u1ea3i."), vbInformation, APP_NAME
+    Unload Me
+    Exit Sub
+OpenFailed:
+    MsgBoxUni UnicodeText("Kh\u00f4ng m\u1edf \u0111\u01b0\u1ee3c trang t\u1ea3i. Vui l\u00f2ng th\u1eed l\u1ea1i sau."), vbExclamation, APP_NAME
+End Sub
+
+Private Sub cmdContinue_Click()
+    Unload Me
+End Sub
