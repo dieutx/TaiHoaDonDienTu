@@ -2,7 +2,7 @@
 
 File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondientu.gdt.gov.vn`.
 
-**Phiên bản mới nhất: v6.7.2**
+**Phiên bản đã phát hành mới nhất: v6.7.2**
 
 [Tải TaiHoaDonDienTu_v6.7.2.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.2.xlsm)
 
@@ -55,8 +55,10 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 
 Source VBA nằm trong `src`, template workbook nằm trong `template` và script build nằm trong `build`.
 
+Hướng dẫn thêm thông báo cập nhật tùy chọn: [docs/UPDATE_CHECK.md](docs/UPDATE_CHECK.md).
+
 ```powershell
-.\build\Build-Excel.ps1 -Version '6.7.2' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm'
+.\build\Build-Excel.ps1 -Version '6.7.3' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.3.xlsm'
 .\tests\Test-RetryUiStatic.ps1
 .\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm' -RunUserFormInstantiation
 .\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm'

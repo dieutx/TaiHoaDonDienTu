@@ -89,6 +89,12 @@ try {
     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot 'src\modules') -Filter '*.bas' | Sort-Object Name)) {
         $imported = $workbook.VBProject.VBComponents.Import((Get-StagedVbaFile $file)); Release-ComObject $imported
     }
+    $versionCode = $workbook.VBProject.VBComponents.Item('modVersion').CodeModule
+    $versionText = $versionCode.Lines(1, $versionCode.CountOfLines)
+    if ($versionText -notmatch ('(?m)^Public Const CURRENT_VERSION As String = "' + [regex]::Escape($normalizedVersion) + '"\r?$')) {
+        throw "Imported modVersion does not match requested build version $normalizedVersion. Actual: $($versionText -replace '\r?\n', ' | ')"
+    }
+    Release-ComObject $versionCode
     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot 'src\classes') -Filter '*.cls' | Sort-Object Name)) {
         $imported = $workbook.VBProject.VBComponents.Import((Get-StagedVbaFile $file)); Release-ComObject $imported
     }
@@ -97,6 +103,51 @@ try {
         if (-not (Test-Path -LiteralPath $frx)) { throw "Missing FRX for $($file.Name)" }
         $imported = $workbook.VBProject.VBComponents.Import((Get-StagedVbaFile $file)); Release-ComObject $imported
     }
+
+    # Create the update form in the VBA designer so its controls and event
+    # handlers are part of the built workbook without hand-editing an FRX blob.
+    $updateForm = $workbook.VBProject.VBComponents.Add(3) # vbext_ct_MSForm
+    $updateForm.Name = 'frmUpdate'
+    $updateForm.Properties.Item('Caption').Value = 'TaiHoaDonDienTu'
+    $updateForm.Properties.Item('Width').Value = 410
+    $updateForm.Properties.Item('Height').Value = 375
+    $updateForm.Properties.Item('StartUpPosition').Value = 1
+    $updateControls = @(
+        @('Label','lblHeader',20,18,350,24),
+        @('Label','lblCurrentTitle',20,54,150,18), @('Label','lblCurrent',180,54,190,18),
+        @('Label','lblNewTitle',20,81,150,18), @('Label','lblNew',180,81,190,18),
+        @('Label','lblDateTitle',20,108,150,18), @('Label','lblDate',180,108,190,18),
+        @('Label','lblNotesTitle',20,141,350,18), @('Label','lblNotes',20,166,350,90),
+        @('Label','lblQuestion',20,268,350,20),
+        @('CommandButton','cmdDownload',20,300,160,30),
+        @('CommandButton','cmdContinue',190,300,190,30)
+    )
+    foreach ($spec in $updateControls) {
+        $control = $updateForm.Designer.Controls.Add(('Forms.' + $spec[0] + '.1'), $spec[1], $true)
+        $control.Left = $spec[2]; $control.Top = $spec[3]
+        $control.Width = $spec[4]; $control.Height = $spec[5]
+        if ($spec[1] -eq 'lblNotes') { $control.WordWrap = $true }
+        Release-ComObject $control
+    }
+    $updateForm.CodeModule.AddFromFile((Join-Path $RepositoryRoot 'src\forms\frmUpdate.code.txt'))
+    Release-ComObject $updateForm
+
+    $workbookComponent = $workbook.VBProject.VBComponents.Item('ThisWorkbook')
+    $workbookCode = $workbookComponent.CodeModule
+    $allWorkbookCode = if ($workbookCode.CountOfLines -gt 0) { $workbookCode.Lines(1, $workbookCode.CountOfLines) } else { '' }
+    if ($allWorkbookCode -match '(?im)^\s*(?:Private\s+)?Sub\s+Workbook_Open\s*\(\s*\)') {
+        if ($allWorkbookCode -notmatch '(?im)^\s*CheckForUpdate\s*$') {
+            for ($line = 1; $line -le $workbookCode.CountOfLines; $line++) {
+                if ($workbookCode.Lines($line, 1) -match '^\s*(?:Private\s+)?Sub\s+Workbook_Open\s*\(\s*\)') {
+                    $workbookCode.InsertLines($line + 1, '    CheckForUpdate')
+                    break
+                }
+            }
+        }
+    } else {
+        $workbookCode.AddFromString("Private Sub Workbook_Open()`r`n    CheckForUpdate`r`nEnd Sub")
+    }
+    Release-ComObject $workbookCode; Release-ComObject $workbookComponent
 
     # Build-time sheet setup.  Macros stay disabled for the whole build so
     # Workbook_Open never runs, therefore the sheet is created through COM and
