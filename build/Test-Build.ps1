@@ -40,6 +40,7 @@ function Read-GdtErrorReportSheet([object]$Workbook, [string]$SheetName, [int]$C
 }
 
 $errorReportSheetSnapshot = [ordered]@{ Exists = $false; Headers = @(); AutoFilterMode = $false; FreezePanes = $null }
+$updateIntegrationSnapshot = [ordered]@{ WorkbookOpenCode = ''; FormCode = '' }
 Write-Host 'Opening built workbook for inventory...'
 Invoke-WithExcelWorkbook -Path $BuiltWorkbook -ReadOnly -Action {
     param($workbook, $excel)
@@ -47,6 +48,14 @@ Invoke-WithExcelWorkbook -Path $BuiltWorkbook -ReadOnly -Action {
     $inventory | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $builtInventoryPath -Encoding utf8
     $captured = Read-GdtErrorReportSheet -Workbook $workbook -SheetName 'BaoCao_LoiTaiHD' -ColumnCount 17
     foreach ($key in @($captured.Keys)) { $errorReportSheetSnapshot[$key] = $captured[$key] }
+    foreach ($componentName in @('ThisWorkbook', 'frmUpdate')) {
+        $component = $workbook.VBProject.VBComponents.Item($componentName)
+        $codeModule = $component.CodeModule
+        $codeText = if ($codeModule.CountOfLines -gt 0) { $codeModule.Lines(1, $codeModule.CountOfLines) } else { '' }
+        if ($componentName -eq 'ThisWorkbook') { $updateIntegrationSnapshot.WorkbookOpenCode = $codeText }
+        else { $updateIntegrationSnapshot.FormCode = $codeText }
+        Release-ComObject $codeModule; Release-ComObject $component
+    }
 }
 Write-Host 'Built inventory captured; comparing metadata...'
 $built = Get-Content -LiteralPath $builtInventoryPath -Raw | ConvertFrom-Json
@@ -65,7 +74,7 @@ function Normalize-OnAction([string]$value) {
 # It is a deliberate addition, so it is reported as an expected structural
 # addition instead of failing the comparison that protects original sheets.
 $expectedAddedWorksheetNames = @('BaoCao_LoiTaiHD')
-$expectedAddedComponentNames = @('modGdtRetry', 'modGdtErrorReport', 'clsGdtRequestResult', 'clsGdtRetryItem', 'Sheet10')
+$expectedAddedComponentNames = @('modGdtRetry', 'modGdtErrorReport', 'clsGdtRequestResult', 'clsGdtRetryItem', 'Sheet10', 'modVersion', 'modUpdate', 'frmUpdate')
 $expectedAddedNamePatterns = @('^BaoCao_LoiTaiHD!')
 $originalWorksheetNames = @($original.Worksheets | ForEach-Object { $_.Name })
 $expectedAddedWorksheets = @($built.Worksheets | Where-Object { $_.Name -in $expectedAddedWorksheetNames -and $_.Name -notin $originalWorksheetNames } | ForEach-Object { $_.Name })
@@ -112,7 +121,13 @@ $checks += [ordered]@{
     Differences = @($missingExpectedComponents)
     Explanation = 'Components added by the retry/error-report feature, plus the document module of the added worksheet.'
 }
-$checks += Compare-Set 'UserFormControls' @($original.VbaComponents | Where-Object Type -eq 3 | ForEach-Object { $f=$_; $_.Controls | ForEach-Object { "$($f.Name)|$($_.Name)|$($_.ProgId)" } }) @($built.VbaComponents | Where-Object Type -eq 3 | ForEach-Object { $f=$_; $_.Controls | ForEach-Object { "$($f.Name)|$($_.Name)|$($_.ProgId)" } })
+$originalFormNames = @($original.VbaComponents | Where-Object Type -eq 3 | ForEach-Object { $_.Name })
+$checks += Compare-Set 'UserFormControls' @($original.VbaComponents | Where-Object Type -eq 3 | ForEach-Object { $f=$_; $_.Controls | ForEach-Object { "$($f.Name)|$($_.Name)|$($_.ProgId)" } }) @($built.VbaComponents | Where-Object { $_.Type -eq 3 -and $_.Name -in $originalFormNames } | ForEach-Object { $f=$_; $_.Controls | ForEach-Object { "$($f.Name)|$($_.Name)|$($_.ProgId)" } })
+$requiredUpdateControls = @('lblHeader','lblCurrentTitle','lblCurrent','lblNewTitle','lblNew','lblDateTitle','lblDate','lblNotesTitle','lblNotes','lblQuestion','cmdDownload','cmdContinue')
+$actualUpdateControls = @($built.VbaComponents | Where-Object Name -eq 'frmUpdate' | ForEach-Object { $_.Controls | ForEach-Object { $_.Name } })
+$checks += [ordered]@{ Name = 'UpdateFormControls'; Pass = (@($requiredUpdateControls | Where-Object { $_ -notin $actualUpdateControls }).Count -eq 0); Differences = @($requiredUpdateControls | Where-Object { $_ -notin $actualUpdateControls }) }
+$checks += [ordered]@{ Name = 'WorkbookOpenChecksForUpdate'; Pass = ($updateIntegrationSnapshot.WorkbookOpenCode -match '(?is)Sub\s+Workbook_Open\s*\(\s*\).*?CheckForUpdate'); Differences = @() }
+$checks += [ordered]@{ Name = 'UpdateFormHandlers'; Pass = ($updateIntegrationSnapshot.FormCode -match 'Private Sub cmdDownload_Click' -and $updateIntegrationSnapshot.FormCode -match 'Private Sub cmdContinue_Click'); Differences = @() }
 
 # The 17 error-report headings come from the reporting module at build time, so
 # the Telex source literals are decoded here and compared with the workbook.
