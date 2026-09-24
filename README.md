@@ -46,7 +46,7 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 
 ## Lưu ý bảo mật
 
-- Không chia sẻ file đã chứa token, cookie, mã số thuế hoặc dữ liệu hóa đơn thật.
+- Không chia sẻ file đã chứa token, cookie, mã số thuế gắn với tài khoản đăng nhập hoặc dữ liệu hóa đơn thật. File phát hành giữ MST định tuyến trong `LinkTraCuu` để tạo link tra cứu hóa đơn.
 - Nếu gặp lỗi 401/403, hãy đăng nhập lại để tạo phiên mới.
 - Không đặt khoảng nghỉ giữa các request quá thấp vì hệ thống có thể trả HTTP 429.
 - Xem [hướng dẫn xử lý sự cố](docs/TROUBLESHOOTING.md) khi cần.
@@ -59,6 +59,7 @@ Source VBA nằm trong `src`, template workbook nằm trong `template` và scrip
 .\build\Build-Excel.ps1 -Version '6.7.2' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm'
 .\tests\Test-RetryUiStatic.ps1
 .\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm' -RunUserFormInstantiation
+.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm'
 .\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm'
 ```
 

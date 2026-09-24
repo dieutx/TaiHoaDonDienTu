@@ -7,7 +7,7 @@ Không đăng lên Issue, Discussion hoặc Pull Request:
 - Username, password hoặc dữ liệu CAPTCHA.
 - Token, JWT, cookie, session ID hoặc Authorization header.
 - Private key, API key hoặc client secret.
-- Mã số thuế thật gắn với tài khoản thử nghiệm.
+- Mã số thuế thật gắn với tài khoản thử nghiệm. MST định tuyến trong `LinkTraCuu!B:C` là dữ liệu cần thiết cho link tra cứu và được giữ trong workbook phát hành.
 - XML/PDF/HTML/ZIP hóa đơn thật.
 - Tên, địa chỉ, số điện thoại, tài khoản ngân hàng hoặc thông tin khách hàng/doanh nghiệp nhạy cảm.
 

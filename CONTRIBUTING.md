@@ -95,7 +95,7 @@ Tên file release phải theo mẫu `TaiHoaDonDienTu_vX.X.X.xlsm`, không thêm 
 
 - Username hoặc password.
 - Token, cookie, JWT hoặc Authorization header.
-- Mã số thuế thật dùng cho tài khoản thử nghiệm.
+- Mã số thuế thật dùng cho tài khoản thử nghiệm. MST định tuyến trong `LinkTraCuu!B:C` được giữ để tạo link tra cứu hóa đơn.
 - XML/PDF/ZIP hóa đơn thật.
 - Tên, địa chỉ, số điện thoại hoặc thông tin khách hàng/doanh nghiệp nhạy cảm.
 

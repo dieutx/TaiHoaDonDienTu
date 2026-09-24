@@ -10,7 +10,6 @@ if (-not (Test-Path -LiteralPath $resolvedPath)) { throw "Workbook not found: $r
 $excel = $null
 $workbook = $null
 $menu = $null
-$lookup = $null
 try {
     $excel = New-ExcelApplication
     $excel.Visible = $false
@@ -21,10 +20,9 @@ try {
 
     $workbook = $excel.Workbooks.Open($resolvedPath, 0, $false)
     $menu = $workbook.Worksheets.Item('MENU')
-    $lookup = $workbook.Worksheets.Item('LinkTraCuu')
-
     $menu.Range('D7:E7').ClearContents()
-    $lookup.Range('B2:C122').ClearContents()
+    # LinkTraCuu!B:C contains the lookup tax IDs needed to select invoice links.
+    # They are public routing data, not cached login/session data.
     $workbook.RemovePersonalInformation = $true
 
     foreach ($propertyName in @('Author', 'Last Author', 'Company', 'Manager')) {
@@ -36,7 +34,6 @@ try {
 
     $workbook.Save()
     $workbook.Close($true)
-    Release-ComObject $lookup; $lookup = $null
     Release-ComObject $menu; $menu = $null
     Release-ComObject $workbook; $workbook = $null
     $excel.Quit()
@@ -45,7 +42,6 @@ try {
 } finally {
     if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }
     if ($null -ne $excel) { try { $excel.Quit() } catch {} }
-    Release-ComObject $lookup
     Release-ComObject $menu
     Release-ComObject $workbook
     Release-ComObject $excel

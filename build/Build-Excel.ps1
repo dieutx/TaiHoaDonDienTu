@@ -171,5 +171,7 @@ if (-not $SkipTest) {
     $powerShellExe = (Get-Process -Id $PID).Path
     & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Build.ps1') -BuiltWorkbook $outputPath -RepositoryRoot $RepositoryRoot
     if ($LASTEXITCODE -ne 0) { throw "BUILD FAILED: structural test process returned exit code $LASTEXITCODE." }
+    & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-PublicWorkbook.ps1') -WorkbookPath $outputPath
+    if ($LASTEXITCODE -ne 0) { throw "BUILD FAILED: public workbook test process returned exit code $LASTEXITCODE." }
 }
 Write-Host "BUILD GENERATED; STRUCTURAL TESTS PASSED: $outputPath"
