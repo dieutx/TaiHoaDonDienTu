@@ -1,9 +1,10 @@
 {
   "version": "6.7.3",
-  "releaseDate": "",
+  "releaseDate": "2026-09-24",
   "downloadUrl": "https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.3/TaiHoaDonDienTu_v6.7.3.xlsm",
   "releaseNote": [
     "Bổ sung thông báo khi có phiên bản mới",
-    "Cho phép tiếp tục dùng phiên bản hiện tại"
+    "Cho phép tiếp tục dùng phiên bản hiện tại",
+    "Khôi phục bảng MST LinkTraCuu và giữ lại khi sanitize workbook"
   ]
 }

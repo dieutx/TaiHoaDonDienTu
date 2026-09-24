@@ -2,9 +2,9 @@
 
 File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondientu.gdt.gov.vn`.
 
-**Phiên bản đã phát hành mới nhất: v6.7.2**
+**Phiên bản đã phát hành mới nhất: v6.7.3**
 
-[Tải TaiHoaDonDienTu_v6.7.2.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.2.xlsm)
+[Tải TaiHoaDonDienTu_v6.7.3.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.3.xlsm)
 
 ![Giao diện tải hóa đơn](docs/images/giao-dien-tai-hoa-don.png)
 
@@ -60,9 +60,9 @@ Hướng dẫn thêm thông báo cập nhật tùy chọn: [docs/UPDATE_CHECK.md
 ```powershell
 .\build\Build-Excel.ps1 -Version '6.7.3' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.3.xlsm'
 .\tests\Test-RetryUiStatic.ps1
-.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm' -RunUserFormInstantiation
-.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm'
-.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.2.xlsm'
+.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.3.xlsm' -RunUserFormInstantiation
+.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.3.xlsm'
+.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.3.xlsm'
 ```
 
 Đọc [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md) trước khi gửi thay đổi.
