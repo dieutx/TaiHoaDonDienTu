@@ -6,6 +6,14 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 
 [Tải TaiHoaDonDienTu_v6.7.3.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.3.xlsm)
 
+> 💡 **Không có Excel hoặc muốn chạy tự động theo lịch?** Dùng bản PowerShell
+> [hddt-downloader-windows](https://github.com/dieutx/hddt-downloader-windows) —
+> cùng logic tải hóa đơn (endpoint `query`/`sco-query`, phân trang theo `state`,
+> retry khi bị giới hạn tốc độ, chuỗi hóa đơn liên quan) nhưng không cần Microsoft
+> Excel, tự nhận dạng CAPTCHA và chạy được trên Command Prompt. Hai công cụ giải
+> quyết chung một bài toán; nếu cần thêm **tờ khai thuế GTGT** từ Cổng Dịch vụ
+> công thì xem thêm [tai-ho-so-thue-gtgt](https://github.com/dieutx/tai-ho-so-thue-gtgt).
+
 ![Giao diện tải hóa đơn](docs/images/giao-dien-tai-hoa-don.png)
 
 ## Cài đặt
