@@ -1,6 +1,24 @@
 Attribute VB_Name = "modGhiExcel"
 Option Explicit
 
+Private Const DETAIL_COL_TEMPLATE As Long = 1
+Private Const DETAIL_COL_SERIES As Long = 2
+Private Const DETAIL_COL_INVOICE_NUMBER As Long = 3
+Private Const DETAIL_COL_SELLER_TAX_ID As Long = 8
+Private Const DETAIL_COL_TAX_AUTHORITY_CODE As Long = 11
+Private Const DETAIL_COL_BUYER_TAX_ID As Long = 14
+Private Const DETAIL_COL_COMMON_LAST As Long = 15
+Private Const DETAIL_COL_ITEM_FIRST As Long = 16
+Private Const DETAIL_COL_ITEM_TAX_RATE As Long = 26
+Private Const DETAIL_COL_ITEM_AMOUNT As Long = 27
+Private Const DETAIL_COL_ITEM_TAX As Long = 28
+Private Const DETAIL_COL_ITEM_TOTAL As Long = 29
+Private Const DETAIL_COL_INVOICE_TAX As Long = 30
+Private Const DETAIL_COL_TAX_CHECK As Long = 31
+Private Const DETAIL_COL_PROVIDER_TAX_ID As Long = 32
+Private Const DETAIL_COL_LOOKUP_LINK As Long = 33
+Private Const DETAIL_COL_LOOKUP_CODE As Long = 34
+
 
 
 Sub ghiExcel_TongHop(ByVal jsonText As String, row As Long, ByVal loaiHD As Long, sSTT As Long)
@@ -505,12 +523,15 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
     tongthueCT = 0
     
     '/Dung chung cho tat ca cac dong hang hoa
-    arrCol = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 31)
-    arrColName = Array("khhdon", "shdon", "tdlap", "dvtte", "tgia", "nbten", "nbmst", "nbdchi", "nky", "mhdon", "ncma", "nmten", "nmmst", "nmdchi", "msttcgp")
+    arrCol = Array(DETAIL_COL_TEMPLATE, DETAIL_COL_SERIES, DETAIL_COL_INVOICE_NUMBER, 4, 5, 6, 7, _
+        DETAIL_COL_SELLER_TAX_ID, 9, 10, DETAIL_COL_TAX_AUTHORITY_CODE, 12, 13, _
+        DETAIL_COL_BUYER_TAX_ID, DETAIL_COL_COMMON_LAST, DETAIL_COL_PROVIDER_TAX_ID)
+    arrColName = Array("khmshdon", "khhdon", "shdon", "tdlap", "dvtte", "tgia", "nbten", "nbmst", _
+        "nbdchi", "nky", "mhdon", "ncma", "nmten", "nmmst", "nmdchi", "msttcgp")
     
     '/Nhieu dong hang hoa
-    arrCol_detail = Array(15, 16, 17, 18, 19, 20, 21, 22, 23, 24, _
-        25, 26, 27, 28)
+    arrCol_detail = Array(DETAIL_COL_ITEM_FIRST, 17, 18, 19, 20, 21, 22, 23, 24, 25, _
+        DETAIL_COL_ITEM_TAX_RATE, DETAIL_COL_ITEM_AMOUNT, DETAIL_COL_ITEM_TAX, DETAIL_COL_ITEM_TOTAL)
     arrColName_detail = Array("stt", "tchat", "mhhdvu", "ten", "dvtinh", "sluong", "dgia", "tlckhau", "stckhau", "ltsuat", _
         "tsuat", "thtien", "tthue", "thtcthue")
     
@@ -521,6 +542,7 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
         Case "ban"
             Set ws = ThisWorkbook.Sheets("ChiTietHD_Ban")
     End Select
+    EnsureDetailInvoiceHeaders ws
     
     Set jsCT = JsonConverter.ParseJSON(jsonText)
     
@@ -531,9 +553,12 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
                 'Dinh dang du lieu dang Date
                 Select Case arrColName(col)
                     Case "ncma", "nky", "ncnhat", "ntao", "ntnhan", "tdlap"
-                        ws.Cells(row_ct, col + 1).Value = CStr(ISODATE(Format(jsCT(arrColName(col)), "yyyy-mm-dd")))
+                        ws.Cells(row_ct, arrCol(col)).Value = CStr(ISODATE(Format(jsCT(arrColName(col)), "yyyy-mm-dd")))
+                    Case "nbmst", "nmmst"
+                        ws.Cells(row_ct, arrCol(col)).NumberFormat = "@"
+                        ws.Cells(row_ct, arrCol(col)).Value2 = CStr(jsCT(arrColName(col)))
                     Case Else
-                        ws.Cells(row_ct, col + 1).Value = jsCT(arrColName(col))
+                        ws.Cells(row_ct, arrCol(col)).Value = jsCT(arrColName(col))
                 End Select
             End If
         End If
@@ -541,24 +566,24 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
     
     '/Lay link tra cuu
     Dim msttcgp As String
-    ws.Cells(row_ct, 31).Value = jsCT("msttcgp")
-    msttcgp = ws.Cells(row_ct, 31).Value
+    ws.Cells(row_ct, DETAIL_COL_PROVIDER_TAX_ID).Value = jsCT("msttcgp")
+    msttcgp = ws.Cells(row_ct, DETAIL_COL_PROVIDER_TAX_ID).Value
     If msttcgp <> "" Then   'Co MSTTCGP
         Dim mst As String, mccqt As String
-        mst = ws.Cells(row_ct, 7).Value: mccqt = ws.Cells(row_ct, 10).Value
+        mst = ws.Cells(row_ct, DETAIL_COL_SELLER_TAX_ID).Value: mccqt = ws.Cells(row_ct, DETAIL_COL_TAX_AUTHORITY_CODE).Value
         Select Case msttcgp
             Case "0100684378"   'VNPT
                 If mccqt <> "" Then
-                    ws.Cells(row_ct, 32).Value = "https://" & mst & "-tt78.vnpt-invoice.com.vn/?strFkey=" & mccqt
+                    ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = "https://" & mst & "-tt78.vnpt-invoice.com.vn/?strFkey=" & mccqt
                 Else
-                    ws.Cells(row_ct, 32).Value = UniConvert("Khoong cos MCCQT")
+                    ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = UniConvert("Khoong cos MCCQT")
                 End If
             Case "0101360697"   'BKAV
-                ws.Cells(row_ct, 32).Value = "https://van.ehoadon.vn/Lookup?InvoiceGUID= [DLHDon Id]" '& .Offset(, 0).Value
+                ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = "https://van.ehoadon.vn/Lookup?InvoiceGUID= [DLHDon Id]" '& .Offset(, 0).Value
             Case "0105987432"
-                ws.Cells(row_ct, 32).Value = "https://" & mst & "hd.easyinvoice.com.vn"
+                ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = "https://" & mst & "hd.easyinvoice.com.vn"
             Case Else
-                ws.Cells(row_ct, 32).Value = dicLink.item(msttcgp)
+                ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = dicLink.item(msttcgp)
         End Select
         
         '/Lay ma tra cuu
@@ -567,7 +592,7 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
             Set subItms = jsCT("cttkhac")
             For Each itm In subItms
                 If dicTenCotTC.Exists(itm("ttruong")) Then
-                    ws.Cells(row_ct, 33).Value = itm("dlieu")
+                    ws.Cells(row_ct, DETAIL_COL_LOOKUP_CODE).Value = itm("dlieu")
                     Exit For
                 End If
             Next
@@ -577,7 +602,7 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
             Set subItms = jsCT("ttkhac")
             For Each itm In subItms
                 If dicTenCotTC.Exists(itm("ttruong")) Then
-                    ws.Cells(row_ct, 33).Value = itm("dlieu")
+                    ws.Cells(row_ct, DETAIL_COL_LOOKUP_CODE).Value = itm("dlieu")
                     Exit For
                 End If
             Next
@@ -585,7 +610,7 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
         '-------------------------------------/
         
     Else    'truong hop khong co msttcgp
-        ws.Cells(row_ct, 32).Value = "Khong co link tra cuu"
+        ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = "Khong co link tra cuu"
     End If
     
     '/Ghi thong tin tung ma HHDVu
@@ -596,14 +621,14 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
             If col = 10 Then
                 Select Case item(arrColName_detail(col - 1))
                     Case "KKKNT"
-                        ws.Cells(row_ct, col + 15).Value = "KKKNT"
+                        ws.Cells(row_ct, arrCol_detail(col)).Value = "KKKNT"
                     Case "KCT"
-                        ws.Cells(row_ct, col + 15).Value = "KCT"
+                        ws.Cells(row_ct, arrCol_detail(col)).Value = "KCT"
                     Case Else
-                        ws.Cells(row_ct, col + 15).Value = item(arrColName_detail(col))
+                        ws.Cells(row_ct, arrCol_detail(col)).Value = item(arrColName_detail(col))
                 End Select
             Else
-                ws.Cells(row_ct, col + 15).Value = item(arrColName_detail(col))
+                ws.Cells(row_ct, arrCol_detail(col)).Value = item(arrColName_detail(col))
             End If
         Next
         
@@ -620,22 +645,22 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
                         Set subItms2 = subItms(c)
                         ttruong = subItms2("ttruong")
                         If isInArray(ttruong, arrTThue) Then
-                            ws.Cells(row_ct, 27).Value = subItms2("dlieu")
+                            ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value = subItms2("dlieu")
                             tongthueCT = tongthueCT + Val(subItms2("dlieu"))
                         ElseIf isInArray(ttruong, arrThTiencoVAT) Then
-                            ws.Cells(row_ct, 28).Value = subItms2("dlieu")
+                            ws.Cells(row_ct, DETAIL_COL_ITEM_TOTAL).Value = subItms2("dlieu")
                         End If
                     Next
                 End If
             End If
         End If
         
-        If ws.Cells(row_ct, 27).Value = 0 Then   'Khong co gia tri cho cot tthueVAT
-            ws.Cells(row_ct, 27).Value = Val(ws.Cells(row_ct, 25).Value) * ws.Cells(row_ct, 26).Value
-            ws.Cells(row_ct, 28).Value = ws.Cells(row_ct, 26).Value + ws.Cells(row_ct, 27).Value
+        If ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value = 0 Then   'Khong co gia tri cho cot tthueVAT
+            ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value = Val(ws.Cells(row_ct, DETAIL_COL_ITEM_TAX_RATE).Value) * ws.Cells(row_ct, DETAIL_COL_ITEM_AMOUNT).Value
+            ws.Cells(row_ct, DETAIL_COL_ITEM_TOTAL).Value = ws.Cells(row_ct, DETAIL_COL_ITEM_AMOUNT).Value + ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value
         End If
-        If ws.Cells(row_ct, 28).Value = 0 Then  'Khong co gia tri cho cot THTiencoVAT
-            ws.Cells(row_ct, 28).Value = ws.Cells(row_ct, 26).Value + ws.Cells(row_ct, 27).Value
+        If ws.Cells(row_ct, DETAIL_COL_ITEM_TOTAL).Value = 0 Then  'Khong co gia tri cho cot THTiencoVAT
+            ws.Cells(row_ct, DETAIL_COL_ITEM_TOTAL).Value = ws.Cells(row_ct, DETAIL_COL_ITEM_AMOUNT).Value + ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value
         End If
         
         '/Dung cho hd khong nhan ma loai 2: chi tiet hhdv ("tthue"= #,##)
@@ -652,16 +677,16 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
     '// So sanh tien thue chi tiet va tong hop
     If jsCT.Exists("tgtthue") Then
         If Not IsNull(jsCT("tgtthue")) Then
-            ws.Cells(sumRow, 29).Value = jsCT("tgtthue")
+            ws.Cells(sumRow, DETAIL_COL_INVOICE_TAX).Value = jsCT("tgtthue")
         End If
     End If
     
     If tongthueCT <> jsCT("tgtthue") Then
-        ws.Cells(sumRow, 30).Value = "Kiem tra lai tien thue: [" & Format(tongthueCT, "standard") & "] <> [" & Format(jsCT("tgtthue"), "standard") & "]"
-        ws.Cells(sumRow, 30).Font.Color = vbRed
+        ws.Cells(sumRow, DETAIL_COL_TAX_CHECK).Value = "Kiem tra lai tien thue: [" & Format(tongthueCT, "standard") & "] <> [" & Format(jsCT("tgtthue"), "standard") & "]"
+        ws.Cells(sumRow, DETAIL_COL_TAX_CHECK).Font.Color = vbRed
     Else
-        ws.Cells(sumRow, 30).Value = "Tien thue ok"
-        ws.Cells(sumRow, 30).Font.Color = vbBlue
+        ws.Cells(sumRow, DETAIL_COL_TAX_CHECK).Value = "Tien thue ok"
+        ws.Cells(sumRow, DETAIL_COL_TAX_CHECK).Font.Color = vbBlue
     End If
     
     '---------------------------------------/
@@ -671,6 +696,11 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
         CopyThongTinChung_CT ws.name, sumRow, row_ct - 1
     End If
     
+End Sub
+
+Private Sub EnsureDetailInvoiceHeaders(ByVal ws As Worksheet)
+    ws.Cells(2, DETAIL_COL_TEMPLATE).Value = UniConvert("Maaxu soos hosa ddown")
+    ws.Cells(2, DETAIL_COL_SERIES).Value = UniConvert("Kys hieeju HDD")
 End Sub
 
 Sub LinkTraCuu()
@@ -712,7 +742,6 @@ Sub CopyThongTinChung_CT(shtName As String, frow As Long, lrow As Long)
     
     If lrow <= frow Then Exit Sub
     Set ws = ThisWorkbook.Sheets(shtName)
-    Set fillRange = ws.Range("A" & frow & ":N" & lrow)
+    Set fillRange = ws.Range("A" & frow & ":O" & lrow)
     fillRange.FillDown
 End Sub
-

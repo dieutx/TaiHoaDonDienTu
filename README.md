@@ -42,6 +42,7 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 - Tạm dừng, tiếp tục hoặc dừng an toàn sau request hiện tại.
 - Retry khi gặp lỗi tạm thời hoặc HTTP 429/500.
 - Tải dữ liệu tổng hợp, chi tiết và ZIP XML/HTML.
+- Hiển thị mẫu số hóa đơn trên sheet chi tiết và giữ MST người mua/người bán dưới dạng Text để không mất số `0` ở đầu.
 - Điền dữ liệu dùng chung cho các dòng chi tiết mà không chiếm hoặc xóa clipboard của Windows.
 - Lấy chuỗi hóa đơn thay thế/điều chỉnh và thông tin sai sót liên quan; nếu hết lượt retry, lỗi được hiển thị ngay tại cột kết quả tương ứng.
 - Báo cáo lỗi chỉ giữ những tác vụ chưa xử lý thành công.
@@ -66,11 +67,14 @@ Source VBA nằm trong `src`, template workbook nằm trong `template` và scrip
 Hướng dẫn thêm thông báo cập nhật tùy chọn: [docs/UPDATE_CHECK.md](docs/UPDATE_CHECK.md).
 
 ```powershell
-.\build\Build-Excel.ps1 -Version '6.7.3' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.3.xlsm'
+.\build\Build-Excel.ps1 -Version '6.7.4' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
 .\tests\Test-RetryUiStatic.ps1
-.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.3.xlsm' -RunUserFormInstantiation
-.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.3.xlsm'
-.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.3.xlsm'
+.\tests\Test-DetailInvoiceStatic.ps1
+.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm' -RunUserFormInstantiation
+.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
+.\build\Test-DetailInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
+.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
+.\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
 ```
 
 Đọc [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md) trước khi gửi thay đổi.
