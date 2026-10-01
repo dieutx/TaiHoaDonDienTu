@@ -6,6 +6,11 @@ if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) { $RepositoryRoot = Split-Pat
 $writeExcel = Get-Content -Raw (Join-Path $RepositoryRoot 'src\modules\modGhiExcel.bas')
 $build = Get-Content -Raw (Join-Path $RepositoryRoot 'build\Build-Excel.ps1')
 $runtime = Get-Content -Raw (Join-Path $RepositoryRoot 'build\Test-DetailInvoiceRuntime.ps1')
+$relatedRuntime = Get-Content -Raw (Join-Path $RepositoryRoot 'build\Test-RelatedInvoiceRuntime.ps1')
+$updateRuntime = Get-Content -Raw (Join-Path $RepositoryRoot 'tests\Test-UpdateRuntime.ps1')
+$userFormSmoke = Get-Content -Raw (Join-Path $RepositoryRoot 'build\Invoke-UserFormSmoke.ps1')
+$commonBuild = Get-Content -Raw (Join-Path $RepositoryRoot 'build\ExcelBuild.Common.psm1')
+$upgradeForm = Get-Content -Raw (Join-Path $RepositoryRoot 'build\Upgrade-FormUI.ps1')
 
 function Has([string]$Text, [string]$Pattern) {
     return [regex]::IsMatch($Text, $Pattern, 'IgnoreCase,Multiline')
@@ -47,6 +52,26 @@ $checks = @(
             (Has $runtime 'CodexTestSalesDetail') -and
             (Has $runtime '"0000000001"') -and
             (Has $runtime '"0000000004"')
+    },
+    [pscustomobject]@{
+        Name = 'Build avoids redundant detail column-width COM setter'
+        Pass = (Has $build '\[Math\]::Abs\(\$detailTemplateWidth - \$detailSeriesWidth\) -gt 0\.01') -and
+            (Has $build '\$detailTemplateColumn\.PasteSpecial\(8\)')
+    },
+    [pscustomobject]@{
+        Name = 'Runtime keeps assertion row separate from ByRef write cursor'
+        Pass = (Has $runtime 'Dim writeRow As Long') -and
+            (Has $runtime 'writeRow = targetRow') -and
+            (Has $runtime 'ghiExcel_ChiTiet sampleJson, writeRow, direction')
+    },
+    [pscustomobject]@{
+        Name = 'Excel runtime scripts resolve workbook paths'
+        Pass = (Has $relatedRuntime '\$BuiltWorkbook = \(Resolve-Path -LiteralPath \$BuiltWorkbook\)\.Path') -and
+            (Has $updateRuntime '\$BuiltWorkbook = \(Resolve-Path -LiteralPath \$BuiltWorkbook\)\.Path') -and
+            (Has $userFormSmoke '\$BuiltWorkbook = \(Resolve-Path -LiteralPath \$BuiltWorkbook\)\.Path') -and
+            (Has $commonBuild '\$resolvedPath = \(Resolve-Path -LiteralPath \$Path\)\.Path') -and
+            (Has $commonBuild 'Workbooks\.Open\(\$resolvedPath') -and
+            (Has $upgradeForm '\$OutputPath = \[IO\.Path\]::GetFullPath\(\$OutputPath\)')
     }
 )
 
@@ -55,6 +80,10 @@ foreach ($script in @(
     (Join-Path $RepositoryRoot 'build\Build-Excel.ps1'),
     (Join-Path $RepositoryRoot 'build\ExcelBuild.Common.psm1'),
     (Join-Path $RepositoryRoot 'build\Test-DetailInvoiceRuntime.ps1'),
+    (Join-Path $RepositoryRoot 'build\Test-RelatedInvoiceRuntime.ps1'),
+    (Join-Path $RepositoryRoot 'build\Invoke-UserFormSmoke.ps1'),
+    (Join-Path $RepositoryRoot 'build\Upgrade-FormUI.ps1'),
+    (Join-Path $RepositoryRoot 'tests\Test-UpdateRuntime.ps1'),
     $PSCommandPath
 )) {
     $errors = $null

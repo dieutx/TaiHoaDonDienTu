@@ -48,6 +48,7 @@ Private Function RunDetailInvoiceFixture(ByVal sheetName As String, ByVal direct
     On Error GoTo Failed
     Dim ws As Worksheet
     Dim sampleJson As String
+    Dim writeRow As Long
 
     Set ws = ThisWorkbook.Sheets(sheetName)
     ws.Range("A" & targetRow & ":AH" & (targetRow + 1)).ClearContents
@@ -66,7 +67,8 @@ Private Function RunDetailInvoiceFixture(ByVal sheetName As String, ByVal direct
         """ltsuat"":""10%"",""tsuat"":0.1,""thtien"":200,""tthue"":20,""thtcthue"":220}]," & _
         """tgtthue"":20}"
 
-    ghiExcel_ChiTiet sampleJson, targetRow, direction
+    writeRow = targetRow
+    ghiExcel_ChiTiet sampleJson, writeRow, direction
     RunDetailInvoiceFixture = _
         (CStr(ws.Cells(2, 1).Value2) = UniConvert("Maaxu soos hosa ddown")) And _
         (CStr(ws.Cells(2, 2).Value2) = UniConvert("Kys hieeju HDD")) And _

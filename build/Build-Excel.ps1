@@ -233,9 +233,22 @@ try {
         $detailTemplateHeader.PasteSpecial(-4122) | Out-Null # xlPasteFormats
         $detailTemplateHeader.Value2 = $detailHeaders['1']
         $detailSheet.Cells.Item(2, 2).Value2 = $detailHeaders['2']
-        $detailSheet.Columns.Item(1).ColumnWidth = $detailSheet.Columns.Item(2).ColumnWidth
+        $detailTemplateColumn = $detailSheet.Columns.Item(1)
+        $detailSeriesColumn = $detailSheet.Columns.Item(2)
+        $detailTemplateWidth = [double]$detailTemplateColumn.ColumnWidth
+        $detailSeriesWidth = [double]$detailSeriesColumn.ColumnWidth
+        if ([Math]::Abs($detailTemplateWidth - $detailSeriesWidth) -gt 0.01) {
+            try {
+                $detailTemplateColumn.ColumnWidth = $detailSeriesWidth
+            } catch [InvalidCastException] {
+                $detailSeriesColumn.Copy() | Out-Null
+                $detailTemplateColumn.PasteSpecial(8) | Out-Null # xlPasteColumnWidths
+                $excel.CutCopyMode = $false
+            }
+        }
         $detailSheet.Columns.Item(8).NumberFormat = '@'
         $detailSheet.Columns.Item(14).NumberFormat = '@'
+        Release-ComObject $detailSeriesColumn; Release-ComObject $detailTemplateColumn
         Release-ComObject $detailTemplateHeader; Release-ComObject $detailHeaderSource; Release-ComObject $detailSheet
     }
     $excel.CutCopyMode = $false

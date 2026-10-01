@@ -6,6 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'build\ExcelBuild.Common.psm1') -Force -DisableNameChecking
 $root = Split-Path -Parent $PSScriptRoot
+$BuiltWorkbook = (Resolve-Path -LiteralPath $BuiltWorkbook).Path
 $testWorkbook = Join-Path $root 'dist\UpdateRuntime-test-only.xlsm'
 $fixture = Join-Path $root 'dist\UpdateRuntime-response-test-only.json'
 $portProbe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback,0)

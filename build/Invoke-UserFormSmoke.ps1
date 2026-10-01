@@ -6,6 +6,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'ExcelBuild.Common.psm1') -Force -DisableNameChecking
+$BuiltWorkbook = (Resolve-Path -LiteralPath $BuiltWorkbook).Path
 $excel = $null
 $workbook = $null
 $testModule = $null
