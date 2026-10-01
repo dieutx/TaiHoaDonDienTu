@@ -305,6 +305,7 @@ function Invoke-WithExcelWorkbook {
         [Parameter(Mandatory)][scriptblock]$Action,
         [switch]$ReadOnly
     )
+    $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
     $excel = $null
     $workbook = $null
     try {
@@ -314,7 +315,7 @@ function Invoke-WithExcelWorkbook {
         $excel.EnableEvents = $false
         $excel.AskToUpdateLinks = $false
         $excel.AutomationSecurity = 3
-        $workbook = $excel.Workbooks.Open($Path, 0, [bool]$ReadOnly)
+        $workbook = $excel.Workbooks.Open($resolvedPath, 0, [bool]$ReadOnly)
         & $Action $workbook $excel -ErrorAction Stop
     } finally {
         if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }

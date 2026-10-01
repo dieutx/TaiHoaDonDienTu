@@ -6,6 +6,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'ExcelBuild.Common.psm1') -Force -DisableNameChecking
+$RepositoryRoot = [IO.Path]::GetFullPath($RepositoryRoot)
+$OutputPath = [IO.Path]::GetFullPath($OutputPath)
 
 $templatePath = Join-Path $RepositoryRoot 'template\App_Template.xlsm'
 $sourceForm = Join-Path $RepositoryRoot 'src\forms\frmTaiHoaDon.frm'
