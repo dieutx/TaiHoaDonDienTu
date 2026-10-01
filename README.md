@@ -2,9 +2,9 @@
 
 File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondientu.gdt.gov.vn`.
 
-**Phiên bản đã phát hành mới nhất: v6.7.3**
+**Phiên bản đã phát hành mới nhất: v6.7.4**
 
-[Tải TaiHoaDonDienTu_v6.7.3.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.3.xlsm)
+[Tải TaiHoaDonDienTu_v6.7.4.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.4.xlsm)
 
 > 💡 **Không có Excel hoặc muốn chạy tự động theo lịch?** Dùng bản PowerShell
 > [hddt-downloader-windows](https://github.com/dieutx/hddt-downloader-windows) —

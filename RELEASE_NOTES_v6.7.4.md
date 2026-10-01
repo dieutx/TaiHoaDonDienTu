@@ -12,7 +12,10 @@
 - Thêm kiểm tra tĩnh cho ánh xạ cột, định dạng MST và bước build workbook.
 - Thêm fixture runtime giả lập cho cả hóa đơn mua vào và bán ra; xác nhận mẫu số, ký hiệu, các cột hàng hóa và MST có số `0` đầu sau khi Excel VBA thực thi.
 - Build kiểm tra lại cấu trúc workbook, dữ liệu công khai và runtime chi tiết hóa đơn trước khi tạo artifact `.xlsm`.
+- Ổn định build trên Windows PowerShell 5.1/Excel COM khi độ rộng cột chi tiết đã đúng hoặc Excel từ chối setter `ColumnWidth` trực tiếp.
+- Sửa fixture chi tiết để biến dòng dùng kiểm tra không bị thay đổi bởi tham số VBA `ByRef`.
+- Chuẩn hóa đường dẫn workbook tuyệt đối trước khi mở bằng Excel COM trong các bài runtime và UserForm smoke test.
 
 ## Trạng thái phát hành
 
-Candidate v6.7.4 chỉ được phát hành sau khi maintainer kiểm tra trực tiếp file `.xlsm` và xác nhận đạt.
+v6.7.4 đã hoàn tất build và kiểm thử bằng Microsoft Excel desktop trước khi phát hành.
