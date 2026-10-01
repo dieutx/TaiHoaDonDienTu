@@ -201,6 +201,46 @@ try {
     $excel.CutCopyMode = $false
     Write-Host 'Related-invoice columns ready on purchase and sales summaries.'
 
+    # The legacy template starts detail sheets with the invoice series in
+    # column A.  Insert the new template-code column once, preserve the title
+    # and header formatting, and make both buyer/seller tax-ID columns Text.
+    $detailHeaders = Get-GdtDetailInvoiceHeaders -RepositoryRoot $RepositoryRoot
+    if ($detailHeaders.Count -ne 2) { throw "Expected 2 detail-invoice headings in modGhiExcel, found $($detailHeaders.Count)." }
+    foreach ($detailSheetName in @('ChiTietHD_Mua', 'ChiTietHD_Ban')) {
+        $detailSheet = $workbook.Worksheets.Item($detailSheetName)
+        $firstHeader = [string]$detailSheet.Cells.Item(2, 1).Value2
+        $secondHeader = [string]$detailSheet.Cells.Item(2, 2).Value2
+        if ($firstHeader -eq $detailHeaders['1'] -and $secondHeader -eq $detailHeaders['2']) {
+            Write-Host "$detailSheetName already uses the current detail layout."
+        } elseif ($firstHeader -eq $detailHeaders['2']) {
+            $titleText = [string]$detailSheet.Cells.Item(1, 1).Value2
+            $firstColumn = $detailSheet.Columns.Item(1)
+            $firstColumn.Insert() | Out-Null
+            $titleSource = $detailSheet.Range('B1')
+            $titleTarget = $detailSheet.Range('A1')
+            $titleSource.Copy() | Out-Null
+            $titleTarget.PasteSpecial(-4122) | Out-Null # xlPasteFormats
+            $titleTarget.Value2 = $titleText
+            $titleSource.ClearContents() | Out-Null
+            Release-ComObject $titleTarget; Release-ComObject $titleSource; Release-ComObject $firstColumn
+        } else {
+            throw "Unexpected $detailSheetName detail layout: A2='$firstHeader', B2='$secondHeader'."
+        }
+
+        $detailHeaderSource = $detailSheet.Range('B2')
+        $detailTemplateHeader = $detailSheet.Range('A2')
+        $detailHeaderSource.Copy() | Out-Null
+        $detailTemplateHeader.PasteSpecial(-4122) | Out-Null # xlPasteFormats
+        $detailTemplateHeader.Value2 = $detailHeaders['1']
+        $detailSheet.Cells.Item(2, 2).Value2 = $detailHeaders['2']
+        $detailSheet.Columns.Item(1).ColumnWidth = $detailSheet.Columns.Item(2).ColumnWidth
+        $detailSheet.Columns.Item(8).NumberFormat = '@'
+        $detailSheet.Columns.Item(14).NumberFormat = '@'
+        Release-ComObject $detailTemplateHeader; Release-ComObject $detailHeaderSource; Release-ComObject $detailSheet
+    }
+    $excel.CutCopyMode = $false
+    Write-Host 'Detail-invoice columns and tax-ID formats ready on purchase and sales sheets.'
+
     $workbook.SaveAs($outputPath, 52)
     Write-Host 'Workbook saved; closing build Excel instance...'
     $workbook.Close($true); Release-ComObject $workbook; $workbook = $null
@@ -224,5 +264,7 @@ if (-not $SkipTest) {
     if ($LASTEXITCODE -ne 0) { throw "BUILD FAILED: structural test process returned exit code $LASTEXITCODE." }
     & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-PublicWorkbook.ps1') -WorkbookPath $outputPath
     if ($LASTEXITCODE -ne 0) { throw "BUILD FAILED: public workbook test process returned exit code $LASTEXITCODE." }
+    & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-DetailInvoiceRuntime.ps1') -BuiltWorkbook $outputPath
+    if ($LASTEXITCODE -ne 0) { throw "BUILD FAILED: detail-invoice runtime test process returned exit code $LASTEXITCODE." }
 }
 Write-Host "BUILD GENERATED; STRUCTURAL TESTS PASSED: $outputPath"

@@ -86,6 +86,19 @@ function Get-GdtRelatedInvoiceHeaders {
     return $headers
 }
 
+function Get-GdtDetailInvoiceHeaders {
+    param([Parameter(Mandatory)][string]$RepositoryRoot)
+    $tables = Get-UniConvertTables -MsgBoxSource (Get-Content -Raw (Join-Path $RepositoryRoot 'src\modules\modMsgboxTV.bas'))
+    if ($tables.Codes.Count -eq 0) { throw 'Could not read the UniConvert tables from modMsgboxTV.bas.' }
+    $source = Get-Content -Raw (Join-Path $RepositoryRoot 'src\modules\modGhiExcel.bas')
+    $headers = [ordered]@{}
+    foreach ($match in [regex]::Matches($source, 'Cells\(2,\s*DETAIL_COL_(TEMPLATE|SERIES)\)\.Value\s*=\s*UniConvert\("([^"]*)"\)')) {
+        $column = if ($match.Groups[1].Value -eq 'TEMPLATE') { 1 } else { 2 }
+        $headers[[string]$column] = ConvertFrom-TelexSource $match.Groups[2].Value $tables
+    }
+    return $headers
+}
+
 function Get-Sha256Text {
     param([AllowEmptyString()][string]$Text)
     $normalized = ($Text -replace "`r`n", "`n").Trim()
@@ -313,4 +326,4 @@ function Invoke-WithExcelWorkbook {
     }
 }
 
-Export-ModuleMember -Function Release-ComObject, New-ExcelApplication, Get-WorkbookInventory, Invoke-WithExcelWorkbook, Get-GdtErrorReportHeaders, Get-GdtRelatedInvoiceHeaders, Get-Sha256Text, Get-VbaCodeTextFromSource
+Export-ModuleMember -Function Release-ComObject, New-ExcelApplication, Get-WorkbookInventory, Invoke-WithExcelWorkbook, Get-GdtErrorReportHeaders, Get-GdtRelatedInvoiceHeaders, Get-GdtDetailInvoiceHeaders, Get-Sha256Text, Get-VbaCodeTextFromSource
