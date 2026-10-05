@@ -25,6 +25,9 @@ try {
             Sheet = $sheetName
             TemplateHeader = [string]$sheet.Cells.Item(2, 1).Value2
             SeriesHeader = [string]$sheet.Cells.Item(2, 2).Value2
+            InvoiceDateFormat = [string]$sheet.Columns.Item(4).NumberFormat
+            SignatureDateFormat = [string]$sheet.Columns.Item(10).NumberFormat
+            CodeDateFormat = [string]$sheet.Columns.Item(12).NumberFormat
             SellerTaxIdFormat = [string]$sheet.Columns.Item(8).NumberFormat
             BuyerTaxIdFormat = [string]$sheet.Columns.Item(14).NumberFormat
         }
@@ -33,10 +36,32 @@ try {
     $layoutOk = @($layoutResults | Where-Object {
         $_.TemplateHeader -ne $expectedHeaders['1'] -or
         $_.SeriesHeader -ne $expectedHeaders['2'] -or
+        $_.InvoiceDateFormat -ne 'dd/mm/yyyy' -or
+        $_.SignatureDateFormat -ne 'dd/mm/yyyy' -or
+        $_.CodeDateFormat -ne 'dd/mm/yyyy' -or
         $_.SellerTaxIdFormat -ne '@' -or
         $_.BuyerTaxIdFormat -ne '@'
     }).Count -eq 0
-    if (-not $layoutOk) { throw 'Detail-invoice headers or tax-ID column formats are incorrect.' }
+
+    $summaryLayoutResults = @()
+    foreach ($sheetName in @('TongHopHD_Mua', 'TongHopHD_Ban')) {
+        $sheet = $workbook.Worksheets.Item($sheetName)
+        $summaryLayoutResults += [ordered]@{
+            Sheet = $sheetName
+            InvoiceDateFormat = [string]$sheet.Columns.Item(6).NumberFormat
+            SignatureDateFormat = [string]$sheet.Columns.Item(12).NumberFormat
+            CodeDateFormat = [string]$sheet.Columns.Item(14).NumberFormat
+            OriginalInvoiceDateFormat = [string]$sheet.Columns.Item(62).NumberFormat
+        }
+        Release-ComObject $sheet
+    }
+    $summaryLayoutOk = @($summaryLayoutResults | Where-Object {
+        $_.InvoiceDateFormat -ne 'dd/mm/yyyy' -or
+        $_.SignatureDateFormat -ne 'dd/mm/yyyy' -or
+        $_.CodeDateFormat -ne 'dd/mm/yyyy' -or
+        $_.OriginalInvoiceDateFormat -ne 'dd/mm/yyyy'
+    }).Count -eq 0
+    if (-not ($layoutOk -and $summaryLayoutOk)) { throw 'Invoice headers or column formats are incorrect.' }
 
     $testModule = $workbook.VBProject.VBComponents.Add(1)
     $testModule.Name = 'modCodexDetailInvoiceTest'
@@ -53,10 +78,10 @@ Private Function RunDetailInvoiceFixture(ByVal sheetName As String, ByVal direct
     Set ws = ThisWorkbook.Sheets(sheetName)
     ws.Range("A" & targetRow & ":AH" & (targetRow + 1)).ClearContents
     sampleJson = "{""khmshdon"":""1"",""khhdon"":""C26TST"",""shdon"":42," & _
-        """tdlap"":""2026-09-30T00:00:00"",""dvtte"":""VND"",""tgia"":1," & _
+        """tdlap"":""2026-09-12T00:00:00"",""dvtte"":""VND"",""tgia"":1," & _
         """nbten"":""SELLER-FIXTURE"",""nbmst"":""" & sellerTaxId & """," & _
-        """nbdchi"":""FIXTURE"",""nky"":""2026-09-30T00:00:00""," & _
-        """mhdon"":""MCCQT-FIXTURE"",""ncma"":""2026-09-30T00:00:00""," & _
+        """nbdchi"":""FIXTURE"",""nky"":""2026-09-12T00:00:00""," & _
+        """mhdon"":""MCCQT-FIXTURE"",""ncma"":""2026-09-12T00:00:00""," & _
         """nmten"":""BUYER-FIXTURE"",""nmmst"":""" & buyerTaxId & """," & _
         """nmdchi"":""FIXTURE"",""msttcgp"":"""",""hdhhdvu"":[" & _
         "{""stt"":1,""tchat"":1,""mhhdvu"":""ITEM-1"",""ten"":""ITEM FIXTURE 1""," & _
@@ -75,6 +100,10 @@ Private Function RunDetailInvoiceFixture(ByVal sheetName As String, ByVal direct
         (CStr(ws.Cells(targetRow, 1).Value2) = "1") And _
         (CStr(ws.Cells(targetRow, 2).Value2) = "C26TST") And _
         (CLng(ws.Cells(targetRow, 3).Value2) = 42) And _
+        (CDbl(ws.Cells(targetRow, 4).Value2) = CDbl(DateSerial(2026, 9, 12))) And _
+        (ws.Cells(targetRow, 4).NumberFormat = "dd/mm/yyyy") And _
+        (CDbl(ws.Cells(targetRow, 10).Value2) = CDbl(DateSerial(2026, 9, 12))) And _
+        (CDbl(ws.Cells(targetRow, 12).Value2) = CDbl(DateSerial(2026, 9, 12))) And _
         (CStr(ws.Cells(targetRow, 8).Value2) = sellerTaxId) And _
         (CStr(ws.Cells(targetRow, 14).Value2) = buyerTaxId) And _
         (CStr(ws.Cells(targetRow + 1, 8).Value2) = sellerTaxId) And _
@@ -102,10 +131,59 @@ End Function
 Public Function CodexTestSalesDetail() As Boolean
     CodexTestSalesDetail = RunDetailInvoiceFixture("ChiTietHD_Ban", "ban", 200, "0000000003", "0000000004")
 End Function
+
+Private Function RunSummaryDateFixture(ByVal sheetName As String, ByVal invoiceType As Long, _
+    ByVal targetRow As Long) As Boolean
+    On Error GoTo Failed
+    Dim ws As Worksheet
+    Dim sampleJson As String
+    Dim writeRow As Long, sequenceNumber As Long
+
+    Set ws = ThisWorkbook.Sheets(sheetName)
+    ws.Range("A" & targetRow & ":BL" & targetRow).ClearContents
+    ReDim arrTrangThai(1 To 1, 1 To 1)
+    ReDim arrKQKTHoaDon(1 To 2, 1 To 1)
+    arrTrangThai(1, 1) = "STATUS-FIXTURE"
+    arrKQKTHoaDon(2, 1) = "CHECK-FIXTURE"
+    Set dicLink = CreateObject("Scripting.Dictionary")
+    Set dicTenCotTC = CreateObject("Scripting.Dictionary")
+
+    sampleJson = "{""datas"":[{""tlhdon"":1,""khmshdon"":""1"",""khhdon"":""C26TST""," & _
+        """shdon"":42,""tdlap"":""2026-09-12T00:00:00"",""dvtte"":""VND"",""tgia"":1," & _
+        """nbten"":""SELLER-FIXTURE"",""nbmst"":""0000000001"",""nbdchi"":""FIXTURE""," & _
+        """nky"":""2026-09-12T00:00:00"",""mhdon"":""MCCQT-FIXTURE""," & _
+        """ncma"":""2026-09-12T00:00:00"",""nmten"":""BUYER-FIXTURE"",""nmmst"":""0000000002""," & _
+        """nmdchi"":""FIXTURE"",""tgtcthue"":0,""tgtkcthue"":0,""tgtthue"":0," & _
+        """ttcktmai"":0,""tgtkhac"":0,""tgtttbso"":0,""tgtttbchu"":"""",""gchu"":""""," & _
+        """msttcgp"":"""",""thttltsuat"":[],""thttlphi"":[],""tthai"":0,""ttxly"":0," & _
+        """cttkhac"":[],""ttkhac"":[]}]}"
+
+    writeRow = targetRow
+    sequenceNumber = 1
+    ghiExcel_TongHop sampleJson, writeRow, invoiceType, sequenceNumber
+    RunSummaryDateFixture = _
+        (CDbl(ws.Cells(targetRow, 6).Value2) = CDbl(DateSerial(2026, 9, 12))) And _
+        (ws.Cells(targetRow, 6).NumberFormat = "dd/mm/yyyy") And _
+        (CDbl(ws.Cells(targetRow, 12).Value2) = CDbl(DateSerial(2026, 9, 12))) And _
+        (CDbl(ws.Cells(targetRow, 14).Value2) = CDbl(DateSerial(2026, 9, 12)))
+    Exit Function
+Failed:
+    RunSummaryDateFixture = False
+End Function
+
+Public Function CodexTestPurchaseSummaryDate() As Boolean
+    CodexTestPurchaseSummaryDate = RunSummaryDateFixture("TongHopHD_Mua", 1, 200)
+End Function
+
+Public Function CodexTestSalesSummaryDate() As Boolean
+    CodexTestSalesSummaryDate = RunSummaryDateFixture("TongHopHD_Ban", 2, 200)
+End Function
 '@)
 
     $purchaseOk = [bool]$excel.Run("'$($workbook.Name)'!CodexTestPurchaseDetail")
     $salesOk = [bool]$excel.Run("'$($workbook.Name)'!CodexTestSalesDetail")
+    $purchaseSummaryOk = [bool]$excel.Run("'$($workbook.Name)'!CodexTestPurchaseSummaryDate")
+    $salesSummaryOk = [bool]$excel.Run("'$($workbook.Name)'!CodexTestSalesSummaryDate")
 
     $fixtureResults = @()
     foreach ($fixture in @(
@@ -129,9 +207,14 @@ End Function
     }
 
     $result = [ordered]@{
-        Pass = ($layoutOk -and $purchaseOk -and $salesOk)
+        Pass = ($layoutOk -and $summaryLayoutOk -and $purchaseOk -and $salesOk -and $purchaseSummaryOk -and $salesSummaryOk)
         Workbook = $BuiltWorkbook
         Layout = $layoutResults
+        SummaryLayout = $summaryLayoutResults
+        SummaryFixtures = [ordered]@{
+            Purchase = $purchaseSummaryOk
+            Sales = $salesSummaryOk
+        }
         Fixtures = $fixtureResults
     }
     $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $repositoryRoot 'tests\detail-invoice-runtime-result.json') -Encoding utf8

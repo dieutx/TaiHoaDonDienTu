@@ -19,7 +19,10 @@ Private Const DETAIL_COL_PROVIDER_TAX_ID As Long = 32
 Private Const DETAIL_COL_LOOKUP_LINK As Long = 33
 Private Const DETAIL_COL_LOOKUP_CODE As Long = 34
 
-
+Private Sub WriteIsoDateCell(ByVal targetCell As Range, ByVal rawValue As Variant)
+    targetCell.Value2 = CDbl(ISODateValue(rawValue))
+    targetCell.NumberFormat = "dd/mm/yyyy"
+End Sub
 
 Sub ghiExcel_TongHop(ByVal jsonText As String, row As Long, ByVal loaiHD As Long, sSTT As Long)
     
@@ -58,7 +61,7 @@ Sub ghiExcel_TongHop(ByVal jsonText As String, row As Long, ByVal loaiHD As Long
             If v = "" Or IsNull(v) Then GoTo next_col
             Select Case arrColName(i)
                 Case "ncma", "nky", "ncnhat", "ntao", "ntnhan", "tdlap"
-                    ws.Cells(row, arrCol(i)).Value = ISODATE(Format(v, "yyyy-mm-dd"))
+                    WriteIsoDateCell ws.Cells(row, arrCol(i)), v
                 Case Else
                     ws.Cells(row, arrCol(i)).Value = v
             End Select
@@ -196,8 +199,7 @@ Private Sub WriteRelatedInvoiceInfo(ByVal invoice As Object, ByVal ws As Workshe
     ws.Cells(targetRow, 63).Value = SafeJsonText(invoice, "gchdgoc")
 
     If Len(SafeJsonText(invoice, "tdlhdgoc")) > 0 Then
-        ws.Cells(targetRow, 62).Value = ISODATE(SafeJsonText(invoice, "tdlhdgoc"))
-        ws.Cells(targetRow, 62).NumberFormat = "dd/mm/yyyy"
+        WriteIsoDateCell ws.Cells(targetRow, 62), SafeJsonText(invoice, "tdlhdgoc")
     End If
 
     relationSummary = BuildRelatedInvoiceKey(invoice, True)
@@ -553,7 +555,7 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
                 'Dinh dang du lieu dang Date
                 Select Case arrColName(col)
                     Case "ncma", "nky", "ncnhat", "ntao", "ntnhan", "tdlap"
-                        ws.Cells(row_ct, arrCol(col)).Value = CStr(ISODATE(Format(jsCT(arrColName(col)), "yyyy-mm-dd")))
+                        WriteIsoDateCell ws.Cells(row_ct, arrCol(col)), jsCT(arrColName(col))
                     Case "nbmst", "nmmst"
                         ws.Cells(row_ct, arrCol(col)).NumberFormat = "@"
                         ws.Cells(row_ct, arrCol(col)).Value2 = CStr(jsCT(arrColName(col)))

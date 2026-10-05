@@ -4,6 +4,7 @@ param([string]$RepositoryRoot = '')
 $ErrorActionPreference = 'Stop'
 if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) { $RepositoryRoot = Split-Path -Parent $PSScriptRoot }
 $writeExcel = Get-Content -Raw (Join-Path $RepositoryRoot 'src\modules\modGhiExcel.bas')
+$parseIso = Get-Content -Raw (Join-Path $RepositoryRoot 'src\modules\modParseIso.bas')
 $build = Get-Content -Raw (Join-Path $RepositoryRoot 'build\Build-Excel.ps1')
 $runtime = Get-Content -Raw (Join-Path $RepositoryRoot 'build\Test-DetailInvoiceRuntime.ps1')
 $relatedRuntime = Get-Content -Raw (Join-Path $RepositoryRoot 'build\Test-RelatedInvoiceRuntime.ps1')
@@ -32,6 +33,12 @@ $checks = @(
         Pass = (Has $writeExcel 'Case "nbmst", "nmmst"[\s\S]*?NumberFormat = "@"[\s\S]*?Value2 = CStr')
     },
     [pscustomobject]@{
+        Name = 'ISO invoice dates are written as real Excel dates'
+        Pass = (Has $parseIso 'Public Function ISODateValue\(ByVal iso As Variant\) As Date[\s\S]*?DateSerial\(yearPart, monthPart, dayPart\)') -and
+            (Has $writeExcel 'Private Sub WriteIsoDateCell[\s\S]*?Value2 = CDbl\(ISODateValue\(rawValue\)\)[\s\S]*?NumberFormat = "dd/mm/yyyy"') -and
+            (Has $writeExcel 'Case "ncma", "nky", "ncnhat", "ntao", "ntnhan", "tdlap"[\s\S]*?WriteIsoDateCell ws\.Cells')
+    },
+    [pscustomobject]@{
         Name = 'All common fields fill down through column O'
         Pass = Has $writeExcel 'Range\("A" & frow & ":O" & lrow\)[\s\S]*?FillDown'
     },
@@ -43,6 +50,11 @@ $checks = @(
             (Has $build "Columns\.Item\(14\)\.NumberFormat = '@'")
     },
     [pscustomobject]@{
+        Name = 'Build formats invoice date columns consistently'
+        Pass = (Has $build 'foreach \(\$column in @\(6, 12, 14, 62\)\).*?NumberFormat = ''dd/mm/yyyy''') -and
+            (Has $build 'foreach \(\$column in @\(4, 10, 12\)\).*?NumberFormat = ''dd/mm/yyyy''')
+    },
+    [pscustomobject]@{
         Name = 'Build runs detail runtime regression'
         Pass = Has $build "Test-DetailInvoiceRuntime\.ps1'"
     },
@@ -52,6 +64,13 @@ $checks = @(
             (Has $runtime 'CodexTestSalesDetail') -and
             (Has $runtime '"0000000001"') -and
             (Has $runtime '"0000000004"')
+    },
+    [pscustomobject]@{
+        Name = 'Runtime covers ambiguous day and month in summaries and details'
+        Pass = (Has $runtime '2026-09-12T00:00:00') -and
+            (Has $runtime 'DateSerial\(2026, 9, 12\)') -and
+            (Has $runtime 'CodexTestPurchaseSummaryDate') -and
+            (Has $runtime 'CodexTestSalesSummaryDate')
     },
     [pscustomobject]@{
         Name = 'Build avoids redundant detail column-width COM setter'

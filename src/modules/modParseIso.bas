@@ -30,6 +30,39 @@ Public Type SYSTEMTIME
 End Type
 
 '---------------------------------------------------------------------
+' Parse the calendar-date portion of an ISO8601 value without using the
+' Windows regional date order. Invoice dates are business dates, so their
+' yyyy-mm-dd portion must not move when the local timezone changes.
+'---------------------------------------------------------------------
+Public Function ISODateValue(ByVal iso As Variant) As Date
+    Dim isoText As String
+    Dim yearPart As Long, monthPart As Long, dayPart As Long
+    Dim parsedDate As Date
+
+    If VarType(iso) = vbDate Then
+        parsedDate = CDate(iso)
+        ISODateValue = DateSerial(Year(parsedDate), Month(parsedDate), Day(parsedDate))
+        Exit Function
+    End If
+
+    isoText = Trim$(CStr(iso))
+    If Len(isoText) < 10 Or Mid$(isoText, 5, 1) <> "-" Or Mid$(isoText, 8, 1) <> "-" Then
+        Err.Raise vbObjectError + 513, "ISODateValue", "Invalid ISO8601 date: " & isoText
+    End If
+
+    yearPart = CLng(Left$(isoText, 4))
+    monthPart = CLng(Mid$(isoText, 6, 2))
+    dayPart = CLng(Mid$(isoText, 9, 2))
+    parsedDate = DateSerial(yearPart, monthPart, dayPart)
+
+    If Year(parsedDate) <> yearPart Or Month(parsedDate) <> monthPart Or Day(parsedDate) <> dayPart Then
+        Err.Raise vbObjectError + 513, "ISODateValue", "Invalid ISO8601 date: " & isoText
+    End If
+
+    ISODateValue = parsedDate
+End Function
+
+'---------------------------------------------------------------------
 ' Convert ISO8601 dateTimes to Excel Dates
 '---------------------------------------------------------------------
 Public Function ISODATE(iso As String)
@@ -50,7 +83,7 @@ Public Function ISODATE(iso As String)
     timePart = Left(timePart, dotPos - 1)
 
     ' Have them parsed separately by Excel
-    Dim d As Date: d = DateValue(datePart)
+    Dim d As Date: d = ISODateValue(datePart)
     Dim t As Date: If timePart <> "" Then t = TimeValue(timePart)
     Dim dt As Date: dt = d + t
 

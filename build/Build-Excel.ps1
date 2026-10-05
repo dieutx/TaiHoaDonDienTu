@@ -195,7 +195,7 @@ try {
         $summarySheet.Columns.Item(57).ColumnWidth = 32
         for ($column = 58; $column -le 63; $column++) { $summarySheet.Columns.Item($column).ColumnWidth = 18 }
         $summarySheet.Columns.Item(64).ColumnWidth = 45
-        $summarySheet.Columns.Item(62).NumberFormat = 'dd/mm/yyyy'
+        foreach ($column in @(6, 12, 14, 62)) { $summarySheet.Columns.Item($column).NumberFormat = 'dd/mm/yyyy' }
         Release-ComObject $relatedHeaderRange; Release-ComObject $formatSource; Release-ComObject $summarySheet
     }
     $excel.CutCopyMode = $false
@@ -248,6 +248,7 @@ try {
         }
         $detailSheet.Columns.Item(8).NumberFormat = '@'
         $detailSheet.Columns.Item(14).NumberFormat = '@'
+        foreach ($column in @(4, 10, 12)) { $detailSheet.Columns.Item($column).NumberFormat = 'dd/mm/yyyy' }
         Release-ComObject $detailSeriesColumn; Release-ComObject $detailTemplateColumn
         Release-ComObject $detailTemplateHeader; Release-ComObject $detailHeaderSource; Release-ComObject $detailSheet
     }
