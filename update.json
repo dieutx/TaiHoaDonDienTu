@@ -1,10 +1,9 @@
 {
-  "version": "6.7.4",
-  "releaseDate": "2026-10-01",
-  "downloadUrl": "https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.4/TaiHoaDonDienTu_v6.7.4.xlsm",
+  "version": "6.7.5",
+  "releaseDate": "2026-10-06",
+  "downloadUrl": "https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.5/TaiHoaDonDienTu_v6.7.5.xlsm",
   "releaseNote": [
-    "Thêm cột Mẫu số hóa đơn trên sheet chi tiết mua vào và bán ra",
-    "Giữ nguyên số 0 đầu của MST người bán và MST người mua",
-    "Ổn định build và các bài kiểm thử runtime bằng Excel"
+    "Chuẩn hóa nhập và so sánh ngày hóa đơn trên máy tính có locale khác nhau",
+    "Giữ giá trị ngày thật trong workbook và đúng định dạng ngày khi gửi yêu cầu API"
   ]
 }

@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$BuiltWorkbook = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist\TaiHoaDonDienTu_v6.7.4.xlsm')
+    [string]$BuiltWorkbook = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist\TaiHoaDonDienTu_v6.7.5.xlsm')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -99,7 +99,7 @@ End Function
         } finally { $listener.Stop() }
     }
 
-    [IO.File]::WriteAllText($fixture, '{"version":"6.7.5","releaseDate":"2026-10-01","downloadUrl":"https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.5/TaiHoaDonDienTu_v6.7.5.xlsm","releaseNote":["Test update"]}', [Text.Encoding]::UTF8)
+    [IO.File]::WriteAllText($fixture, '{"version":"6.7.6","releaseDate":"2026-10-06","downloadUrl":"https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.6/TaiHoaDonDienTu_v6.7.6.xlsm","releaseNote":["Test update"]}', [Text.Encoding]::UTF8)
     Start-Sleep -Milliseconds 700
     $excel = New-ExcelApplication
     $excel.Visible = $false
@@ -108,10 +108,10 @@ End Function
     $excel.EnableEvents = $false
 
     $newResult = Read-OpenResult $excel $testWorkbook
-    if ($newResult -ne '6.7.4|6.7.5|01/10/2026|? Test update' -and $newResult -ne "6.7.4|6.7.5|01/10/2026|$([char]10003) Test update") { throw "New-version test failed: $newResult" }
+    if ($newResult -ne '6.7.5|6.7.6|06/10/2026|? Test update' -and $newResult -ne "6.7.5|6.7.6|06/10/2026|$([char]10003) Test update") { throw "New-version test failed: $newResult" }
     Write-Output "NEW_VERSION=PASS $newResult"
 
-    [IO.File]::WriteAllText($fixture, '{"version":"6.7.4","downloadUrl":"https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.4/TaiHoaDonDienTu_v6.7.4.xlsm"}', [Text.Encoding]::UTF8)
+    [IO.File]::WriteAllText($fixture, '{"version":"6.7.5","downloadUrl":"https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.5/TaiHoaDonDienTu_v6.7.5.xlsm"}', [Text.Encoding]::UTF8)
     $sameResult = Read-OpenResult $excel $testWorkbook
     if ($sameResult) { throw "Same-version test failed: $sameResult" }
     Write-Output 'SAME_VERSION=PASS no form'

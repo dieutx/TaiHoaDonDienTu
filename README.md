@@ -2,9 +2,9 @@
 
 File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondientu.gdt.gov.vn`.
 
-**Phiên bản đã phát hành mới nhất: v6.7.4**
+**Phiên bản đã phát hành mới nhất: v6.7.5**
 
-[Tải TaiHoaDonDienTu_v6.7.4.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.4.xlsm)
+[Tải TaiHoaDonDienTu_v6.7.5.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.5.xlsm)
 
 > 💡 **Không có Excel hoặc muốn chạy tự động theo lịch?** Dùng bản PowerShell
 > [hddt-downloader-windows](https://github.com/dieutx/hddt-downloader-windows) —
@@ -68,14 +68,14 @@ Source VBA nằm trong `src`, template workbook nằm trong `template` và scrip
 Hướng dẫn thêm thông báo cập nhật tùy chọn: [docs/UPDATE_CHECK.md](docs/UPDATE_CHECK.md).
 
 ```powershell
-.\build\Build-Excel.ps1 -Version '6.7.4' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
+.\build\Build-Excel.ps1 -Version '6.7.5' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
 .\tests\Test-RetryUiStatic.ps1
 .\tests\Test-DetailInvoiceStatic.ps1
-.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm' -RunUserFormInstantiation
-.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
-.\build\Test-DetailInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
-.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
-.\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.4.xlsm'
+.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm' -RunUserFormInstantiation
+.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
+.\build\Test-DetailInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
+.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
+.\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
 ```
 
 Đọc [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md) trước khi gửi thay đổi.
