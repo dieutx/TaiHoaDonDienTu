@@ -43,6 +43,7 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 - Retry khi gặp lỗi tạm thời hoặc HTTP 429/500.
 - Tải dữ liệu tổng hợp, chi tiết và ZIP XML/HTML.
 - Hiển thị mẫu số hóa đơn trên sheet chi tiết và giữ MST người mua/người bán dưới dạng Text để không mất số `0` ở đầu.
+- Lưu ngày hóa đơn dưới dạng ngày thật của Excel và luôn hiển thị `dd/mm/yyyy`, không phụ thuộc thiết lập vùng của Windows.
 - Điền dữ liệu dùng chung cho các dòng chi tiết mà không chiếm hoặc xóa clipboard của Windows.
 - Lấy chuỗi hóa đơn thay thế/điều chỉnh và thông tin sai sót liên quan; nếu hết lượt retry, lỗi được hiển thị ngay tại cột kết quả tương ứng.
 - Báo cáo lỗi chỉ giữ những tác vụ chưa xử lý thành công.
