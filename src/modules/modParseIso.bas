@@ -100,7 +100,7 @@ Public Function ISODATE(iso As String)
 
     ' Return value is the ISO8601 date in the local time zone
     dt = UTCToLocalTime(dt)
-    ISODATE = Format(dt, "dd/mm/yyyy")
+    ISODATE = dt
 End Function
 
 '---------------------------------------------------------------------

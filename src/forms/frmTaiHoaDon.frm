@@ -110,6 +110,8 @@ End Sub
 
 Private Sub txtDenNgay_AfterUpdate()
     Dim blnErr As Boolean
+    Dim startText As String, endText As String
+    Dim startDate As Date, endDate As Date
     Me.txtDenNgay.Value = Format(correctDate(Me.txtDenNgay.Value, blnErr), "dd/mm/yyyy")
     If blnErr = True Then
         Me.lblSaiNgay.Visible = True
@@ -118,7 +120,13 @@ Private Sub txtDenNgay_AfterUpdate()
     End If
     'Khong so sanh duoc khi mot trong hai o ngay con trong
     If Len(Trim(Me.txtTuNgay)) = 0 Or Len(Trim(Me.txtDenNgay)) = 0 Then Exit Sub
-    If CDate(Me.txtDenNgay) < CDate(Me.txtTuNgay) Then
+    startText = CStr(Me.txtTuNgay.Value)
+    endText = CStr(Me.txtDenNgay.Value)
+    endDate = correctDate(endText, blnErr)
+    If blnErr Then Exit Sub
+    startDate = correctDate(startText, blnErr)
+    If blnErr Then Exit Sub
+    If endDate < startDate Then
         MsgBoxUni "Sai ng" & ChrW(224) & "y. [Ng" & ChrW(224) & "y b" & ChrW(7855) & "t " & ChrW(273) & ChrW(7847) & "u] > [Ng" & ChrW(224) & "y k" & ChrW(7871) & "t th" & ChrW(250) & "c].", vbCritical
         Exit Sub
     End If
@@ -133,7 +141,9 @@ End Sub
 
 Function correctDate(ByRef textDate As String, ByRef err As Boolean) As Date
     Dim ngay As Long, thang As Long, nam As Long
-    Dim dtNgayNhap As Date, dtNgayCuoiThang As Date
+    Dim dtNgayNhap As Date
+    err = False
+    On Error GoTo InvalidDate
     
     If Len(textDate) < 10 Or Len(textDate) > 10 Then
         correctDate = Date
@@ -145,17 +155,21 @@ Function correctDate(ByRef textDate As String, ByRef err As Boolean) As Date
         Exit Function
     End If
     
-    ngay = CLng(Left(textDate, 2))
-    thang = CLng(Mid(textDate, 4, 2))
-    nam = CLng(Right(textDate, 4))
-    
-    If thang > 12 Then thang = 12
-    
+    If Not (Left$(textDate, 2) Like "##") Or Not (Mid$(textDate, 4, 2) Like "##") Or _
+        Not (Right$(textDate, 4) Like "####") Then GoTo InvalidDate
+    ngay = CLng(Left$(textDate, 2))
+    thang = CLng(Mid$(textDate, 4, 2))
+    nam = CLng(Right$(textDate, 4))
+    If thang < 1 Or thang > 12 Or ngay < 1 Or ngay > 31 Then GoTo InvalidDate
+
     dtNgayNhap = DateSerial(nam, thang, ngay)
-    dtNgayCuoiThang = DateSerial(nam, thang + 1, 0)
-    If dtNgayNhap > dtNgayCuoiThang Then dtNgayNhap = dtNgayCuoiThang
-    
-    correctDate = CStr(dtNgayNhap)
+    If Day(dtNgayNhap) <> ngay Or Month(dtNgayNhap) <> thang Or Year(dtNgayNhap) <> nam Then GoTo InvalidDate
+    correctDate = dtNgayNhap
+    Exit Function
+
+InvalidDate:
+    correctDate = Date
+    err = True
     
 End Function
 
@@ -1052,15 +1066,15 @@ Sub taiHoaDon_Total(Optional rowTotalstart As Long = 3, Optional rowDetailStart 
         If tthai = "All" Then 'Tat ca
             'Hd mua va ban giong nhau
             If ttxly = "All" Then  'Tat ca
-                search = "tdlap=ge=" & Format(arrDate(k, 1), "dd/mm/yyyy") & "T00:00:00;tdlap=le=" & Format(arrDate(k, 2), "dd/mm/yyyy") & "T23:59:59"
+                search = "tdlap=ge=" & ApiDateText(arrDate(k, 1)) & "T00:00:00;tdlap=le=" & ApiDateText(arrDate(k, 2)) & "T23:59:59"
             Else
-                search = "tdlap=ge=" & Format(arrDate(k, 1), "dd/mm/yyyy") & "T00:00:00;tdlap=le=" & Format(arrDate(k, 2), "dd/mm/yyyy") & "T23:59:59;ttxly==" & ttxly
+                search = "tdlap=ge=" & ApiDateText(arrDate(k, 1)) & "T00:00:00;tdlap=le=" & ApiDateText(arrDate(k, 2)) & "T23:59:59;ttxly==" & ttxly
             End If
         Else
             If ttxly = "All" Then
-                search = "tdlap=ge=" & Format(arrDate(k, 1), "dd/mm/yyyy") & "T00:00:00;tdlap=le=" & Format(arrDate(k, 2), "dd/mm/yyyy") & "T23:59:59;tthai==" & tthai
+                search = "tdlap=ge=" & ApiDateText(arrDate(k, 1)) & "T00:00:00;tdlap=le=" & ApiDateText(arrDate(k, 2)) & "T23:59:59;tthai==" & tthai
             Else
-                search = "tdlap=ge=" & Format(arrDate(k, 1), "dd/mm/yyyy") & "T00:00:00;tdlap=le=" & Format(arrDate(k, 2), "dd/mm/yyyy") & "T23:59:59;tthai==" & tthai & ";ttxly==" & ttxly
+                search = "tdlap=ge=" & ApiDateText(arrDate(k, 1)) & "T00:00:00;tdlap=le=" & ApiDateText(arrDate(k, 2)) & "T23:59:59;tthai==" & tthai & ";ttxly==" & ttxly
             End If
         End If
         url2 = url & sort & "&size=" & size & "&search=" & search
@@ -1363,6 +1377,10 @@ Function lietKeThoiGian() As Boolean
 InvalidDate:
     Erase arrDate
     lietKeThoiGian = False
+End Function
+
+Private Function ApiDateText(ByVal value As Date) As String
+    ApiDateText = Format$(Day(value), "00") & "/" & Format$(Month(value), "00") & "/" & Format$(Year(value), "0000")
 End Function
 
 Sub ghiLog(errorMessage As String, Optional txtFile As Boolean = False)

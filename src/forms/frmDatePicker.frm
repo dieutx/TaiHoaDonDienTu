@@ -49,8 +49,10 @@ Private Sub AddPickerButton(ByVal controlName As String, ByVal caption As String
 End Sub
 
 Public Sub SetTarget(ByVal targetControl As Object)
+    Dim inputText As String, invalidDate As Boolean
     Set mTarget = targetControl
-    If IsDate(targetControl.Value) Then SetPickerDate CDate(targetControl.Value)
+    inputText = CStr(targetControl.Value)
+    SetPickerDate frmTaiHoaDon.correctDate(inputText, invalidDate)
 End Sub
 
 Private Sub SetPickerDate(ByVal selectedDate As Date)
