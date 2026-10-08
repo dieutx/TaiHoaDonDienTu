@@ -6,7 +6,7 @@ on:
       version:
         description: Version without the v prefix
         required: true
-        default: 6.7.5
+        default: 6.7.6
   push:
     tags:
       - 'v*'
@@ -31,12 +31,7 @@ jobs:
       - name: Build and test
         shell: pwsh
         run: |
-          .\tests\Test-DetailInvoiceStatic.ps1
-          .\tests\Test-RetryUiStatic.ps1
-          .\build\Build-Excel.ps1 -Version '${{ steps.version.outputs.version }}' -OutputPath '.\dist\TaiHoaDonDienTu_v${{ steps.version.outputs.version }}.xlsm'
-          .\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v${{ steps.version.outputs.version }}.xlsm' -RunUserFormInstantiation
-          .\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v${{ steps.version.outputs.version }}.xlsm'
-          .\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v${{ steps.version.outputs.version }}.xlsm'
+          .\build\Test-Release.ps1 -Version '${{ steps.version.outputs.version }}' -OutputPath '.\dist\TaiHoaDonDienTu_v${{ steps.version.outputs.version }}.xlsm'
       - uses: actions/upload-artifact@v4
         with:
           name: TaiHoaDonDienTu_v${{ steps.version.outputs.version }}

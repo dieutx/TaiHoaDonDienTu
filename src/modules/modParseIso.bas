@@ -30,14 +30,17 @@ Public Type SYSTEMTIME
 End Type
 
 '---------------------------------------------------------------------
-' Parse the calendar-date portion of an ISO8601 value without using the
-' Windows regional date order. Invoice dates are business dates, so their
-' yyyy-mm-dd portion must not move when the local timezone changes.
+' Invoice timestamps with an explicit zone are converted to Vietnam (UTC+7).
+' Date-only values and timestamps without a zone retain their calendar date.
 '---------------------------------------------------------------------
 Public Function ISODateValue(ByVal iso As Variant) As Date
     Dim isoText As String
     Dim yearPart As Long, monthPart As Long, dayPart As Long
     Dim parsedDate As Date
+    Dim hourPart As Long, minutePart As Long, secondPart As Long
+    Dim zoneText As String, offsetMinutes As Long, suffix As String, i As Long
+
+    On Error GoTo InvalidIso
 
     If VarType(iso) = vbDate Then
         parsedDate = CDate(iso)
@@ -46,9 +49,7 @@ Public Function ISODateValue(ByVal iso As Variant) As Date
     End If
 
     isoText = Trim$(CStr(iso))
-    If Len(isoText) < 10 Or Mid$(isoText, 5, 1) <> "-" Or Mid$(isoText, 8, 1) <> "-" Then
-        Err.Raise vbObjectError + 513, "ISODateValue", "Invalid ISO8601 date: " & isoText
-    End If
+    If Not Left$(isoText, 10) Like "####-##-##" Then GoTo InvalidIso
 
     yearPart = CLng(Left$(isoText, 4))
     monthPart = CLng(Mid$(isoText, 6, 2))
@@ -56,10 +57,46 @@ Public Function ISODateValue(ByVal iso As Variant) As Date
     parsedDate = DateSerial(yearPart, monthPart, dayPart)
 
     If Year(parsedDate) <> yearPart Or Month(parsedDate) <> monthPart Or Day(parsedDate) <> dayPart Then
-        Err.Raise vbObjectError + 513, "ISODateValue", "Invalid ISO8601 date: " & isoText
+        GoTo InvalidIso
     End If
 
-    ISODateValue = parsedDate
+    If Len(isoText) > 10 Then
+        If Len(isoText) < 19 Then GoTo InvalidIso
+        If Mid$(isoText, 11, 1) <> "T" And Mid$(isoText, 11, 1) <> "t" And _
+            Mid$(isoText, 11, 1) <> " " Then GoTo InvalidIso
+        If Not Mid$(isoText, 12, 8) Like "##:##:##" Then GoTo InvalidIso
+        hourPart = CLng(Mid$(isoText, 12, 2))
+        minutePart = CLng(Mid$(isoText, 15, 2))
+        secondPart = CLng(Mid$(isoText, 18, 2))
+        ' TimeSerial normalizes invalid fields; reject them before conversion.
+        If hourPart > 23 Or minutePart > 59 Or secondPart > 59 Then GoTo InvalidIso
+        suffix = Mid$(isoText, 20)
+        If Left$(suffix, 1) = "." Then
+            i = 2
+            Do While i <= Len(suffix)
+                If Not Mid$(suffix, i, 1) Like "#" Then Exit Do
+                i = i + 1
+            Loop
+            If i = 2 Then GoTo InvalidIso
+            suffix = Mid$(suffix, i)
+        End If
+        If Len(suffix) > 0 Then
+            If UCase$(suffix) <> "Z" Then
+                If Left$(suffix, 1) <> "+" And Left$(suffix, 1) <> "-" Then GoTo InvalidIso
+                zoneText = Mid$(suffix, 2)
+                If zoneText Like "##:##" Then zoneText = Replace$(zoneText, ":", "")
+                If Not zoneText Like "####" Then GoTo InvalidIso
+                If CLng(Left$(zoneText, 2)) > 23 Or CLng(Right$(zoneText, 2)) > 59 Then GoTo InvalidIso
+                offsetMinutes = CLng(Left$(zoneText, 2)) * 60 + CLng(Right$(zoneText, 2))
+                If Left$(suffix, 1) = "-" Then offsetMinutes = -offsetMinutes
+            End If
+            parsedDate = DateAdd("n", 420 - offsetMinutes, parsedDate + TimeSerial(hourPart, minutePart, secondPart))
+        End If
+    End If
+    ISODateValue = DateSerial(Year(parsedDate), Month(parsedDate), Day(parsedDate))
+    Exit Function
+InvalidIso:
+    Err.Raise vbObjectError + 513, "ISODateValue", "Invalid ISO8601 date/time: " & isoText
 End Function
 
 '---------------------------------------------------------------------

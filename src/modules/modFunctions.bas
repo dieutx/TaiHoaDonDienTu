@@ -1,47 +1,131 @@
 Attribute VB_Name = "modFunctions"
 Option Explicit
 
+Public Function GdtInvoiceFileBase(ByVal sellerTaxCode As String, ByVal templateCode As String, _
+    ByVal invoiceSeries As String, ByVal invoiceNumber As String) As String
+    GdtInvoiceFileBase = GdtSafeFilePart(sellerTaxCode) & "_" & GdtSafeFilePart(templateCode) & _
+        "_" & GdtSafeFilePart(invoiceSeries) & "_" & GdtSafeFilePart(invoiceNumber)
+End Function
 
-
+Private Function GdtSafeFilePart(ByVal value As String) As String
+    Dim i As Long, ch As String
+    value = Trim$(value)
+    If Len(value) = 0 Then Err.Raise 5, , "Missing invoice file identity"
+    For i = 1 To Len(value)
+        ch = Mid$(value, i, 1)
+        ' Escape instead of replace: different identifiers must not collide.
+        If ch Like "[A-Za-z0-9-]" Then
+            GdtSafeFilePart = GdtSafeFilePart & ch
+        Else
+            GdtSafeFilePart = GdtSafeFilePart & "~" & Right$("0000" & Hex$(AscW(ch) And &HFFFF&), 4)
+        End If
+    Next i
+End Function
 
 Sub Unzip(ZipfilePath As Variant, savedFolderPath As Variant)
-    '* ZipFilePath:     toan bo duong dan + ten file zip
-    '* savedFolderPath: duong dan toi folder luu file trich xuat (xml). Khong co dau "\" cuoi.
-    
-    Dim FSO As Object, oApp As Object
-    Dim fileNameInZip As Variant, zipFileName As String, newFileName As String
-    
-    zipFileName = Replace(Mid(ZipfilePath, InStrRev(ZipfilePath, "\") + 1), ".zip", "") 'Lay ten file zip --> de rename ten file xml tuong ung
-    Set oApp = CreateObject("Shell.Application")
-    For Each fileNameInZip In oApp.Namespace(ZipfilePath).Items 'Duyet tung file trong file zip
-        If LCase(fileNameInZip) Like LCase("*.xml") Then
-            newFileName = zipFileName & ".xml"
-            oApp.Namespace(savedFolderPath).CopyHere _
-                oApp.Namespace(ZipfilePath).Items.item(CStr(fileNameInZip))
-            Name savedFolderPath & "\" & fileNameInZip As savedFolderPath & "\" & newFileName
-            'Exit For
-        ElseIf LCase(fileNameInZip) Like LCase("*.html") Then
-            newFileName = zipFileName & ".html"
-            oApp.Namespace(savedFolderPath).CopyHere _
-                oApp.Namespace(ZipfilePath).Items.item(CStr(fileNameInZip))
-            Name savedFolderPath & "\" & fileNameInZip As savedFolderPath & "\" & newFileName
+    Dim fso As Object, app As Object, archive As Object, destination As Object, entry As Object
+    Dim staging As String, copied As String, target As String, baseName As String, extension As String
+    Dim document As Object, seen As Object, files As Collection, index As Long, suffix As String
+    Dim deadline As Double, stableAt As Double, errorNumber As Long, errorText As String
+    On Error GoTo Failed
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If Not fso.FolderExists(CStr(savedFolderPath)) Then Err.Raise 76, , "Missing XML destination"
+    staging = fso.BuildPath(CStr(savedFolderPath), ".hddt-xml-" & Replace(CreateRequestID(), "-", ""))
+    fso.CreateFolder staging
+    Set app = CreateObject("Shell.Application")
+    Set archive = app.Namespace(CVar(fso.GetAbsolutePathName(CStr(ZipfilePath))))
+    Set destination = app.Namespace(CVar(staging))
+    If archive Is Nothing Or destination Is Nothing Then Err.Raise 5, , "Invalid ZIP archive"
+    Set files = New Collection
+    CollectGdtZipFiles archive, files, 0
+    If files.count = 0 Then Err.Raise 5, , "Archive contains no XML/HTML"
+    index = 0
+    For Each entry In files
+        If entry.Size > 52428800 Then Err.Raise 5, , "XML/HTML entry too large"
+        copied = fso.BuildPath(staging, CStr(entry.Name))
+        destination.CopyHere entry, 4 + 16 + 512 + 1024
+        deadline = GdtClockSeconds() + 30
+        stableAt = 0
+        Do
+            If fso.FileExists(copied) Then
+                If CDbl(fso.GetFile(copied).Size) = CDbl(entry.Size) Then
+                    If stableAt = 0 Then stableAt = GdtClockSeconds()
+                    If GdtClockSeconds() - stableAt >= 0.25 Then Exit Do
+                Else
+                    stableAt = 0
+                End If
+            End If
+            If GdtClockSeconds() > deadline Then Err.Raise 5, , "ZIP extraction timed out"
+            GdtPumpWait
+        Loop
+        extension = LCase$(fso.GetExtensionName(copied))
+        If extension = "xml" Then
+            Set document = CreateObject("MSXML2.DOMDocument.6.0")
+            document.async = False
+            document.resolveExternals = False
+            document.setProperty "ProhibitDTD", True
+            If Not document.Load(copied) Then Err.Raise 5, , "Invalid XML in ZIP archive"
+            Set document = Nothing
         End If
-        
-    Next
-    
+        index = index + 1
+        fso.MoveFile copied, fso.BuildPath(staging, CStr(index) & ".ready." & extension)
+    Next entry
+    ' Validate all entries before replacing destination files.
+    baseName = fso.GetBaseName(CStr(ZipfilePath))
+    Set seen = CreateObject("Scripting.Dictionary")
+    For index = 1 To files.count
+        extension = LCase$(fso.GetExtensionName(CStr(files(index).Name)))
+        copied = fso.BuildPath(staging, CStr(index) & ".ready." & extension)
+        suffix = vbNullString
+        If seen.Exists(extension) Then
+            seen(extension) = seen(extension) + 1
+            suffix = "_" & CStr(seen(extension))
+        Else
+            seen.Add extension, 1
+        End If
+        target = fso.BuildPath(CStr(savedFolderPath), baseName & suffix & "." & extension)
+        If fso.FileExists(target) Then fso.DeleteFile target, True
+        fso.MoveFile copied, target
+    Next index
+    Set destination = Nothing
+    fso.DeleteFolder staging, True
+    Exit Sub
+Failed:
+    errorNumber = Err.Number
+    errorText = Err.Description
+    Set destination = Nothing
     On Error Resume Next
-    Set FSO = CreateObject("scripting.filesystemobject")
-    FSO.DeleteFolder Environ("Temp") & "\Temporary Directory*", True
-    
-    Set FSO = Nothing
-    Set oApp = Nothing
+    If Len(staging) > 0 Then
+        If Not fso Is Nothing Then
+            If fso.FolderExists(staging) Then fso.DeleteFolder staging, True
+        End If
+    End If
+    On Error GoTo 0
+    Err.Raise errorNumber, "Unzip", errorText
 End Sub
 
-Sub parseXML(xmlFolder As Variant, loaiHD As Boolean)
+Private Sub CollectGdtZipFiles(ByVal folder As Object, ByVal files As Collection, ByVal depth As Long)
+    Dim entry As Object, extension As String
+    If depth > 8 Then Err.Raise 5, , "ZIP nesting too deep"
+    For Each entry In folder.Items
+        If entry.Name = "." Or entry.Name = ".." Or InStr(entry.Name, "\") > 0 Or InStr(entry.Name, "/") > 0 Then _
+            Err.Raise 5, , "Unsafe ZIP entry"
+        If entry.IsFolder Then
+            CollectGdtZipFiles entry.GetFolder, files, depth + 1
+        Else
+            extension = LCase$(CreateObject("Scripting.FileSystemObject").GetExtensionName(CStr(entry.Name)))
+            If extension = "xml" Or extension = "html" Then files.Add entry
+        End If
+    Next entry
+End Sub
+
+Sub parseXML(xmlFolder As Variant, loaiHD As Boolean, Optional ByVal showMessages As Boolean = True)
     Dim xmlDoc As Object, oHHDVu As Object, rngData As Range, rngHHDV As Range, list As Object, ttruong As String
     Dim sht As Worksheet, i As Long, j As Long, k As Long, l As Long, count As Long
     
     On Error Resume Next
+    LinkTraCuu
+    tenCotTraCuu
     
     If loaiHD = True Then
         Set sht = ThisWorkbook.Sheets("ChiTietHD_Mua_XML")
@@ -49,13 +133,15 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean)
         Set sht = ThisWorkbook.Sheets("ChiTietHD_Ban_XML")
     End If
     
-    '/Liet ke c·c ten field dai dien cho cot [tthueVAT] v‡ [THTiencoVAT]
+    '/Liet ke c√°c ten field dai dien cho cot [tthueVAT] v√† [THTiencoVAT]
     Dim arrTThue As Variant, arrThTiencoVAT As Variant, tthue As Double
     arrTThue = Split(Sheets("LinkTraCuu").Range("O14"), ",")
     arrThTiencoVAT = Split(Sheets("LinkTraCuu").Range("O15"), ",")
     
-    Set xmlDoc = CreateObject("MSXML2.DOMDocument")
+    Set xmlDoc = CreateObject("MSXML2.DOMDocument.6.0")
     xmlDoc.async = False: xmlDoc.validateOnParse = False
+    xmlDoc.resolveExternals = False
+    xmlDoc.setProperty "ProhibitDTD", True
     
     Set rngData = sht.Range("A3")
     '// Xoa du lieu cu
@@ -63,13 +149,17 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean)
     With rngData
         r = .Offset(.Parent.Rows.count - .row - 10).End(xlUp).row - .row + 1
         If r > 0 Then
-            ans = MsgBoxUni("B" & ChrW(7841) & "n c" & ChrW(243) & " mu" & ChrW(7889) & "n X" & ChrW(243) & "a d" & ChrW(7919) & " li" & ChrW(7879) & "u c" & ChrW(361) & " kh" & ChrW(244) & "ng?", vbYesNoCancel + vbDefaultButton2, "ThÙng b·o")
+            If showMessages Then
+            ans = MsgBoxUni("B" & ChrW(7841) & "n c" & ChrW(243) & " mu" & ChrW(7889) & "n X" & ChrW(243) & "a d" & ChrW(7919) & " li" & ChrW(7879) & "u c" & ChrW(361) & " kh" & ChrW(244) & "ng?", vbYesNoCancel + vbDefaultButton2, "Th√¥ng b√°o")
+            Else
+                ans = vbNo
+            End If
             If ans = vbYes Then
                 .Resize(r, 35).ClearContents
             ElseIf ans = vbNo Then
                 Set rngData = rngData.Offset(r)
             Else    'cancel
-                End
+                Exit Sub
             End If
         End If
     End With
@@ -79,9 +169,21 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean)
     fileName = Dir(xmlFolder & "\")
     count = 0
     While fileName <> ""
-        If Right(fileName, 3) = "xml" Then
+        If LCase$(Right$(fileName, 4)) = ".xml" Then
+            If Not xmlDoc.Load(xmlFolder & "\" & fileName) Then
+                UpsertGdtErrorReport IIf(loaiHD, "mua", "ban"), "XML", "", "", CStr(fileName), "", Empty, _
+                    "Parse XML", "", 0, "Invalid XML", 1, 0, "Failed"
+                GoTo NextFile
+            End If
+            Set oHHDVu = xmlDoc.SelectNodes("/HDon/DLHDon/NDHDon/DSHHDVu/HHDVu")
+            If oHHDVu.Length = 0 Then
+                UpsertGdtErrorReport IIf(loaiHD, "mua", "ban"), "XML", "", "", CStr(fileName), "", Empty, _
+                    "Parse XML", "", 0, "Missing invoice items", 1, 0, "Failed"
+                GoTo NextFile
+            End If
             count = count + 1
-            xmlDoc.Load (xmlFolder & "\" & fileName)
+            ' No optional field may retain content from another file or old row.
+            rngData.Resize(oHHDVu.Length, 35).ClearContents
             With rngData
                 On Error Resume Next
                 .Offset(, 0).Value = xmlDoc.SelectSingleNode("/HDon/DLHDon").getAttribute("Id")
@@ -114,7 +216,7 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean)
                                 .Offset(, 29).Value = "https://" & mst & "-tt78.vnpt-invoice.com.vn/?strFkey=" & mccqt
                                 .Offset(, 30).Value = mccqt
                             Else
-                                .Offset(, 29).Value = "KhÙng cÛ MCCQT"
+                                .Offset(, 29).Value = "Kh√¥ng c√≥ MCCQT"
                             End If
                         Case "0101360697"   'BKAV
                             .Offset(, 29).Value = "https://van.ehoadon.vn/Lookup?InvoiceGUID=" & .Offset(, 0).Value
@@ -132,6 +234,7 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean)
                 '/Lay ma tra cuu ----------------------------------------
                 If .Offset(, 30).Value <> "" Then GoTo Da_co_maTC
                 Set list = xmlDoc.SelectSingleNode("//DLHDon/TTKhac")   'Truong hop 1
+                If Not list Is Nothing Then
                 For k = 0 To list.ChildNodes.Length - 1
                     ttruong = list.ChildNodes(k).getElementsByTagName("TTruong")(0).text
                     If dicTenCotTC.Exists(ttruong) Then
@@ -142,7 +245,9 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean)
                         .Offset(, 30).Value = "Khong co ma tra cuu"
                     End If
                 Next k
+                End If
                 Set list = xmlDoc.SelectSingleNode("//DLHDon/TTChung/TTKhac") 'Truong hop 2
+                If Not list Is Nothing Then
                 For k = 0 To list.ChildNodes.Length - 1
                     ttruong = list.ChildNodes(k).getElementsByTagName("TTruong")(0).text
                     If dicTenCotTC.Exists(ttruong) Then
@@ -153,6 +258,7 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean)
                         .Offset(, 30).Value = "Khong co ma tra cuu"
                     End If
                 Next k
+                End If
 Da_co_maTC:
                 '-----------------------------------------------------/
                 
@@ -165,6 +271,7 @@ Da_co_maTC:
             With rngHHDV
                 ndong = 0
                 For i = 0 To oHHDVu.Length - 1
+                    Thtien = 0: TSuat = 0: tthue = 0
                     For j = 0 To oHHDVu(i).ChildNodes.Length - 1
                         Select Case oHHDVu(i).ChildNodes(j).tagName
                             Case "STT"
@@ -197,25 +304,24 @@ Da_co_maTC:
                         End If
                     Next j
                     
-                    Set list = oHHDVu(i).SelectSingleNode("//HHDVu/TTKhac")
-                    tthue = 0
-                    For k = 0 To list.ChildNodes.Length - 1
-                        ttruong = list.ChildNodes(k).getElementsByTagName("TTruong")(0).text
-                        If isInArray(ttruong, arrTThue) Then
-                            .Offset(i, 10).Value = list.ChildNodes(k).getElementsByTagName("DLieu")(0).text
-                            tthue = Val(list.ChildNodes(k).getElementsByTagName("DLieu")(0).text)
-                        ElseIf isInArray(ttruong, arrThTiencoVAT) Then
-                            .Offset(i, 11).Value = list.ChildNodes(k).getElementsByTagName("DLieu")(0).text
-                        End If
-                        
-                        'Truong hop khong co cot [tthue]
-                        If tthue = 0 Then
-                            .Offset(i, 10).Value = Thtien * TSuat / 100
-                        End If
-                        If .Offset(i, 11).Value = 0 Then  'Khong co gia tri cho cot THTiencoVAT
-                            .Offset(i, 11).Value = Thtien + tthue
-                        End If
-                    Next k
+                    Dim hasTax As Boolean, hasTotal As Boolean
+                    hasTax = False: hasTotal = False
+                    Set list = oHHDVu(i).SelectSingleNode("TTKhac")
+                    If Not list Is Nothing Then
+                        For k = 0 To list.ChildNodes.Length - 1
+                            ttruong = list.ChildNodes(k).getElementsByTagName("TTruong")(0).text
+                            If isInArray(ttruong, arrTThue) Then
+                                tthue = Val(list.ChildNodes(k).getElementsByTagName("DLieu")(0).text)
+                                hasTax = True
+                            ElseIf isInArray(ttruong, arrThTiencoVAT) Then
+                                .Offset(i, 11).Value = list.ChildNodes(k).getElementsByTagName("DLieu")(0).text
+                                hasTotal = True
+                            End If
+                        Next k
+                    End If
+                    If Not hasTax Then tthue = Thtien * TSuat
+                    .Offset(i, 10).Value = tthue
+                    If Not hasTotal Then .Offset(i, 11).Value = Thtien + tthue
                     ndong = ndong + 1
                 Next i
             End With
@@ -235,13 +341,15 @@ Da_co_maTC:
             '------------------------------------------------------------------------------------------------------------/
         End If
         
+NextFile:
         fileName = Dir
     Wend
     
+    If Not showMessages Then Exit Sub
     If count > 0 Then
         MsgBox "Xong"
     Else
-        MsgBoxUni "Th" & ChrW(432) & " m" & ChrW(7909) & "c kh" & ChrW(244) & "ng c" & ChrW(243) & " ch" & ChrW(7913) & "a file XML.", vbExclamation, "ThÙng b·o"
+        MsgBoxUni "Th" & ChrW(432) & " m" & ChrW(7909) & "c kh" & ChrW(244) & "ng c" & ChrW(243) & " ch" & ChrW(7913) & "a file XML.", vbExclamation, "Th√¥ng b√°o"
     End If
     
     Set xmlDoc = Nothing

@@ -1,9 +1,10 @@
 {
-  "version": "6.7.5",
-  "releaseDate": "2026-10-06",
-  "downloadUrl": "https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.5/TaiHoaDonDienTu_v6.7.5.xlsm",
+  "version": "6.7.6",
+  "releaseDate": "2026-10-08",
+  "downloadUrl": "https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.6/TaiHoaDonDienTu_v6.7.6.xlsm",
   "releaseNote": [
-    "Chuẩn hóa nhập và so sánh ngày hóa đơn trên máy tính có locale khác nhau",
-    "Giữ giá trị ngày thật trong workbook và đúng định dạng ngày khi gửi yêu cầu API"
+    "Tải song song chi tiết và thông tin liên quan với tối đa 4 kết nối, XML với tối đa 6 kết nối",
+    "Tự giảm tải khi gặp 429/503/504 ở bước JSON, giữ thứ tự chi tiết và đúng dòng thông tin liên quan",
+    "Sửa ngày UTC+7, ghi dữ liệu, retry và báo cáo lỗi; giữ nguyên endpoint và luồng đăng nhập"
   ]
 }

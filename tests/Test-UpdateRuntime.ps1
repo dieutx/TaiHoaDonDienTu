@@ -51,6 +51,8 @@ try {
     $excel.AutomationSecurity = 1
     $workbook = $excel.Workbooks.Open($testWorkbook, 0, $false)
     $versionCode = $workbook.VBProject.VBComponents.Item('modVersion').CodeModule
+    # Keep the fixture independent of the version of the workbook under test.
+    Set-CodeLine $versionCode '^Public Const CURRENT_VERSION ' 'Public Const CURRENT_VERSION As String = "6.7.5"'
     $versionCode.DeleteLines(5, 2)
     $versionCode.InsertLines(5, "Public Const UPDATE_URL As String = `"http://127.0.0.1:$port/update.json`"")
     $updateCode = $workbook.VBProject.VBComponents.Item('modUpdate').CodeModule

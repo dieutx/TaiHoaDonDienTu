@@ -74,7 +74,7 @@ function Normalize-OnAction([string]$value) {
 # It is a deliberate addition, so it is reported as an expected structural
 # addition instead of failing the comparison that protects original sheets.
 $expectedAddedWorksheetNames = @('BaoCao_LoiTaiHD')
-$expectedAddedComponentNames = @('modGdtRetry', 'modGdtErrorReport', 'clsGdtRequestResult', 'clsGdtRetryItem', 'Sheet10', 'modVersion', 'modUpdate', 'frmUpdate')
+$expectedAddedComponentNames = @('modGdtRetry', 'modGdtErrorReport', 'clsGdtRequestResult', 'clsGdtRetryItem', 'Sheet10', 'modVersion', 'modUpdate', 'frmUpdate', 'modGdtJson', 'modGdtXmlScheduler', 'clsGdtXmlTask', 'clsGdtXmlThrottle')
 $expectedAddedNamePatterns = @('^BaoCao_LoiTaiHD!')
 $originalWorksheetNames = @($original.Worksheets | ForEach-Object { $_.Name })
 $expectedAddedWorksheets = @($built.Worksheets | Where-Object { $_.Name -in $expectedAddedWorksheetNames -and $_.Name -notin $originalWorksheetNames } | ForEach-Object { $_.Name })

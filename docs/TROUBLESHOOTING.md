@@ -25,6 +25,7 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 
 - Tăng khoảng nghỉ giữa các request.
 - Chờ trước khi chạy lại; ứng dụng sẽ tôn trọng `Retry-After` nếu server cung cấp.
+- Bản sửa 6.7.6 không cắt `Retry-After` dạng số giây xuống 60 giây; thời gian chờ có thể dài hơn khi server yêu cầu.
 - Giảm khoảng thời gian tra cứu hoặc chia tác vụ thành nhiều lần.
 
 ## Timeout, HTTP 500/502/503/504
@@ -40,11 +41,32 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 - Ghi endpoint dạng đường dẫn, HTTP status và schema tối giản; xóa query chứa định danh thật.
 - Không tự thay endpoint bằng giá trị chưa được xác minh.
 
+## Chi tiết hoặc thông tin liên quan vẫn tải chậm
+
+- Bản sửa 6.7.6 có log `DETAIL scheduler`/`RELATED scheduler` khi vào pha tải JSON song song, tối đa 4 kết nối. Khoảng nghỉ trên form là khoảng cách giữa các lần gửi; server phản hồi nhanh có thể không cần dùng đủ 4 kết nối.
+- Danh sách `query`/`sco-query` vẫn phân trang tuần tự. Nếu log đang ở bước này và gặp 504, việc tăng tốc chi tiết/thông tin liên quan chưa giúp được.
+- 429/503/504 ở pha JSON làm bộ tải giảm tốc và chờ retry. Chi tiết giữ thứ tự gốc và ngừng thêm tác vụ khi bộ đệm 12 kết quả đầy; thông tin liên quan được ghi ngay vào dòng hóa đơn tương ứng.
+- Xem [logic tải JSON song song](JSON_PARALLEL_DOWNLOAD.md) và `BaoCao_LoiTaiHD`. Tốc độ đo trên localhost không phải tốc độ cam kết trên GDT.
+
 ## Không tải được XML/HTML ZIP
 
 - Kiểm tra đã chọn thư mục có quyền ghi.
 - Kiểm tra dung lượng ổ đĩa và phần mềm bảo mật có chặn Excel hay không.
 - Kiểm tra token còn hiệu lực và xem `BaoCao_LoiTaiHD`.
+- Bản sửa 6.7.6 đợi giải nén hoàn tất, hỗ trợ XML/HTML trong thư mục con của ZIP và lưu tên file có MST người bán để tránh trùng số hóa đơn. Lỗi lưu/giải nén của từng hóa đơn được ghi trong `BaoCao_LoiTaiHD`; các hóa đơn khác tiếp tục được xử lý.
+- Nếu ZIP tải lại bị hỏng, ZIP hợp lệ đã có vẫn được giữ; chỉ thay ZIP đích sau khi kiểm tra giải nén thành công.
+
+## Ngày nhập sai hoặc trang dữ liệu không ghi được
+
+- Nhập ngày tồn tại theo `dd/mm/yyyy` và để ngày bắt đầu không vượt ngày kết thúc. Bản sửa 6.7.6 giữ nguyên ô sai/để trống, báo lỗi và không tự chọn ngày hôm nay.
+- Nếu một trang tổng hợp có dữ liệu không hợp lệ, bản sửa khôi phục cả trang về trước khi ghi và giữ tác vụ lỗi để tải lại. Kiểm tra `BaoCao_LoiTaiHD`; không coi HTTP 200 là đã xử lý thành công nếu JSON hoặc dữ liệu ghi bị lỗi.
+
+## Ngày hóa đơn bị lùi một ngày trên 6.7.5
+
+- 6.7.5 lấy phần ngày của chuỗi API trước khi chuyển múi giờ. Ví dụ `2026-09-11T17:00:00Z` được ghi thành 11/09, trong khi tại Việt Nam là 12/09.
+- Bản sửa 6.7.6 chuyển thời điểm có múi giờ về UTC+7, giữ nguyên ngày không có múi giờ và lưu ngày thật của Excel để sắp xếp tăng dần. Không cần đổi thiết lập vùng hoặc múi giờ Windows.
+- Tải lại dữ liệu cũ bị sai ngày; sắp xếp không khôi phục được thời điểm gốc đã mất.
+- Với link XanhSM của đơn vị có MST riêng, nhập MST dạng Text vào `LinkTraCuu!C:C` và link tra cứu vào cột D. Chi nhánh dạng `0110269067-xxx` có thể dùng cấu hình MST chính khi chưa có link riêng.
 
 ## Lỗi parse XML
 

@@ -94,12 +94,10 @@ Private Sub txtPass_AfterUpdate()
 End Sub
 
 Private Sub cmdDangNhap_Click()
-    Application.ScreenUpdating = False
-    
     If blnCaptcha = False Then Exit Sub
     
     Dim http As Object, formData As String
-    formData = "{""username"":""" & Me.txtUser & """,""password"":""" & Me.txtPass & """,""cvalue"":""" & Me.txtNhapCaptcha & """,""ckey"":""" & ckey & """}"
+    formData = BuildGdtLoginJson(CStr(Me.txtUser.Value), CStr(Me.txtPass.Value), CStr(Me.txtNhapCaptcha.Value), CStr(ckey))
     Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
     http.Open "POST", BASE_URL & LOGIN_URL, False
     http.setRequestHeader "Content-Type", "application/json"
@@ -123,7 +121,7 @@ Private Sub cmdDangNhap_Click()
     
     If InStr(1, res, "message") > 0 Then
         If InStr(1, res, "captcha") Then
-            MsgBoxUni js("message") & vbCrLf & "Vui l" & ChrW(242) & "ng nh" & ChrW(7853) & "p l" & ChrW(7841) & "i.", vbCritical, "ThÙng b·o"
+            MsgBoxUni js("message") & vbCrLf & "Vui l" & ChrW(242) & "ng nh" & ChrW(7853) & "p l" & ChrW(7841) & "i.", vbCritical, "Th√¥ng b√°o"
         Else
             MsgBoxUni js("message")
         End If

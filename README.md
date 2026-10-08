@@ -2,9 +2,9 @@
 
 File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondientu.gdt.gov.vn`.
 
-**Phiên bản đã phát hành mới nhất: v6.7.5**
+**Phiên bản đã phát hành mới nhất: v6.7.6**
 
-[Tải TaiHoaDonDienTu_v6.7.5.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.5.xlsm)
+[Tải TaiHoaDonDienTu_v6.7.6.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.6.xlsm)
 
 > 💡 **Không có Excel hoặc muốn chạy tự động theo lịch?** Dùng bản PowerShell
 > [hddt-downloader-windows](https://github.com/dieutx/hddt-downloader-windows) —
@@ -42,8 +42,10 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 - Tạm dừng, tiếp tục hoặc dừng an toàn sau request hiện tại.
 - Retry khi gặp lỗi tạm thời hoặc HTTP 429/500.
 - Tải dữ liệu tổng hợp, chi tiết và ZIP XML/HTML.
+- Tải XML bằng tối đa 6 kết nối HTTP bất đồng bộ, giãn cách khởi đầu 300 ms, cooldown chung khi gặp 429 và phục hồi dần. Xem [logic tải song song](docs/XML_PARALLEL_DOWNLOAD.md).
+- Tải chi tiết và thông tin liên quan bằng tối đa 4 kết nối HTTP bất đồng bộ; khoảng nghỉ trên form điều tiết các lần gửi, tự giảm tải khi gặp 429/503/504. Kết quả được ghi vào Excel tuần tự. Xem [logic tải JSON song song](docs/JSON_PARALLEL_DOWNLOAD.md).
 - Hiển thị mẫu số hóa đơn trên sheet chi tiết và giữ MST người mua/người bán dưới dạng Text để không mất số `0` ở đầu.
-- Lưu ngày hóa đơn dưới dạng ngày thật của Excel và luôn hiển thị `dd/mm/yyyy`, không phụ thuộc thiết lập vùng của Windows.
+- Lưu ngày hóa đơn dưới dạng ngày thật của Excel và luôn hiển thị `dd/mm/yyyy`, không phụ thuộc thiết lập vùng của Windows. Bản sửa 6.7.6 chuyển thời điểm có múi giờ về UTC+7 trước khi lấy ngày; ngày không có múi giờ giữ nguyên. Xem [review và kiểm thử 6.7.6](docs/REVIEW_2026-10-08.md).
 - Điền dữ liệu dùng chung cho các dòng chi tiết mà không chiếm hoặc xóa clipboard của Windows.
 - Lấy chuỗi hóa đơn thay thế/điều chỉnh và thông tin sai sót liên quan; nếu hết lượt retry, lỗi được hiển thị ngay tại cột kết quả tương ứng.
 - Báo cáo lỗi chỉ giữ những tác vụ chưa xử lý thành công.
@@ -67,15 +69,28 @@ Source VBA nằm trong `src`, template workbook nằm trong `template` và scrip
 
 Hướng dẫn thêm thông báo cập nhật tùy chọn: [docs/UPDATE_CHECK.md](docs/UPDATE_CHECK.md).
 
+Trước khi phát hành, chạy bộ kiểm tra dưới đây. Mỗi bước chạy trong tiến trình riêng; nếu có bước lỗi, toàn bộ quy trình dừng và không chạy các bước tiếp theo.
+
 ```powershell
-.\build\Build-Excel.ps1 -Version '6.7.5' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
+.\build\Test-Release.ps1 -Version '6.7.6' -OutputPath '.\dist\release-candidate\TaiHoaDonDienTu_v6.7.6.xlsm'
+```
+
+Kết quả review mở rộng và các lỗi tái hiện trước khi sửa: [review mở rộng 08/10/2026](docs/REVIEW_EXPANDED_2026-10-08.md). Các lệnh kiểm tra riêng lẻ:
+
+```powershell
+.\build\Build-Excel.ps1 -Version '6.7.6' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
 .\tests\Test-RetryUiStatic.ps1
 .\tests\Test-DetailInvoiceStatic.ps1
-.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm' -RunUserFormInstantiation
-.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
-.\build\Test-DetailInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
-.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
-.\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.5.xlsm'
+.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm' -RunUserFormInstantiation
+.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Test-DetailInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Test-InvoiceDateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Test-ReviewFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Test-ExtendedReviewRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Test-ParallelJsonRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\tests\Test-ReleaseGate.ps1
+.\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
 ```
 
 Đọc [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md) trước khi gửi thay đổi.

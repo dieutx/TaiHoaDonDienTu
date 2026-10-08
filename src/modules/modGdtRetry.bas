@@ -70,6 +70,12 @@ Public Function ExecuteGdtRequest( _
     Dim readSucceeded As Boolean
 
     Set result = New clsGdtRequestResult
+    If GdtAuthenticationFailed Then
+        result.AuthenticationFailure = True
+        result.ErrorMessage = UniConvert("Token heest hajn hoawjc khoong cos quyeefn truy caajp.")
+        Set ExecuteGdtRequest = result
+        Exit Function
+    End If
     If maxAttempts < 1 Then maxAttempts = 1
 
     For attempt = 1 To maxAttempts
@@ -140,6 +146,7 @@ Public Function ExecuteGdtRequest( _
         End If
 
         If result.StatusCode = 401 Or result.StatusCode = 403 Then
+            GdtAuthenticationFailed = True
             result.AuthenticationFailure = True
             result.ErrorMessage = UniConvert("Token heest hajn hoawjc khoong cos quyeefn truy caajp.")
             Set ExecuteGdtRequest = result
@@ -177,9 +184,13 @@ ContinueAttempt:
     Exit Function
 
 RequestError:
-    transportError = True
     transportMessage = Err.Description
-    Err.Clear
+    ' Resume leaves the active handler before the next HTTP attempt. A GoTo
+    ' from here would let a second transport error escape the same handler.
+    Resume HandleTransportError
+
+HandleTransportError:
+    transportError = True
     On Error GoTo 0
     result.StatusCode = 0
     result.Attempts = attempt
@@ -291,7 +302,8 @@ Public Function CalculateGdtRetrySeconds( _
     If jitterSeconds < 0 Then jitterSeconds = 0
     If jitterSeconds > 1 Then jitterSeconds = 1
     computedDelay = baseDelay + jitterSeconds
-    If computedDelay > GDT_RETRY_MAX_SECONDS Then computedDelay = GDT_RETRY_MAX_SECONDS
+    If retryAfterSeconds <= 0 And computedDelay > GDT_RETRY_MAX_SECONDS Then computedDelay = GDT_RETRY_MAX_SECONDS
+    If computedDelay > 2147483647# Then computedDelay = 2147483647#
     CalculateGdtRetrySeconds = CLng(Int(computedDelay + 0.999999))
 End Function
 
@@ -299,7 +311,6 @@ Public Sub WaitGdtSeconds(ByVal seconds As Long)
     Dim deadline As Date
 
     If seconds <= 0 Then Exit Sub
-    If seconds > GDT_RETRY_MAX_SECONDS Then seconds = GDT_RETRY_MAX_SECONDS
     deadline = DateAdd("s", seconds, Now)
     Do While Now < deadline
         If Not WaitForGdtControl() Then Exit Sub
@@ -329,7 +340,7 @@ Public Sub ResetGdtStatusBar()
     Application.StatusBar = False
 End Sub
 
-Private Function ReadRetryAfterSeconds(ByVal http As Object) As Long
+Public Function ReadRetryAfterSeconds(ByVal http As Object) As Long
     Dim rawValue As String
 
     On Error GoTo MissingHeader
@@ -346,7 +357,7 @@ MissingHeader:
     On Error GoTo 0
 End Function
 
-Private Function IsNoXmlResponse( _
+Public Function IsNoXmlResponse( _
     ByVal requestUrl As String, _
     ByVal statusCode As Long, _
     ByVal responseText As String) As Boolean
@@ -362,7 +373,7 @@ Private Function IsNoXmlResponse( _
                       (InStr(1, normalized, "not found", vbTextCompare) > 0)
 End Function
 
-Private Function BuildHttpErrorMessage(ByVal statusCode As Long, ByVal responseText As String) As String
+Public Function BuildHttpErrorMessage(ByVal statusCode As Long, ByVal responseText As String) As String
     Dim safeText As String
 
     safeText = Trim$(responseText)

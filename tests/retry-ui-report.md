@@ -1,6 +1,6 @@
 ﻿# Bao cao kiem tra retry/UI
 
-Ngay chay: 24/09/2026 09:50:47
+Ngay chay: 08/10/2026 18:09:58
 
 | # | Tinh huong | Ket qua | Bang chung |
 |---:|---|---|---|
@@ -18,7 +18,7 @@ Ngay chay: 24/09/2026 09:50:47
 | 12 | Context query/sco-query | PASS_STATIC | Queue giu nguon API va dinh danh. |
 | 19 | Bang ky thoi gian tao lai luc tai | PASS_STATIC | taiHoaDon_Total tao lai bang ky thoi gian truoc vong lap; arrDate khong con phu thuoc AfterUpdate cua o ngay. |
 | 20 | O ngay trong khong lam loi form | PASS_STATIC | txtDenNgay_AfterUpdate chi so sanh ngay khi ca hai o da co gia tri. |
-| 21 | Loi chi tiet khong truy cap arrDate(k) | PASS_STATIC | Loi tai chi tiet ghi nhan ky hieu, so va ngay hoa don tu arrHDChiTiet(j), khong truy cap arrDate(k). |
+| 21 | Loi chi tiet khong truy cap arrDate(k) | PASS_STATIC | Loi tai chi tiet ghi nhan ky hieu, so va ngay hoa don tu task.InvoiceIndex, khong truy cap arrDate(k). |
 | 22 | Tu dong mo rong buffer hoa don | PASS_STATIC | Co ham EnsureInvoiceBufferCapacity mo rong buffer dong, GetSleepDelayMs an toan va dat lai n luc tai. |
 | 23 | Tien do theo so hoa don thuc te | PASS_STATIC | Danh sach chiem 0-10%; 88% tiep theo gom ca relative, related, chi tiet va XML. |
 | 24 | Goi API hoa don lien quan | PASS_STATIC | Trang thai 2-5 goi relative va related; trang thai 6 chi goi related. |
@@ -34,10 +34,10 @@ Ngay chay: 24/09/2026 09:50:47
 | 31 | Log chi tiet phan trang danh sach | PASS_STATIC | Log neu ky, nguon query/sco-query, trang, HTTP, so hoa don, tong luy ke, thoi gian va chan state lap. |
 | 32 | Tam dung tiep tuc va dung an toan | PASS_STATIC | Hai nut runtime dieu khien co-operative; cac vong request va thoi gian cho deu kiem tra pause/stop. |
 | 15 | Tieu de bao cao dung tieng Viet | PASS_STATIC | UniConvert duoc tai tao tu modMsgboxTV.bas; 17 tieu de khop retry-ui-expected-text.json |
-| 16 | Literal Telex khong con sai | PASS_STATIC | Da decode 177 literal UniConvert; khong con chuoi sai da biet. |
+| 16 | Literal Telex khong con sai | PASS_STATIC | Da decode 184 literal UniConvert; khong con chuoi sai da biet. |
 | 17 | Script build parse duoc | PASS_STATIC | Moi script build parse duoc va khong co literal non-ASCII thieu BOM. |
-| 18 | Khoi VBA can bang | PASS_STATIC | Khoi Sub/Function/If/With/Select/For/Do can bang trong 21 file nguon. |
-| 13 | Mo lai khong repair | PASS_RUNTIME | Build da mo lai workbook trong Excel COM instance moi: PASS, 18 check, 0 check loi, file TaiHoaDonDienTu_v6.7.2.xlsm. |
-| 14 | Compile VBAProject | PASS_RUNTIME | Excel khong co API compile; bang chung runtime: 5 UserForm instantiate thanh cong trong tien trinh rieng (frmCapNhatMK, frmDangNhap, frmDatePicker, frmTaiHoaDon, frmTrichXuatXML). |
+| 18 | Khoi VBA can bang | PASS_STATIC | Khoi Sub/Function/If/With/Select/For/Do can bang trong 27 file nguon. |
+| 13 | Mo lai khong repair | PASS_RUNTIME | Build da mo lai workbook trong Excel COM instance moi: PASS, 21 check, 0 check loi, file TaiHoaDonDienTu_v6.7.6.xlsm. |
+| 14 | Compile VBAProject | PASS_RUNTIME | Excel khong co API compile; bang chung runtime: 6 UserForm instantiate thanh cong trong tien trinh rieng (frmCapNhatMK, frmDangNhap, frmDatePicker, frmTaiHoaDon, frmTrichXuatXML, frmUpdate). |
 
 Luu y: `PASS_STATIC` chi xac nhan nhanh code va cau hinh hien dien; `PASS_RUNTIME` lay tu tests/comparison-report.json do build/Build-Excel.ps1 tao ra. Muc 13 va 14 la bang chung Excel; muc 17 va 18 la bang chung tinh khong can Excel.

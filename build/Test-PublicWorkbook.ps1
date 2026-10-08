@@ -62,7 +62,6 @@ try {
         Release-ComObject $sheet
     }
 
-    Write-Host 'PUBLIC WORKBOOK TEST PASSED'
 } finally {
     if ($null -ne $reference) { try { $reference.Close($false) } catch {} }
     if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }
@@ -73,5 +72,7 @@ try {
     Release-ComObject $menu
     Release-ComObject $workbook
     Release-ComObject $excel
-    [GC]::Collect(); [GC]::WaitForPendingFinalizers(); [GC]::Collect(); [GC]::WaitForPendingFinalizers()
+    # Do not block the STA on finalizers after Excel has closed. The COM roots
+    # above are released explicitly and this test runs in an isolated process.
 }
+Write-Host 'PUBLIC WORKBOOK TEST PASSED'

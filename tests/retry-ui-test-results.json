@@ -87,7 +87,7 @@
         "id":  21,
         "name":  "Loi chi tiet khong truy cap arrDate(k)",
         "status":  "PASS_STATIC",
-        "evidence":  "Loi tai chi tiet ghi nhan ky hieu, so va ngay hoa don tu arrHDChiTiet(j), khong truy cap arrDate(k)."
+        "evidence":  "Loi tai chi tiet ghi nhan ky hieu, so va ngay hoa don tu task.InvoiceIndex, khong truy cap arrDate(k)."
     },
     {
         "id":  22,
@@ -183,7 +183,7 @@
         "id":  16,
         "name":  "Literal Telex khong con sai",
         "status":  "PASS_STATIC",
-        "evidence":  "Da decode 177 literal UniConvert; khong con chuoi sai da biet."
+        "evidence":  "Da decode 184 literal UniConvert; khong con chuoi sai da biet."
     },
     {
         "id":  17,
@@ -195,18 +195,18 @@
         "id":  18,
         "name":  "Khoi VBA can bang",
         "status":  "PASS_STATIC",
-        "evidence":  "Khoi Sub/Function/If/With/Select/For/Do can bang trong 21 file nguon."
+        "evidence":  "Khoi Sub/Function/If/With/Select/For/Do can bang trong 27 file nguon."
     },
     {
         "id":  13,
         "name":  "Mo lai khong repair",
         "status":  "PASS_RUNTIME",
-        "evidence":  "Build da mo lai workbook trong Excel COM instance moi: PASS, 18 check, 0 check loi, file TaiHoaDonDienTu_v6.7.2.xlsm."
+        "evidence":  "Build da mo lai workbook trong Excel COM instance moi: PASS, 21 check, 0 check loi, file TaiHoaDonDienTu_v6.7.6.xlsm."
     },
     {
         "id":  14,
         "name":  "Compile VBAProject",
         "status":  "PASS_RUNTIME",
-        "evidence":  "Excel khong co API compile; bang chung runtime: 5 UserForm instantiate thanh cong trong tien trinh rieng (frmCapNhatMK, frmDangNhap, frmDatePicker, frmTaiHoaDon, frmTrichXuatXML)."
+        "evidence":  "Excel khong co API compile; bang chung runtime: 6 UserForm instantiate thanh cong trong tien trinh rieng (frmCapNhatMK, frmDangNhap, frmDatePicker, frmTaiHoaDon, frmTrichXuatXML, frmUpdate)."
     }
 ]

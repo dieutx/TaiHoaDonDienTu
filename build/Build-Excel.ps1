@@ -281,4 +281,8 @@ if (-not $SkipTest) {
     & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-DetailInvoiceRuntime.ps1') -BuiltWorkbook $outputPath
     if ($LASTEXITCODE -ne 0) { throw "BUILD FAILED: detail-invoice runtime test process returned exit code $LASTEXITCODE." }
 }
-Write-Host "BUILD GENERATED; STRUCTURAL TESTS PASSED: $outputPath"
+if ($SkipTest) {
+    Write-Host "BUILD GENERATED; TESTS SKIPPED: $outputPath"
+} else {
+    Write-Host "BUILD GENERATED; STRUCTURAL AND RUNTIME TESTS PASSED: $outputPath"
+}

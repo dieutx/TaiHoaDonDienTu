@@ -1,6 +1,6 @@
 ﻿{
     "Status":  "PASS",
-    "BuiltWorkbook":  "C:\\Users\\dieut\\TaiHoaDonDienTu\\dist\\TaiHoaDonDienTu_v6.7.2.xlsm",
+    "BuiltWorkbook":  "C:\\Users\\dieut\\TaiHoaDonDienTu\\dist\\release-v6.7.6-20261008\\TaiHoaDonDienTu_v6.7.6.xlsm",
     "ReopenVerified":  true,
     "Checks":  [
                    {
@@ -98,6 +98,27 @@
                    },
                    {
                        "Name":  "UserFormControls",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "UpdateFormControls",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "WorkbookOpenChecksForUpdate",
+                       "Pass":  true,
+                       "Differences":  [
+
+                                       ]
+                   },
+                   {
+                       "Name":  "UpdateFormHandlers",
                        "Pass":  true,
                        "Differences":  [
 
@@ -203,6 +224,11 @@
                                                   "Name":  "frmTrichXuatXML",
                                                   "Pass":  true,
                                                   "ExitCode":  0
+                                              },
+                                              {
+                                                  "Name":  "frmUpdate",
+                                                  "Pass":  true,
+                                                  "ExitCode":  0
                                               }
                                           ],
                               "Note":  "Each UserForm was instantiated in an isolated Excel/PowerShell process using a temporary VBA test module and then unloaded."
@@ -212,21 +238,21 @@
                                                  "Category":  "Expected serialization difference",
                                                  "Item":  "MENU/Rounded Rectangle 1",
                                                  "Original":  "\u0027App_v6.4-ui.xlsm\u0027!dangnhap",
-                                                 "Built":  "TaiHoaDonDienTu_v6.7.2.xlsm!dangnhap",
+                                                 "Built":  "TaiHoaDonDienTu_v6.7.6.xlsm!dangnhap",
                                                  "Explanation":  "Excel rebound the workbook-qualified OnAction prefix to the new output filename; the macro target is unchanged."
                                              },
                                              {
                                                  "Category":  "Expected serialization difference",
                                                  "Item":  "MENU/Rounded Rectangle 2",
                                                  "Original":  "\u0027App_v6.4-ui.xlsm\u0027!TaiHoaDon",
-                                                 "Built":  "TaiHoaDonDienTu_v6.7.2.xlsm!TaiHoaDon",
+                                                 "Built":  "TaiHoaDonDienTu_v6.7.6.xlsm!TaiHoaDon",
                                                  "Explanation":  "Excel rebound the workbook-qualified OnAction prefix to the new output filename; the macro target is unchanged."
                                              },
                                              {
                                                  "Category":  "Expected serialization difference",
                                                  "Item":  "MENU/Rounded Rectangle 3",
                                                  "Original":  "\u0027App_v6.4-ui.xlsm\u0027!moUFTrichXuat",
-                                                 "Built":  "TaiHoaDonDienTu_v6.7.2.xlsm!moUFTrichXuat",
+                                                 "Built":  "TaiHoaDonDienTu_v6.7.6.xlsm!moUFTrichXuat",
                                                  "Explanation":  "Excel rebound the workbook-qualified OnAction prefix to the new output filename; the macro target is unchanged."
                                              }
                                          ],
@@ -237,7 +263,7 @@
     "VbaCompile":  {
                        "Status":  "NOT VERIFIED (no supported compile API)",
                        "Reason":  "Excel exposes no supported programmatic compile API, so compilation is only evidenced by running code: the workbook is reopened and every UserForm is instantiated.",
-                       "RuntimeEvidence":  "All 5 UserForms instantiated and unloaded in isolated processes."
+                       "RuntimeEvidence":  "All 6 UserForms instantiated and unloaded in isolated processes."
                    },
     "ExpectedStructuralAdditions":  {
                                         "Worksheets":  [
@@ -248,7 +274,14 @@
                                                               "modGdtErrorReport",
                                                               "clsGdtRequestResult",
                                                               "clsGdtRetryItem",
-                                                              "Sheet10"
+                                                              "Sheet10",
+                                                              "modVersion",
+                                                              "modUpdate",
+                                                              "frmUpdate",
+                                                              "modGdtJson",
+                                                              "modGdtXmlScheduler",
+                                                              "clsGdtXmlTask",
+                                                              "clsGdtXmlThrottle"
                                                           ],
                                         "NamedRanges":  [
                                                             "BaoCao_LoiTaiHD!_FilterDatabase"
@@ -257,23 +290,31 @@
                                     },
     "CodeDifferencesVsMigrationBaseline":  [
                                                {
-                                                   "InputObject":  "Sheet6|574fff9f4fdeaa6ca81f762a0b6bbf0f91df1f2e96315b9d7dcd6a51e1419a34",
+                                                   "InputObject":  "ThisWorkbook|f36c9d27d98cf19ddb00385df26aa582180e89bba97cbbf287f32c61e8ad5f74",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
-                                                   "InputObject":  "modFunctions|c46e70d54b520db4140e8405d833e0d12e6c8346c93afd64ba293139d758945e",
+                                                   "InputObject":  "Sheet6|7c04a939c899517f30e669f85e837e332c3df577317ea17e1ca6e786b66c619c",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
-                                                   "InputObject":  "modGhiExcel|e9f180425fedcf943f83c109013f76a021bc69f6455cba34fd625aabd501285f",
+                                                   "InputObject":  "JsonConverter|68b9cdccf78b557d30bb412722d3ebf800f8d490bb9faaa9c8515f23623371ec",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
-                                                   "InputObject":  "modHTTPRequest|f4f493437dd9d64433d65ac573fb9326c08d58c2aef547ba18003b0dae226766",
+                                                   "InputObject":  "modFunctions|6b86036841c05420dd33fe99f4a9c4a81d9dbc98f4bd42bf651b447512a0db06",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
-                                                   "InputObject":  "modParseIso|23fff8cab2038fe821f604168f831e9cfcb5dde362c1cce8a3d2a499ebd8a2a1",
+                                                   "InputObject":  "modGhiExcel|90a0444d332653fbe53c810453fabdf2aebe498268f2d3ac862c0f8468a2fd20",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "modHTTPRequest|414ddf2f732ef4d7268b742737ea817979b49cd9421d85bb8cbda9e11da6e950",
+                                                   "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "modParseIso|10cdb63fdef6c94cb252f3089cac87e0bc2023fb7a4e53656c481c04f0bc0e82",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
@@ -285,20 +326,28 @@
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
-                                                   "InputObject":  "frmDangNhap|be5a11d791cbfe832cca711a4192a9a38b3a715ca5b8336478784300f3ead086",
+                                                   "InputObject":  "frmDangNhap|5aeb29f0b17795abfe890087339829ea479150d23a8540b3af788a8bc3e0e8e2",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
-                                                   "InputObject":  "frmDatePicker|4a2748a825ec37731267de701b37331c8a2cddf1ecbdc2759b815dbd6d72088f",
+                                                   "InputObject":  "frmDatePicker|da13fa986daa43459488efbc71b22d8589ab352c53a80d015df4e69a2d0f9e15",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
-                                                   "InputObject":  "frmTaiHoaDon|9dbb1cc383aaacb04b92ac6e7a38316873a641f7a3d6c6a338e630d9dfc4e152",
+                                                   "InputObject":  "frmTaiHoaDon|852a28857cd4c9918a7a36835e700d7afa7d292e244cd30a7202ffca5023dd18",
                                                    "SideIndicator":  "=\u003e"
                                                },
                                                {
                                                    "InputObject":  "frmTrichXuatXML|a0d6e68df34bed99b47c0d8b620645b8898e455e3be60dad62112e911202265e",
                                                    "SideIndicator":  "=\u003e"
+                                               },
+                                               {
+                                                   "InputObject":  "ThisWorkbook|e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                   "SideIndicator":  "\u003c="
+                                               },
+                                               {
+                                                   "InputObject":  "JsonConverter|b4284784c3b1aa33f63043d5715ac67417ce8ec3467cfc23366047f0801695c8",
+                                                   "SideIndicator":  "\u003c="
                                                },
                                                {
                                                    "InputObject":  "modHTTPRequest|bf70ce695c064228634161006d044ccfacf624a4f18db970487d52a5ad207224",

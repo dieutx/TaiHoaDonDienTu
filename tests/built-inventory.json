@@ -1,11 +1,11 @@
 ﻿{
     "SchemaVersion":  1,
-    "CapturedAtUtc":  "2026-09-24T02:42:50.6740341Z",
+    "CapturedAtUtc":  "2026-10-08T11:07:30.1425659Z",
     "Workbook":  {
-                     "FileName":  "TaiHoaDonDienTu_v6.7.2.xlsm",
-                     "FullPath":  "C:\\Users\\dieut\\TaiHoaDonDienTu\\dist\\TaiHoaDonDienTu_v6.7.2.xlsm",
-                     "FileSize":  282735,
-                     "FileSha256":  "c356f497a943b78f1cf4eafb7bfedb511f4811b241e3797be5468662609cb695",
+                     "FileName":  "TaiHoaDonDienTu_v6.7.6.xlsm",
+                     "FullPath":  "C:\\Users\\dieut\\TaiHoaDonDienTu\\dist\\release-v6.7.6-20261008\\TaiHoaDonDienTu_v6.7.6.xlsm",
+                     "FileSize":  334422,
+                     "FileSha256":  "233dc90d9f5ebb3d8a844ce75b91053aa09e1adac00c9614b8f261e1d51cbb70",
                      "ExcelVersion":  "16.0",
                      "VBProjectName":  "TaiHDDT",
                      "VBProjectProtection":  0
@@ -39,19 +39,19 @@
                                           {
                                               "Name":  "Rounded Rectangle 1",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.2.xlsm!dangnhap",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.6.xlsm!dangnhap",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 2",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.2.xlsm!TaiHoaDon",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.6.xlsm!TaiHoaDon",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 3",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.2.xlsm!moUFTrichXuat",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.6.xlsm!moUFTrichXuat",
                                               "FormControlType":  0
                                           }
                                       ],
@@ -282,9 +282,9 @@
                               "Name":  "ThisWorkbook",
                               "Type":  100,
                               "TypeName":  "DocumentModule",
-                              "LineCount":  0,
-                              "CodeSha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                              "CodeSha256IgnoringCase":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                              "LineCount":  3,
+                              "CodeSha256":  "f36c9d27d98cf19ddb00385df26aa582180e89bba97cbbf287f32c61e8ad5f74",
+                              "CodeSha256IgnoringCase":  "a6197e52c2c9f5b7a978c7bee284a0004bbed3a92e272d079c2d4236696bd7dd"
                           },
                           {
                               "Name":  "Sheet1",
@@ -315,7 +315,7 @@
                               "Type":  100,
                               "TypeName":  "DocumentModule",
                               "LineCount":  9,
-                              "CodeSha256":  "574fff9f4fdeaa6ca81f762a0b6bbf0f91df1f2e96315b9d7dcd6a51e1419a34",
+                              "CodeSha256":  "7c04a939c899517f30e669f85e837e332c3df577317ea17e1ca6e786b66c619c",
                               "CodeSha256IgnoringCase":  "d4fd5c28957da5e566dafbbe83d72da3d524eb7620ec98529e07f64acc9becc8"
                           },
                           {
@@ -363,7 +363,7 @@
                               "Type":  1,
                               "TypeName":  "StandardModule",
                               "LineCount":  1050,
-                              "CodeSha256":  "b4284784c3b1aa33f63043d5715ac67417ce8ec3467cfc23366047f0801695c8",
+                              "CodeSha256":  "68b9cdccf78b557d30bb412722d3ebf800f8d490bb9faaa9c8515f23623371ec",
                               "CodeSha256IgnoringCase":  "ddf00ebc571378522daa38dc926e1f8b01101d29089e30022785f6d8da78386c"
                           },
                           {
@@ -394,33 +394,49 @@
                               "Name":  "modFunctions",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  262,
-                              "CodeSha256":  "c46e70d54b520db4140e8405d833e0d12e6c8346c93afd64ba293139d758945e",
-                              "CodeSha256IgnoringCase":  "4394c6d0a45b434651bc49f277d65fa838a9095b3ddfb0aba38ab5848fcf9083"
+                              "LineCount":  370,
+                              "CodeSha256":  "6b86036841c05420dd33fe99f4a9c4a81d9dbc98f4bd42bf651b447512a0db06",
+                              "CodeSha256IgnoringCase":  "85917f6e6a012d61d81d2e928a6d80e83cd5e894bf7f6cb97a26b9e37b39c783"
                           },
                           {
                               "Name":  "modGdtErrorReport",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  250,
-                              "CodeSha256":  "2494bfbe2820fa91732e1827541c31802be9a7901b51ecb593eaca652e12ce90",
-                              "CodeSha256IgnoringCase":  "2186c4ccc3f11927a4709ac762c8545e767622eba5c24c46f566ce30a76d125f"
+                              "LineCount":  264,
+                              "CodeSha256":  "6b93020887903b1d176ad2455af49398ac44ed4d9b09250c5874749ce179792a",
+                              "CodeSha256IgnoringCase":  "2425396c0ebcf71601278aa6a515d3d7f91f016d73745eb9c53d7c0411d81964"
+                          },
+                          {
+                              "Name":  "modGdtJson",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  41,
+                              "CodeSha256":  "a5806d255b17e3613b7e041681f0196ca7c08a09684f50e3e5eb13f31e68d736",
+                              "CodeSha256IgnoringCase":  "b766287a46b87549c538b4f349df9e99a2495e38c2b336faff1991f990476941"
                           },
                           {
                               "Name":  "modGdtRetry",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  393,
-                              "CodeSha256":  "72cb7ab6c431ce6d3998b8dce965361f2163d3160dd5aa576ebc4ebcfeaef3c0",
-                              "CodeSha256IgnoringCase":  "c9eea3d46dca77aafbe3b12bfa8fd67c4ddc6eae46a48e286ad5ee0cbcb2e6f4"
+                              "LineCount":  404,
+                              "CodeSha256":  "03baaeff389cc5e82c71bed4364200df1cf32f8441ed134756d84fef4e87ac01",
+                              "CodeSha256IgnoringCase":  "7a0a84b606d0a9c284a930a797adefa71d0073ba7abaeaaec77d64eefdfbac76"
+                          },
+                          {
+                              "Name":  "modGdtXmlScheduler",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  40,
+                              "CodeSha256":  "a39f1cb8e084f4b216ef41d7ac3c105ebd8193f8a9d717adb462354fefbb7706",
+                              "CodeSha256IgnoringCase":  "8f39bb3ef5cee4631f55791d3cc8334c8331265e7fbaee24332c2f2e46d8664a"
                           },
                           {
                               "Name":  "modGhiExcel",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  717,
-                              "CodeSha256":  "e9f180425fedcf943f83c109013f76a021bc69f6455cba34fd625aabd501285f",
-                              "CodeSha256IgnoringCase":  "134b86bc2f5c9405c0bf7d6edc82520c1e83b620f4b2717a0c81b558d7badcc2"
+                              "LineCount":  873,
+                              "CodeSha256":  "90a0444d332653fbe53c810453fabdf2aebe498268f2d3ac862c0f8468a2fd20",
+                              "CodeSha256IgnoringCase":  "b7e5a7a47014dd5e12ae9cdf4a3bc05d6b8a6390bef17ef8ce2d8603cf710f5d"
                           },
                           {
                               "Name":  "modGlobalVariables",
@@ -434,9 +450,9 @@
                               "Name":  "modHTTPRequest",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  267,
-                              "CodeSha256":  "f4f493437dd9d64433d65ac573fb9326c08d58c2aef547ba18003b0dae226766",
-                              "CodeSha256IgnoringCase":  "1d8d6006e0c1c74db7771a91bed957767bee2febce1f35c06b55797636797510"
+                              "LineCount":  274,
+                              "CodeSha256":  "414ddf2f732ef4d7268b742737ea817979b49cd9421d85bb8cbda9e11da6e950",
+                              "CodeSha256IgnoringCase":  "9c090aafb57cc7f9fbdc9de58ab2fdd156eedd8806ca854c32565693b6344e79"
                           },
                           {
                               "Name":  "modMsgboxTV",
@@ -450,9 +466,9 @@
                               "Name":  "modParseIso",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  129,
-                              "CodeSha256":  "23fff8cab2038fe821f604168f831e9cfcb5dde362c1cce8a3d2a499ebd8a2a1",
-                              "CodeSha256IgnoringCase":  "2950d76da8b1b35a6897578ec991f1335a0aa9c7d2f9602db5409b0ff14a7861"
+                              "LineCount":  199,
+                              "CodeSha256":  "10cdb63fdef6c94cb252f3089cac87e0bc2023fb7a4e53656c481c04f0bc0e82",
+                              "CodeSha256IgnoringCase":  "619e266c01558c5994a0c1d1c6bc3b1c924db7f413d32751fe69d519146a4382"
                           },
                           {
                               "Name":  "Module1",
@@ -463,11 +479,27 @@
                               "CodeSha256IgnoringCase":  "f38ed55bab3b975ba04eef38a64338cd37a5069b7e699d2514095a866ed11eda"
                           },
                           {
+                              "Name":  "modUpdate",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  67,
+                              "CodeSha256":  "7e2de8bc7bb144febfde3e3b07c835182087819d750cea9ec89ed0b7929ff4ca",
+                              "CodeSha256IgnoringCase":  "ffe7dbb64d2862674825d29c25ec6401379286d68a54c08446d9b66876602bb3"
+                          },
+                          {
+                              "Name":  "modVersion",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  6,
+                              "CodeSha256":  "f0fe3258f2489d4807631358dcc042e9437b158efea625d35c4b3c0d88e41153",
+                              "CodeSha256IgnoringCase":  "45e8af322dd9b518ac95b6eaa2661f0148cea152c43744498e976dcf2a19adcd"
+                          },
+                          {
                               "Name":  "clsGdtRequestResult",
                               "Type":  2,
                               "TypeName":  "ClassModule",
                               "LineCount":  13,
-                              "CodeSha256":  "87647542df84641a1b3a918d5311363fa9d1eb711d0eedab19731e8a76490ae4",
+                              "CodeSha256":  "1f9087e86f21b551cef1c1aafdcc60867f690b9806afc628cbfeff76b6620020",
                               "CodeSha256IgnoringCase":  "0131df73c5be81851747b0689fb4454d0549849142929c23da609524fd502dd2"
                           },
                           {
@@ -475,8 +507,24 @@
                               "Type":  2,
                               "TypeName":  "ClassModule",
                               "LineCount":  20,
-                              "CodeSha256":  "da324eb91bd38d525a8bbb1c1af9c964f76d5b671bd97bb847e63fb67c322351",
+                              "CodeSha256":  "f9182e649745d48c2c065cdfa5622e32651b1b7979b4202a4fbb837b58011679",
                               "CodeSha256IgnoringCase":  "836b2c592779d60705e86dfa0b54ab516bda7134f3afb5beaa7838682441901e"
+                          },
+                          {
+                              "Name":  "clsGdtXmlTask",
+                              "Type":  2,
+                              "TypeName":  "ClassModule",
+                              "LineCount":  154,
+                              "CodeSha256":  "6fd32b13cce1dccb65e15949467938e20670f7bbdf1f2e5b4844b50385bb7575",
+                              "CodeSha256IgnoringCase":  "3364cea1c67259bb6bcdec5dd4609205040dacb09311fa6259d1b947c5cc6cb4"
+                          },
+                          {
+                              "Name":  "clsGdtXmlThrottle",
+                              "Type":  2,
+                              "TypeName":  "ClassModule",
+                              "LineCount":  62,
+                              "CodeSha256":  "48b77a32e4dcd07bb7110051fa2250a88fa57e6f5c58a772554b7d23ed318b93",
+                              "CodeSha256IgnoringCase":  "e7b3a080548898d2d4b9812afcead4f04bb4978f59876890f96e9c9d1a1dcc14"
                           },
                           {
                               "Name":  "clsUiButtonHandler",
@@ -591,9 +639,9 @@
                               "Name":  "frmDangNhap",
                               "Type":  3,
                               "TypeName":  "UserForm",
-                              "LineCount":  215,
-                              "CodeSha256":  "be5a11d791cbfe832cca711a4192a9a38b3a715ca5b8336478784300f3ead086",
-                              "CodeSha256IgnoringCase":  "72736a017ca99ba30f249b5a0a91940fb70904d6edc3c6c5ef801de4e625920e",
+                              "LineCount":  213,
+                              "CodeSha256":  "5aeb29f0b17795abfe890087339829ea479150d23a8540b3af788a8bc3e0e8e2",
+                              "CodeSha256IgnoringCase":  "4c0a7fc1406df77b067e3162907b70d62e454ae64f438048af427a6449a1fab3",
                               "Caption":  "",
                               "Controls":  [
                                                {
@@ -692,9 +740,9 @@
                               "Name":  "frmDatePicker",
                               "Type":  3,
                               "TypeName":  "UserForm",
-                              "LineCount":  67,
-                              "CodeSha256":  "4a2748a825ec37731267de701b37331c8a2cddf1ecbdc2759b815dbd6d72088f",
-                              "CodeSha256IgnoringCase":  "bdf14e43a9f7e0f629ff6b2aaedb39191de1efaa5737cc59bf82143fc6f13dd1",
+                              "LineCount":  69,
+                              "CodeSha256":  "da13fa986daa43459488efbc71b22d8589ab352c53a80d015df4e69a2d0f9e15",
+                              "CodeSha256IgnoringCase":  "493209274d80c952730b0e510c05c1c9fc59eedac81aea073c993877de0e3ca7",
                               "Caption":  "",
                               "Controls":  [
 
@@ -704,9 +752,9 @@
                               "Name":  "frmTaiHoaDon",
                               "Type":  3,
                               "TypeName":  "UserForm",
-                              "LineCount":  1480,
-                              "CodeSha256":  "9dbb1cc383aaacb04b92ac6e7a38316873a641f7a3d6c6a338e630d9dfc4e152",
-                              "CodeSha256IgnoringCase":  "bd611e96ad88e82ec5ce154d984bb4b6db4c07b356d818af51c62061e7ac0815",
+                              "LineCount":  1794,
+                              "CodeSha256":  "852a28857cd4c9918a7a36835e700d7afa7d292e244cd30a7202ffca5023dd18",
+                              "CodeSha256IgnoringCase":  "7cec03f00d3e70ab4c7532a536eb15456d07cb4b34938cd53ad8651ca74fabbd",
                               "Caption":  "",
                               "Controls":  [
                                                {
@@ -958,6 +1006,77 @@
                                            ]
                           },
                           {
+                              "Name":  "frmUpdate",
+                              "Type":  3,
+                              "TypeName":  "UserForm",
+                              "LineCount":  77,
+                              "CodeSha256":  "82975d84faa752c93bfa5c5ebd182c077c7da32d8c0571141dffd35077d1b4ae",
+                              "CodeSha256IgnoringCase":  "a4b25e17410168be88fda0930482f6c1ac0442efde58616b2d0104bbe56c7fc2",
+                              "Caption":  "",
+                              "Controls":  [
+                                               {
+                                                   "Name":  "lblHeader",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblCurrentTitle",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblCurrent",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblNewTitle",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblNew",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblDateTitle",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblDate",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblNotesTitle",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblNotes",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "lblQuestion",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdDownload",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               },
+                                               {
+                                                   "Name":  "cmdContinue",
+                                                   "Type":  "System.__ComObject",
+                                                   "ProgId":  ""
+                                               }
+                                           ]
+                          },
+                          {
                               "Name":  "Sheet10",
                               "Type":  100,
                               "TypeName":  "DocumentModule",
@@ -1034,6 +1153,11 @@
                         },
                         {
                             "Component":  "modFunctions",
+                            "Declaration":  "Public Function GdtInvoiceFileBase",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modFunctions",
                             "Declaration":  "Sub Unzip",
                             "Name":  ""
                         },
@@ -1070,6 +1194,26 @@
                         {
                             "Component":  "modGdtErrorReport",
                             "Declaration":  "Public Function BuildGdtErrorKey",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Function GdtJsonArray",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Function GdtJsonHasValue",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Function GdtJsonHasError",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Function BuildGdtLoginJson",
                             "Name":  ""
                         },
                         {
@@ -1153,8 +1297,43 @@
                             "Name":  ""
                         },
                         {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function ReadRetryAfterSeconds",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function IsNoXmlResponse",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function BuildHttpErrorMessage",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtXmlScheduler",
+                            "Declaration":  "Public Sub GdtPumpWait",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtXmlScheduler",
+                            "Declaration":  "Public Function GdtClockSeconds",
+                            "Name":  ""
+                        },
+                        {
                             "Component":  "modGhiExcel",
                             "Declaration":  "Sub ghiExcel_TongHop",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Function SellerLookupLink",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Sub FinalizeInvoiceSheets",
                             "Name":  ""
                         },
                         {
@@ -1254,7 +1433,12 @@
                         },
                         {
                             "Component":  "modParseIso",
-                            "Declaration":  "Public Function ISODATE",
+                            "Declaration":  "Public Function ISODateValue",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modParseIso",
+                            "Declaration":  "Public Function isoDate",
                             "Name":  ""
                         },
                         {
@@ -1298,8 +1482,58 @@
                             "Name":  ""
                         },
                         {
+                            "Component":  "modUpdate",
+                            "Declaration":  "Public Sub CheckForUpdate",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modUpdate",
+                            "Declaration":  "Public Function CompareVersions",
+                            "Name":  ""
+                        },
+                        {
                             "Component":  "clsGdtRetryItem",
                             "Declaration":  "Public Function UniqueKey",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "clsGdtXmlTask",
+                            "Declaration":  "Public Sub Configure",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "clsGdtXmlTask",
+                            "Declaration":  "Public Sub Tick",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "clsGdtXmlTask",
+                            "Declaration":  "Public Sub Cancel",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "clsGdtXmlThrottle",
+                            "Declaration":  "Public Sub Configure",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "clsGdtXmlThrottle",
+                            "Declaration":  "Public Function CanStart",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "clsGdtXmlThrottle",
+                            "Declaration":  "Public Sub started",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "clsGdtXmlThrottle",
+                            "Declaration":  "Public Sub RateLimited",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "clsGdtXmlThrottle",
+                            "Declaration":  "Public Sub Recover",
                             "Name":  ""
                         },
                         {
@@ -1400,6 +1634,11 @@
                         {
                             "Component":  "frmTaiHoaDon",
                             "Declaration":  "Sub taiXML_zip",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmUpdate",
+                            "Declaration":  "Public Sub SetUpdateInfo",
                             "Name":  ""
                         }
                     ],

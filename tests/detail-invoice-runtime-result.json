@@ -1,0 +1,74 @@
+﻿{
+    "Pass":  true,
+    "ReportedIssues":  true,
+    "ReportedIssueStage":  "row height/sequence Ban 5",
+    "Workbook":  "C:\\Users\\dieut\\TaiHoaDonDienTu\\dist\\release-v6.7.6-20261008\\TaiHoaDonDienTu_v6.7.6.xlsm",
+    "Layout":  [
+                   {
+                       "Sheet":  "ChiTietHD_Mua",
+                       "TemplateHeader":  "Mẫu số hóa đơn",
+                       "SeriesHeader":  "Ký hiệu HĐ",
+                       "InvoiceDateFormat":  "dd/mm/yyyy",
+                       "SignatureDateFormat":  "dd/mm/yyyy",
+                       "CodeDateFormat":  "dd/mm/yyyy",
+                       "SellerTaxIdFormat":  "@",
+                       "BuyerTaxIdFormat":  "@"
+                   },
+                   {
+                       "Sheet":  "ChiTietHD_Ban",
+                       "TemplateHeader":  "Mẫu số hóa đơn",
+                       "SeriesHeader":  "Ký hiệu HĐ",
+                       "InvoiceDateFormat":  "dd/mm/yyyy",
+                       "SignatureDateFormat":  "dd/mm/yyyy",
+                       "CodeDateFormat":  "dd/mm/yyyy",
+                       "SellerTaxIdFormat":  "@",
+                       "BuyerTaxIdFormat":  "@"
+                   }
+               ],
+    "SummaryLayout":  [
+                          {
+                              "Sheet":  "TongHopHD_Mua",
+                              "InvoiceDateFormat":  "dd/mm/yyyy",
+                              "SignatureDateFormat":  "dd/mm/yyyy",
+                              "CodeDateFormat":  "dd/mm/yyyy",
+                              "OriginalInvoiceDateFormat":  "dd/mm/yyyy"
+                          },
+                          {
+                              "Sheet":  "TongHopHD_Ban",
+                              "InvoiceDateFormat":  "dd/mm/yyyy",
+                              "SignatureDateFormat":  "dd/mm/yyyy",
+                              "CodeDateFormat":  "dd/mm/yyyy",
+                              "OriginalInvoiceDateFormat":  "dd/mm/yyyy"
+                          }
+                      ],
+    "SummaryFixtures":  {
+                            "Purchase":  true,
+                            "Sales":  true
+                        },
+    "Fixtures":  [
+                     {
+                         "Sheet":  "ChiTietHD_Mua",
+                         "Pass":  true,
+                         "TemplateCode":  "1",
+                         "Series":  "C26TST",
+                         "SellerTaxId":  "0000000001",
+                         "BuyerTaxId":  "0000000002",
+                         "SellerTaxIdRepeated":  "0000000001",
+                         "BuyerTaxIdRepeated":  "0000000002",
+                         "ExpectedSellerTaxId":  "0000000001",
+                         "ExpectedBuyerTaxId":  "0000000002"
+                     },
+                     {
+                         "Sheet":  "ChiTietHD_Ban",
+                         "Pass":  true,
+                         "TemplateCode":  "1",
+                         "Series":  "C26TST",
+                         "SellerTaxId":  "0000000003",
+                         "BuyerTaxId":  "0000000004",
+                         "SellerTaxIdRepeated":  "0000000003",
+                         "BuyerTaxIdRepeated":  "0000000004",
+                         "ExpectedSellerTaxId":  "0000000003",
+                         "ExpectedBuyerTaxId":  "0000000004"
+                     }
+                 ]
+}

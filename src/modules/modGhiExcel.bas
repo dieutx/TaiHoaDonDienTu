@@ -30,7 +30,11 @@ Sub ghiExcel_TongHop(ByVal jsonText As String, row As Long, ByVal loaiHD As Long
     Dim ws As Worksheet
     Dim arrCol, arrColName
     
-    'On Error Resume Next
+    Dim pageStart As Long, sequenceStart As Long, previousContents As Variant
+    Dim pageRange As Range, failureNumber As Long, failureText As String
+    Dim restoreRow As Long, restoreColumn As Long
+    pageStart = row: sequenceStart = sSTT
+    On Error GoTo WriteFailed
     
     arrCol = Array(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, _
         12, 13, 14, 15, 16, 17, 42, 43, 44, _
@@ -51,12 +55,17 @@ Sub ghiExcel_TongHop(ByVal jsonText As String, row As Long, ByVal loaiHD As Long
     
     Dim dataArray As Object, i As Long, v As Variant
     Set dataArray = jsTH("datas")
+    If dataArray.count = 0 Then Exit Sub
+    Set pageRange = ws.Cells(pageStart, 1).Resize(dataArray.count, 64)
+    previousContents = pageRange.Formula
+    pageRange.ClearContents
     For l = 1 To jsTH("datas").count
         'On Error Resume Next    'Bo qua cac loi khi khong tim thay cac item trong json,item = null
         '/Cot STT
         ws.Cells(row, 1).Value = sSTT
         
         For i = 0 To UBound(arrCol)
+            If Not dataArray(l).Exists(arrColName(i)) Then GoTo next_col
             v = dataArray(l)(arrColName(i))
             If v = "" Or IsNull(v) Then GoTo next_col
             Select Case arrColName(i)
@@ -69,8 +78,9 @@ next_col:
         Next i
         
         '/Ghi cac truong dac biet
-        If Not dataArray(l)("thttltsuat") Is Nothing Then
-            Set subItms = dataArray(l)("thttltsuat")
+        Set subItms = GdtJsonArray(dataArray(l), "thttltsuat")
+        If subItms.count > 6 Then Err.Raise 5, , "Too many summary tax groups"
+        If subItms.count > 0 Then
             If subItms.count > 0 Then
                 Dim c As Long
                 For c = 0 To subItms.count - 1  'Co tat ca 6 cot tsuat: KKKCT, KCT, 0%, 5%, 8%, 10%
@@ -83,9 +93,9 @@ next_col:
             End If
         End If
         
-        If Not IsEmpty(dataArray(l)("thttlphi")) Then
-            If Not dataArray(l)("thttlphi") Is Nothing Then
-                Set subItms = dataArray(l)("thttlphi")
+        Set subItms = GdtJsonArray(dataArray(l), "thttlphi")
+        If subItms.count > 0 Then
+            If subItms.count > 0 Then
                 If subItms.count > 0 Then
                     Set subItms2 = subItms(1)
                     ws.Cells(row, 45).Value = subItms2("tlphi")
@@ -100,8 +110,10 @@ next_col:
         
         '//LAY LINK TRA CUU
         Dim msttcgp As String, mst As String, mccqt As String
-        mst = ws.Cells(row, 10).Value: mccqt = ws.Cells(l + ROWSTART, 13).Value
-        If Len(dataArray(l)("msttcgp")) > 0 Then
+        mst = Trim$(SafeJsonText(dataArray(l), "nbmst")): mccqt = ws.Cells(row, 13).Value
+        If Len(SellerLookupLink(mst)) > 0 Then
+            ws.Cells(row, 55).Value = SellerLookupLink(mst)
+        ElseIf Len(SafeJsonText(dataArray(l), "msttcgp")) > 0 Then
             msttcgp = dataArray(l)("msttcgp")
             Select Case msttcgp
                 Case "0100684378"   'VNPT
@@ -129,18 +141,13 @@ next_col:
             '------------------------------------------------------------------/
             
         Else    'truong hop khong co msttcgp
-            Select Case mst
-                Case "0110269067", "0110269067-002" 'hoa don Xanh SM
-                    ws.Cells(row, 55).Value = dicLink.item("0110269067")
-                Case Else
-                    ws.Cells(row, 55).Value = "Khong co link tra cuu"
-            End Select
+            ws.Cells(row, 55).Value = "Khong co link tra cuu"
         End If
         
         '/LAY MA TRA CUU
         'Con truong hop cttkhac khong exists!
-        If Not dataArray(l)("cttkhac") Is Nothing Then
-            Set subItms = dataArray(l)("cttkhac")
+        Set subItms = GdtJsonArray(dataArray(l), "cttkhac")
+        If subItms.count > 0 Then
             For Each itm In subItms
                 'If ws.Cells(row, 56).Value = "" Then   'Tru cac truong hop BKAV, VNPT... da co ms tra cuu
                  If Trim(ws.Cells(row, 56).Value) <> "" Then GoTo skipMTC 'Tru cac truong hop BKAV, VNPT... da co ms tra cuu
@@ -153,8 +160,8 @@ next_col:
         End If
         
         If Trim(ws.Cells(row, 56).Value) <> "" Then GoTo skipMTC
-        If Not dataArray(l)("ttkhac") Is Nothing Then
-            Set subItms = dataArray(l)("ttkhac")
+        Set subItms = GdtJsonArray(dataArray(l), "ttkhac")
+        If subItms.count > 0 Then
             For Each itm In subItms
                 If dicTenCotTC.Exists(itm("ttruong")) Then
                     ws.Cells(row, 56).Value = itm("dlieu")
@@ -164,13 +171,105 @@ next_col:
         End If
         '-------------------------------------/
 skipMTC:
+        FitInvoiceRow ws, row
         'Tang so tt va so thu thu dong
         sSTT = sSTT + 1
         row = row + 1
         
 next_invoice:
     Next l
-    
+    Exit Sub
+WriteFailed:
+    failureNumber = Err.Number: failureText = Err.Description
+    On Error Resume Next
+    If Not pageRange Is Nothing Then
+        pageRange.ClearContents
+        ' Writing an array of empty Formula strings can leave non-empty cells
+        ' in Excel. Restore only cells that held content before this page.
+        For restoreRow = 1 To UBound(previousContents, 1)
+            For restoreColumn = 1 To UBound(previousContents, 2)
+                If Len(CStr(previousContents(restoreRow, restoreColumn))) > 0 Then _
+                    pageRange.Cells(restoreRow, restoreColumn).Formula = previousContents(restoreRow, restoreColumn)
+            Next restoreColumn
+        Next restoreRow
+    End If
+    row = pageStart: sSTT = sequenceStart
+    On Error GoTo 0
+    Err.Raise failureNumber, "ghiExcel_TongHop", failureText
+End Sub
+
+Public Function SellerLookupLink(ByVal sellerTaxId As String) As String
+    sellerTaxId = Trim$(sellerTaxId)
+    If dicLink Is Nothing Then Exit Function
+    If dicLink.Exists(sellerTaxId) Then SellerLookupLink = Trim$(CStr(dicLink(sellerTaxId)))
+    If Len(SellerLookupLink) > 0 Then Exit Function
+    If sellerTaxId Like "0110269067-###" Then
+        If dicLink.Exists("0110269067") Then SellerLookupLink = CStr(dicLink("0110269067"))
+    End If
+End Function
+
+Private Sub FitInvoiceRow(ByVal ws As Worksheet, ByVal targetRow As Long)
+    ws.Rows(targetRow).Hidden = False
+    ws.Rows(targetRow).AutoFit
+    If ws.Rows(targetRow).RowHeight < 18 Then ws.Rows(targetRow).RowHeight = 18
+    If ws.Rows(targetRow).RowHeight > 150 Then ws.Rows(targetRow).RowHeight = 150
+End Sub
+
+' Run only after all retry/related-invoice work using row numbers has finished.
+Public Sub FinalizeInvoiceSheets(ByVal invoiceType As Long)
+    Dim suffix As String
+    If invoiceType = 1 Then
+        suffix = "Mua"
+    ElseIf invoiceType = 2 Then
+        suffix = "Ban"
+    Else
+        Exit Sub
+    End If
+    SortInvoiceSheet ThisWorkbook.Sheets("TongHopHD_" & suffix), 6, True
+    SortInvoiceSheet ThisWorkbook.Sheets("ChiTietHD_" & suffix), 4, False
+End Sub
+
+Private Sub SortInvoiceSheet(ByVal ws As Worksheet, ByVal dateColumn As Long, ByVal summary As Boolean)
+    Dim lastRow As Long, r As Long, helperColumn As Long, helperInserted As Boolean
+    Dim sequence() As Variant, errorNumber As Long, errorText As String
+    On Error GoTo Failed
+    lastRow = ws.Cells(ws.Rows.count, 3).End(xlUp).row
+    If lastRow < 3 Then Exit Sub
+    If ws.FilterMode Then ws.ShowAllData
+    ws.Rows("3:" & lastRow).Hidden = False
+    ' Keep equal-date rows in their original order, including invoice item blocks.
+    helperColumn = ws.UsedRange.Column + ws.UsedRange.Columns.count
+    If helperColumn < 79 Then helperColumn = 79
+    ws.Columns(helperColumn).Insert
+    helperInserted = True
+    ReDim sequence(1 To lastRow - 2, 1 To 1)
+    For r = 1 To lastRow - 2
+        sequence(r, 1) = r
+    Next r
+    ws.Range(ws.Cells(3, helperColumn), ws.Cells(lastRow, helperColumn)).Value2 = sequence
+    With ws.Sort
+        .SortFields.Clear
+        .SortFields.Add Key:=ws.Range(ws.Cells(3, dateColumn), ws.Cells(lastRow, dateColumn)), Order:=xlAscending
+        .SortFields.Add Key:=ws.Range(ws.Cells(3, helperColumn), ws.Cells(lastRow, helperColumn)), Order:=xlAscending
+        .SetRange ws.Range(ws.Cells(3, 1), ws.Cells(lastRow, helperColumn))
+        .Header = xlNo
+        .Orientation = xlTopToBottom
+        .Apply
+        .SortFields.Clear
+    End With
+    ws.Columns(helperColumn).Delete
+    helperInserted = False
+    If summary Then ws.Range("A3:A" & lastRow).Value2 = sequence
+    For r = 3 To lastRow
+        FitInvoiceRow ws, r
+    Next r
+    Exit Sub
+Failed:
+    errorNumber = Err.Number: errorText = Err.Description
+    On Error Resume Next
+    If helperInserted Then ws.Columns(helperColumn).Delete
+    On Error GoTo 0
+    Err.Raise errorNumber, "SortInvoiceSheet", errorText
 End Sub
 
 Private Sub EnsureRelatedInvoiceHeaders(ByVal ws As Worksheet)
@@ -460,12 +559,7 @@ Private Function FormatRelatedNoticeDate(ByVal isoText As String) As String
     Dim parsedDate As Date
     On Error GoTo InvalidDate
 
-    parsedDate = DateSerial(CInt(Left$(isoText, 4)), CInt(Mid$(isoText, 6, 2)), CInt(Mid$(isoText, 9, 2)))
-    If Len(isoText) >= 19 Then
-        parsedDate = parsedDate + TimeSerial(CInt(Mid$(isoText, 12, 2)), _
-            CInt(Mid$(isoText, 15, 2)), CInt(Mid$(isoText, 18, 2)))
-    End If
-    If Right$(Trim$(isoText), 1) = "Z" Then parsedDate = UTCToLocalTime(parsedDate)
+    parsedDate = ISODateValue(isoText)
     FormatRelatedNoticeDate = Format$(parsedDate, "dd/mm/yyyy")
     Exit Function
 
@@ -519,7 +613,9 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
     Dim ws As Worksheet
     Dim arrCol, arrColName, arrCol_detail, arrColName_detail
     
-    On Error Resume Next
+    Dim items As Collection, hasTax As Boolean, hasTotal As Boolean
+    Dim failureNumber As Long, failureText As String
+    On Error GoTo WriteFailed
     
     sumRow = row_ct
     tongthueCT = 0
@@ -547,11 +643,15 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
     EnsureDetailInvoiceHeaders ws
     
     Set jsCT = JsonConverter.ParseJSON(jsonText)
+    If TypeName(jsCT) <> "Dictionary" Then Err.Raise 5, , "Expected invoice object"
+    If GdtJsonHasError(jsCT) Then Err.Raise 5, , "API error response"
+    Set items = GdtJsonArray(jsCT, "hdhhdvu")
+    If items.count = 0 Then Err.Raise 5, , "Missing invoice items"
     
     '/Ghi thong tin chung
     For col = 0 To UBound(arrCol)
         If jsCT.Exists(arrColName(col)) Then
-            If Not IsNull(jsCT(arrColName(col))) Then
+            If GdtJsonHasValue(jsCT, CStr(arrColName(col))) Then
                 'Dinh dang du lieu dang Date
                 Select Case arrColName(col)
                     Case "ncma", "nky", "ncnhat", "ntao", "ntnhan", "tdlap"
@@ -568,9 +668,11 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
     
     '/Lay link tra cuu
     Dim msttcgp As String
-    ws.Cells(row_ct, DETAIL_COL_PROVIDER_TAX_ID).Value = jsCT("msttcgp")
+    ws.Cells(row_ct, DETAIL_COL_PROVIDER_TAX_ID).Value = SafeJsonText(jsCT, "msttcgp")
     msttcgp = ws.Cells(row_ct, DETAIL_COL_PROVIDER_TAX_ID).Value
-    If msttcgp <> "" Then   'Co MSTTCGP
+    If Len(SellerLookupLink(SafeJsonText(jsCT, "nbmst"))) > 0 Then
+        ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = SellerLookupLink(SafeJsonText(jsCT, "nbmst"))
+    ElseIf msttcgp <> "" Then   'Co MSTTCGP
         Dim mst As String, mccqt As String
         mst = ws.Cells(row_ct, DETAIL_COL_SELLER_TAX_ID).Value: mccqt = ws.Cells(row_ct, DETAIL_COL_TAX_AUTHORITY_CODE).Value
         Select Case msttcgp
@@ -588,10 +690,14 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
                 ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = dicLink.item(msttcgp)
         End Select
         
+    Else
+        ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = "Khong co link tra cuu"
+    End If
+
         '/Lay ma tra cuu
         'Con truong hop cttkhac khong exists!
-        If Not jsCT("cttkhac") Is Nothing Then
-            Set subItms = jsCT("cttkhac")
+        Set subItms = GdtJsonArray(jsCT, "cttkhac")
+        If subItms.count > 0 Then
             For Each itm In subItms
                 If dicTenCotTC.Exists(itm("ttruong")) Then
                     ws.Cells(row_ct, DETAIL_COL_LOOKUP_CODE).Value = itm("dlieu")
@@ -600,8 +706,8 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
             Next
         End If
         
-        If Not jsCT("ttkhac") Is Nothing Then
-            Set subItms = jsCT("ttkhac")
+        Set subItms = GdtJsonArray(jsCT, "ttkhac")
+        If subItms.count > 0 Then
             For Each itm In subItms
                 If dicTenCotTC.Exists(itm("ttruong")) Then
                     ws.Cells(row_ct, DETAIL_COL_LOOKUP_CODE).Value = itm("dlieu")
@@ -611,26 +717,25 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
         End If
         '-------------------------------------/
         
-    Else    'truong hop khong co msttcgp
-        ws.Cells(row_ct, DETAIL_COL_LOOKUP_LINK).Value = "Khong co link tra cuu"
-    End If
     
     '/Ghi thong tin tung ma HHDVu
-    For Each item In jsCT("hdhhdvu")
+    For Each item In items
+        If TypeName(item) <> "Dictionary" Then Err.Raise 5, , "Invalid invoice item"
+        hasTax = GdtJsonHasValue(item, "tthue")
+        hasTotal = GdtJsonHasValue(item, "thtcthue")
         For col = 0 To UBound(arrCol_detail)
-            On Error Resume Next    'bo qua loi khong co ten cot trong json
             'Cac cot con lai
             If col = 10 Then
-                Select Case item(arrColName_detail(col - 1))
+                Select Case SafeJsonText(item, CStr(arrColName_detail(col - 1)))
                     Case "KKKNT"
                         ws.Cells(row_ct, arrCol_detail(col)).Value = "KKKNT"
                     Case "KCT"
                         ws.Cells(row_ct, arrCol_detail(col)).Value = "KCT"
                     Case Else
-                        ws.Cells(row_ct, arrCol_detail(col)).Value = item(arrColName_detail(col))
+                        If GdtJsonHasValue(item, CStr(arrColName_detail(col))) Then ws.Cells(row_ct, arrCol_detail(col)).Value = item(arrColName_detail(col))
                 End Select
             Else
-                ws.Cells(row_ct, arrCol_detail(col)).Value = item(arrColName_detail(col))
+                If GdtJsonHasValue(item, CStr(arrColName_detail(col))) Then ws.Cells(row_ct, arrCol_detail(col)).Value = item(arrColName_detail(col))
             End If
         Next
         
@@ -638,39 +743,39 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
         arrTThue = Split(Sheets("LinkTraCuu").Range("O14"), ",")
         arrThTiencoVAT = Split(Sheets("LinkTraCuu").Range("O15"), ",")
         
-        If item.Exists("ttkhac") Then
-            If Not item("ttkhac") Is Nothing Then
+        Set subItms = GdtJsonArray(item, "ttkhac")
+        If subItms.count > 0 Then
+            If subItms.count > 0 Then
                 Dim ttruong As String
-                Set subItms = item("ttkhac")
                 If subItms.count > 0 Then
                     For c = 1 To subItms.count  'Co tat ca 3 cot
                         Set subItms2 = subItms(c)
                         ttruong = subItms2("ttruong")
-                        If isInArray(ttruong, arrTThue) Then
+                        If isInArray(ttruong, arrTThue) And GdtJsonHasValue(subItms2, "dlieu") Then
                             ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value = subItms2("dlieu")
-                            tongthueCT = tongthueCT + Val(subItms2("dlieu"))
-                        ElseIf isInArray(ttruong, arrThTiencoVAT) Then
+                            hasTax = GdtJsonHasValue(subItms2, "dlieu")
+                        ElseIf isInArray(ttruong, arrThTiencoVAT) And GdtJsonHasValue(subItms2, "dlieu") Then
                             ws.Cells(row_ct, DETAIL_COL_ITEM_TOTAL).Value = subItms2("dlieu")
+                            hasTotal = GdtJsonHasValue(subItms2, "dlieu")
                         End If
                     Next
                 End If
             End If
         End If
         
-        If ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value = 0 Then   'Khong co gia tri cho cot tthueVAT
-            ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value = Val(ws.Cells(row_ct, DETAIL_COL_ITEM_TAX_RATE).Value) * ws.Cells(row_ct, DETAIL_COL_ITEM_AMOUNT).Value
-            ws.Cells(row_ct, DETAIL_COL_ITEM_TOTAL).Value = ws.Cells(row_ct, DETAIL_COL_ITEM_AMOUNT).Value + ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value
+        If Not hasTax Then
+            If IsNumeric(ws.Cells(row_ct, DETAIL_COL_ITEM_TAX_RATE).Value2) Then
+                ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value = CDbl(ws.Cells(row_ct, DETAIL_COL_ITEM_TAX_RATE).Value2) * ws.Cells(row_ct, DETAIL_COL_ITEM_AMOUNT).Value2
+            Else
+                ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value = 0
+            End If
         End If
-        If ws.Cells(row_ct, DETAIL_COL_ITEM_TOTAL).Value = 0 Then  'Khong co gia tri cho cot THTiencoVAT
+        If Not hasTotal Then
             ws.Cells(row_ct, DETAIL_COL_ITEM_TOTAL).Value = ws.Cells(row_ct, DETAIL_COL_ITEM_AMOUNT).Value + ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value
         End If
         
         '/Dung cho hd khong nhan ma loai 2: chi tiet hhdv ("tthue"= #,##)
-        If item.Exists("tthue") Then
-            If Not IsNull(item("tthue")) Then
-                tongthueCT = item("tthue")
-            End If
-        End If
+        tongthueCT = tongthueCT + CDbl(ws.Cells(row_ct, DETAIL_COL_ITEM_TAX).Value2)
         '------------------------------/
         
         row_ct = row_ct + 1
@@ -683,7 +788,9 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
         End If
     End If
     
-    If tongthueCT <> jsCT("tgtthue") Then
+    If Not GdtJsonHasValue(jsCT, "tgtthue") Then
+        ws.Cells(sumRow, DETAIL_COL_TAX_CHECK).Value = "Khong co tong thue de doi chieu"
+    ElseIf Abs(tongthueCT - CDbl(jsCT("tgtthue"))) > 0.01 Then
         ws.Cells(sumRow, DETAIL_COL_TAX_CHECK).Value = "Kiem tra lai tien thue: [" & Format(tongthueCT, "standard") & "] <> [" & Format(jsCT("tgtthue"), "standard") & "]"
         ws.Cells(sumRow, DETAIL_COL_TAX_CHECK).Font.Color = vbRed
     Else
@@ -697,6 +804,16 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
     If row_ct > sumRow Then
         CopyThongTinChung_CT ws.name, sumRow, row_ct - 1
     End If
+    Exit Sub
+
+WriteFailed:
+    failureNumber = Err.Number
+    failureText = Err.Description
+    On Error Resume Next
+    If Not ws Is Nothing Then ws.Cells(sumRow, 1).Resize(row_ct - sumRow + 1, DETAIL_COL_LOOKUP_CODE).ClearContents
+    row_ct = sumRow
+    On Error GoTo 0
+    Err.Raise failureNumber, "ghiExcel_ChiTiet", failureText
     
 End Sub
 
@@ -710,13 +827,21 @@ Sub LinkTraCuu()
     
     Set dicLink = CreateObject("Scripting.Dictionary")
     With Sheets("LinkTraCuu")
-        lr = .Range("B" & .Rows.count).End(xlUp).row
+        lr = Application.Max(.Range("B" & .Rows.count).End(xlUp).row, _
+            .Range("C" & .Rows.count).End(xlUp).row)
     End With
+    If lr < 2 Then Exit Sub
     arrLinks = Sheets("LinkTraCuu").Range("B2:E" & lr).Value
     
     For n = 1 To UBound(arrLinks)
         'Debug.Print arrLinks(n, 1), arrLinks(n, 3), , arrLinks(n, 4)
-        dicLink(arrLinks(n, 1)) = arrLinks(n, 3)
+        If Len(Trim$(CStr(arrLinks(n, 1)))) > 0 Then dicLink(Trim$(CStr(arrLinks(n, 1)))) = arrLinks(n, 3)
+    Next n
+    'Column C contains seller-specific mappings, including independent members.
+    For n = 1 To UBound(arrLinks)
+        If Len(Trim$(CStr(arrLinks(n, 2)))) > 0 And Len(Trim$(CStr(arrLinks(n, 3)))) > 0 Then
+            dicLink(Trim$(CStr(arrLinks(n, 2)))) = arrLinks(n, 3)
+        End If
     Next n
     Erase arrLinks
 End Sub

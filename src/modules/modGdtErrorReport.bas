@@ -3,6 +3,7 @@ Option Explicit
 
 Private Const GDT_ERROR_SHEET As String = "BaoCao_LoiTaiHD"
 Private Const GDT_ERROR_COLUMN_COUNT As Long = 17
+Public GdtReportAccount As String
 
 Public Function EnsureGdtErrorReportSheet() As Worksheet
     Dim ws As Worksheet
@@ -51,7 +52,7 @@ Public Sub UpsertGdtErrorReport( _
 
     Set ws = EnsureGdtErrorReportSheet()
     targetRow = FindGdtErrorRow(ws, direction, apiSource, sellerTaxCode, _
-                                templateCode, invoiceSeries, invoiceNumber, failureStage)
+                                templateCode, invoiceSeries, invoiceNumber, failureStage, endpoint)
     If targetRow = 0 Then targetRow = LastGdtErrorRow(ws) + 1
 
     rowData(1, 1) = targetRow - 1
@@ -71,7 +72,12 @@ Public Sub UpsertGdtErrorReport( _
     If retryAfterSeconds > 0 Then rowData(1, 15) = retryAfterSeconds
     rowData(1, 16) = finalResult
     rowData(1, 17) = RedactGdtSensitiveText(note)
-    ws.Cells(targetRow, 1).Resize(1, GDT_ERROR_COLUMN_COUNT).Value = rowData
+    ws.Cells(targetRow, 5).Resize(1, 4).NumberFormat = "@"
+    ws.Cells(targetRow, 1).Resize(1, GDT_ERROR_COLUMN_COUNT).Value2 = rowData
+    ws.Cells(1, 18).Value2 = "Account scope"
+    ws.Columns(18).Hidden = True
+    ws.Cells(targetRow, 18).NumberFormat = "@"
+    ws.Cells(targetRow, 18).Value2 = GdtReportAccount
 End Sub
 
 Public Sub MarkGdtRetrySuccess( _
@@ -83,7 +89,8 @@ Public Sub MarkGdtRetrySuccess( _
     ByVal invoiceNumber As String, _
     ByVal failureStage As String, _
     ByVal attempts As Long, _
-    Optional ByVal note As String = vbNullString)
+    Optional ByVal note As String = vbNullString, _
+    Optional ByVal endpoint As String = vbNullString)
 
     Dim ws As Worksheet
     Dim targetRow As Long
@@ -91,7 +98,7 @@ Public Sub MarkGdtRetrySuccess( _
     Set ws = EnsureGdtErrorReportSheet()
     Do
         targetRow = FindGdtErrorRow(ws, direction, apiSource, sellerTaxCode, _
-                                    templateCode, invoiceSeries, invoiceNumber, failureStage)
+                                    templateCode, invoiceSeries, invoiceNumber, failureStage, endpoint)
         If targetRow = 0 Then Exit Do
         ws.Rows(targetRow).Delete Shift:=xlUp
     Loop
@@ -186,7 +193,8 @@ Private Function FindGdtErrorRow( _
     ByVal templateCode As String, _
     ByVal invoiceSeries As String, _
     ByVal invoiceNumber As String, _
-    ByVal failureStage As String) As Long
+    ByVal failureStage As String, _
+    ByVal endpoint As String) As Long
 
     Dim data As Variant
     Dim rowIndex As Long
@@ -200,6 +208,11 @@ Private Function FindGdtErrorRow( _
                                    invoiceSeries, invoiceNumber, failureStage)
 
     For rowIndex = 1 To UBound(data, 1)
+        If CStr(ws.Cells(rowIndex + 1, 18).Value2) <> GdtReportAccount Then GoTo NextRow
+        If Len(sellerTaxCode & templateCode & invoiceSeries & invoiceNumber) = 0 Then
+            If Len(endpoint) = 0 Then GoTo NextRow
+            If CStr(data(rowIndex, 11)) <> endpoint Then GoTo NextRow
+        End If
         If BuildGdtErrorKey(CStr(data(rowIndex, 3)), CStr(data(rowIndex, 4)), _
                             CStr(data(rowIndex, 5)), CStr(data(rowIndex, 6)), _
                             CStr(data(rowIndex, 7)), CStr(data(rowIndex, 8)), _
@@ -207,6 +220,7 @@ Private Function FindGdtErrorRow( _
             FindGdtErrorRow = rowIndex + 1
             Exit Function
         End If
+NextRow:
     Next rowIndex
 End Function
 
