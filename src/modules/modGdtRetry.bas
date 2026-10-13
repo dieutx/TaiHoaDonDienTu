@@ -15,10 +15,12 @@ Private mRandomized As Boolean
 Public GdtAuthenticationFailed As Boolean
 Public GdtStopRequested As Boolean
 Public GdtPauseRequested As Boolean
+Public GdtStopReason As String
 
 Public Sub ResetGdtOperationControl()
     GdtStopRequested = False
     GdtPauseRequested = False
+    GdtStopReason = vbNullString
 End Sub
 
 Public Sub RequestGdtStop()
@@ -36,7 +38,7 @@ End Sub
 
 Public Function WaitForGdtControl() As Boolean
     Do While GdtPauseRequested And Not GdtStopRequested
-        DoEvents
+        GdtPumpWait
     Loop
     WaitForGdtControl = Not GdtStopRequested
 End Function
@@ -314,7 +316,7 @@ Public Sub WaitGdtSeconds(ByVal seconds As Long)
     deadline = DateAdd("s", seconds, Now)
     Do While Now < deadline
         If Not WaitForGdtControl() Then Exit Sub
-        DoEvents
+        GdtPumpWait
     Loop
 End Sub
 
@@ -326,7 +328,7 @@ Public Sub WaitGdtMilliseconds(ByVal milliseconds As Long)
     started = Timer
     Do
         If Not WaitForGdtControl() Then Exit Sub
-        DoEvents
+        GdtPumpWait
         elapsed = Timer - started
         If elapsed < 0 Then elapsed = elapsed + 86400#
     Loop While elapsed * 1000# < milliseconds
@@ -346,15 +348,53 @@ Public Function ReadRetryAfterSeconds(ByVal http As Object) As Long
     On Error GoTo MissingHeader
     rawValue = Trim$(CStr(http.getResponseHeader("Retry-After")))
     On Error GoTo 0
-    If Len(rawValue) = 0 Then Exit Function
-    If IsNumeric(rawValue) Then
-        If CDbl(rawValue) > 0 Then ReadRetryAfterSeconds = CLng(CDbl(rawValue))
+    ReadRetryAfterSeconds = ParseGdtRetryAfter(rawValue, GdtUtcNow())
+    If ReadRetryAfterSeconds < 0 Then
+        GdtStopReason = UniConvert("Retry-After quas lowns. DDax duwfng ddeer khoong guwri yeeu caafu sowms.")
+        RequestGdtStop
+        ReadRetryAfterSeconds = 0
     End If
     Exit Function
 
 MissingHeader:
     Err.Clear
     On Error GoTo 0
+End Function
+
+' -1 means a valid delay exceeds the supported wait range: never retry early.
+Public Function ParseGdtRetryAfter(ByVal raw As String, ByVal utcNow As Date) As Long
+    Dim re As Object, match As Object, delay As Double, months As Variant, month As Long, i As Long
+    Dim stamp As Date, parsedYear As Long, parsedDay As Long, parsedHour As Long, parsedMinute As Long, parsedSecond As Long
+    On Error GoTo InvalidHeader
+    raw = Trim$(raw)
+    If Len(raw) = 0 Then Exit Function
+    Set re = CreateObject("VBScript.RegExp")
+    re.Pattern = "^[0-9]+$"
+    If re.Test(raw) Then
+        Do While Len(raw) > 1 And Left$(raw, 1) = "0"
+            raw = Mid$(raw, 2)
+        Loop
+        If Len(raw) > 15 Then ParseGdtRetryAfter = -1: Exit Function
+        delay = CDbl(raw)
+    Else
+        re.Pattern = "^[A-Za-z]{3}, ([0-9]{2}) ([A-Za-z]{3}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2}) GMT$"
+        If Not re.Test(raw) Then Exit Function
+        Set match = re.Execute(raw)(0)
+        months = Split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", " ")
+        For i = 0 To 11
+            If CStr(match.SubMatches(1)) = months(i) Then month = i + 1: Exit For
+        Next i
+        parsedDay = CLng(match.SubMatches(0)): parsedYear = CLng(match.SubMatches(2))
+        parsedHour = CLng(match.SubMatches(3)): parsedMinute = CLng(match.SubMatches(4)): parsedSecond = CLng(match.SubMatches(5))
+        If parsedYear < 100 Or month = 0 Or parsedDay < 1 Or parsedHour > 23 Or parsedMinute > 59 Or parsedSecond > 59 Then Exit Function
+        stamp = DateSerial(parsedYear, month, parsedDay)
+        If Year(stamp) <> parsedYear Or VBA.Month(stamp) <> month Or Day(stamp) <> parsedDay Then Exit Function
+        stamp = stamp + TimeSerial(parsedHour, parsedMinute, parsedSecond)
+        delay = (CDbl(stamp) - CDbl(utcNow)) * 86400#
+    End If
+    If delay > 2147483647# Then ParseGdtRetryAfter = -1: Exit Function
+    If delay > 0 Then ParseGdtRetryAfter = CLng(Int(delay + 0.99999))
+InvalidHeader:
 End Function
 
 Public Function IsNoXmlResponse( _

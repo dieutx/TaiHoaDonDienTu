@@ -29,6 +29,8 @@ Invoke-ReleaseCheck 'build\Test-RelatedInvoiceRuntime.ps1' @('-BuiltWorkbook', $
 Invoke-ReleaseCheck 'build\Test-InvoiceDateRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-ReviewFixesRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-ExtendedReviewRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
+Invoke-ReleaseCheck 'build\Test-CompatibilityFixesRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
+Invoke-ReleaseCheck 'build\Test-CoreFixesRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-ParallelJsonRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'tests\Test-UpdateRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Write-Output "RELEASE CHECKS PASSED: $OutputPath"

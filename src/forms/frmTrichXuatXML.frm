@@ -25,11 +25,16 @@ Private Sub cmdChonFolder_Click()
 End Sub
 
 Private Sub cmdTrichXuat_Click()
+    On Error GoTo ExtractFailed
     Application.Cursor = xlWait
     If Me.txtXMLFolderPath <> "" Then
         Call parseXML(Me.txtXMLFolderPath, Me.optMua.Value)
     End If
     Application.Cursor = xlDefault
+    Exit Sub
+ExtractFailed:
+    Application.Cursor = xlDefault
+    MsgBoxUni UniConvert("Khoong trisch xuaast dduwowjc XML. Kieerm tra thuw mujc vaf quyeen ddocj file."), vbExclamation
 End Sub
 
 Private Sub UserForm_Initialize()

@@ -231,12 +231,13 @@ try {
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path (Split-Path $PSScriptRoot -Parent) 'tests\related-runtime-result.json') -Encoding utf8
 
     if (-not ($ok -and $statusSixOk -and $resolvedErrorRemoved -and $relationErrorsOk -and $legacyColumnRemoved -and $detailFillDownOk)) { throw 'Related-invoice runtime smoke test failed.' }
-    Write-Host 'RELATED-INVOICE RUNTIME TEST PASSED'
 } finally {
-    if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }
-    if ($null -ne $excel) { try { $excel.Quit() } catch {} }
     Release-ComObject $reportRange; Release-ComObject $relatedRange; Release-ComObject $queryRelatedRange; Release-ComObject $scoRelatedRange
     Release-ComObject $informationHeaderRange; Release-ComObject $legacyHeaderRange; Release-ComObject $sheet
-    Release-ComObject $testModule; Release-ComObject $workbook; Release-ComObject $excel
-    [GC]::Collect(); [GC]::WaitForPendingFinalizers(); [GC]::Collect(); [GC]::WaitForPendingFinalizers()
+    Release-ComObject $testModule
+    if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }
+    if ($null -ne $excel) { try { $excel.Quit() } catch {} }
+    Release-ComObject $workbook; Release-ComObject $excel
+    # Match the detail runtime test: forced finalizer waits can deadlock STA.
 }
+Write-Host 'RELATED-INVOICE RUNTIME TEST PASSED'

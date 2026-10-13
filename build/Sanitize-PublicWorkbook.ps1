@@ -21,6 +21,16 @@ try {
     $workbook = $excel.Workbooks.Open($resolvedPath, 0, $false)
     $menu = $workbook.Worksheets.Item('MENU')
     $menu.Range('D7:E7').ClearContents()
+    foreach ($sheet in @($workbook.Worksheets)) {
+        if ($sheet.Name -eq 'TrangThaiTaiHD') {
+            $sheet.Range('A2:F1048576').ClearContents()
+        } elseif ($sheet.Name -in @('TongHopHD_Mua','TongHopHD_Ban')) {
+            $sheet.Range('BM3:BN1048576').ClearContents()
+        } elseif ($sheet.Name -in @('ChiTietHD_Mua','ChiTietHD_Ban')) {
+            $sheet.Range('AI3:AJ1048576').ClearContents()
+        }
+        Release-ComObject $sheet
+    }
     # LinkTraCuu!B:C contains the lookup tax IDs needed to select invoice links.
     # They are public routing data, not cached login/session data.
     $workbook.RemovePersonalInformation = $true

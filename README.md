@@ -33,6 +33,8 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 6. Có thể bấm **Tạm dừng/Tiếp tục** hoặc **Dừng**; dữ liệu đã tải trước khi dừng vẫn được giữ lại.
 7. Xem kết quả tại các sheet tổng hợp, chi tiết và `BaoCao_LoiTaiHD`.
 
+Source đang phát triển: chọn **No** tại câu hỏi xóa dữ liệu để tải bổ sung chống trùng và bỏ phần chi tiết/XML đã xác minh hoàn tất. Lưu workbook để dùng trạng thái sau khi đóng Excel. Xem [hướng dẫn và giới hạn resume](docs/CORE_FIXES_2026-10-13.md); tính năng này chưa nằm trong release công khai 6.7.6.
+
 ## Tính năng chính
 
 - Tải hóa đơn mua vào và bán ra.
@@ -69,6 +71,10 @@ Source VBA nằm trong `src`, template workbook nằm trong `template` và scrip
 
 Hướng dẫn thêm thông báo cập nhật tùy chọn: [docs/UPDATE_CHECK.md](docs/UPDATE_CHECK.md).
 
+Bản sửa đang phát triển cho XML namespace, kiểu dữ liệu XML, phản hồi đăng nhập và link BKAV: [docs/COMPATIBILITY_FIXES_2026-10-13.md](docs/COMPATIBILITY_FIXES_2026-10-13.md). Các thay đổi này chưa nằm trong release công khai 6.7.6.
+
+Bản sửa log, ghi dữ liệu, tải bổ sung/resume và Retry-After: [docs/CORE_FIXES_2026-10-13.md](docs/CORE_FIXES_2026-10-13.md).
+
 Trước khi phát hành, chạy bộ kiểm tra dưới đây. Mỗi bước chạy trong tiến trình riêng; nếu có bước lỗi, toàn bộ quy trình dừng và không chạy các bước tiếp theo.
 
 ```powershell
@@ -88,6 +94,7 @@ Kết quả review mở rộng và các lỗi tái hiện trước khi sửa: [r
 .\build\Test-InvoiceDateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
 .\build\Test-ReviewFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
 .\build\Test-ExtendedReviewRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Test-CompatibilityFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
 .\build\Test-ParallelJsonRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
 .\tests\Test-ReleaseGate.ps1
 .\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'

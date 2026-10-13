@@ -15,10 +15,12 @@ Public ResponseKind As String
 Public Result As clsGdtRequestResult
 Public Running As Boolean
 Public Finished As Boolean
+Public ElapsedSeconds As Double
 Private mHttp As Object
 Private mToken As String
 Private mDue As Double
 Private mStarted As Double
+Private mFirstStarted As Double
 Private mMaxAttempts As Long
 Private mTimeoutSeconds As Long
 Private mExpectBinary As Boolean
@@ -63,6 +65,7 @@ Public Sub Tick(ByVal throttle As clsGdtXmlThrottle, ByVal activeCount As Long)
         Result.ResponseText = vbNullString
         Result.RetryAfterSeconds = 0
         mStarted = atTime
+        If mFirstStarted = 0 Then mFirstStarted = atTime
         throttle.Started atTime
         mHttp.Open "GET", Endpoint, True
         mHttp.setRequestHeader "User-Agent", "Mozilla/5.0 ExcelVBA-HDDT"
@@ -142,6 +145,7 @@ Private Sub RetryOrComplete(ByVal atTime As Double)
 End Sub
 
 Private Sub Complete()
+    If mFirstStarted > 0 Then ElapsedSeconds = GdtClockSeconds() - mFirstStarted
     Running = False
     Finished = True
     Set mHttp = Nothing

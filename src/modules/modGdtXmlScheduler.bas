@@ -39,3 +39,13 @@ Public Function GdtClockSeconds() As Double
     If today <> Date Then today = Date: ticks = Timer
     GdtClockSeconds = CDbl(today) * 86400# + ticks
 End Function
+
+Public Function GdtElapsedText(ByVal seconds As Double) As String
+    Dim hours As Double, minutes As Long, remainder As Long
+    If seconds < 0 Then seconds = 0
+    seconds = Int(seconds)
+    hours = Int(seconds / 3600#)
+    remainder = CLng(seconds - hours * 3600#)
+    minutes = remainder \ 60
+    GdtElapsedText = Format$(hours, "00") & ":" & Format$(minutes, "00") & ":" & Format$(remainder Mod 60, "00")
+End Function

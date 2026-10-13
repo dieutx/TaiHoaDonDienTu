@@ -96,9 +96,11 @@ End Sub
 Private Sub cmdDangNhap_Click()
     If blnCaptcha = False Then Exit Sub
     
-    Dim http As Object, formData As String
+    Dim http As Object, formData As String, sessionToken As String
+    On Error GoTo HttpErr
     formData = BuildGdtLoginJson(CStr(Me.txtUser.Value), CStr(Me.txtPass.Value), CStr(Me.txtNhapCaptcha.Value), CStr(ckey))
     Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    http.setTimeouts 5000, 5000, 15000, 15000
     http.Open "POST", BASE_URL & LOGIN_URL, False
     http.setRequestHeader "Content-Type", "application/json"
     http.setRequestHeader "Accept", "application/json"
@@ -116,10 +118,10 @@ Private Sub cmdDangNhap_Click()
     End If
     
     res = http.responseText
-    Set js = CreateObject("Scripting.Dictionary")
-    Set js = JsonConverter.ParseJSON(res)
+    On Error GoTo ResponseErr
+    Set js = ParseGdtAuthObject(res)
     
-    If InStr(1, res, "message") > 0 Then
+    If GdtJsonHasValue(js, "message") Then
         If InStr(1, res, "captcha") Then
             MsgBoxUni js("message") & vbCrLf & "Vui l" & ChrW(242) & "ng nh" & ChrW(7853) & "p l" & ChrW(7841) & "i.", vbCritical, "Thông báo"
         Else
@@ -130,13 +132,15 @@ Private Sub cmdDangNhap_Click()
         Me.lblThatBai.Visible = True
         Exit Sub
     Else
-        cToken = js("token")
+        sessionToken = GdtRequiredAuthText(js, "token")
+        cToken = sessionToken
         bearer = cToken
         
         Me.lblThanhCong.Visible = True
         Me.lblThatBai.Visible = False
         
         ' Luu User/pass neu chua co trong danh sach, va Token
+        On Error GoTo SaveErr
         Call saveUserPassToken
         
         Application.OnTime Time + TimeValue("00:00:01"), "closeForm"
@@ -149,11 +153,21 @@ Private Sub cmdDangNhap_Click()
 HttpErr:
     'LogMsg "Loi mang khi dang nhap: " & err.Description
     MsgBox "Loi mang: " & err.Description, vbCritical
+    Exit Sub
+
+ResponseErr:
+    Me.lblThanhCong.Visible = False
+    Me.lblThatBai.Visible = True
+    MsgBoxUni UniConvert("Pharn hoofi ddawng nhaajp khoong howjp leej. Vui lofng thuwr laji."), vbCritical
+    Exit Sub
+
+SaveErr:
+    MsgBoxUni UniConvert("DDax ddawng nhaajp nhuwng khoong luwu dduwowjc file. Kieerm tra quyeen ghi vaf thuwr laji."), vbExclamation
 
 End Sub
 
 Function layCaptcha() As Boolean
-    layCaptcha = True
+    layCaptcha = False
     'Kiem tra ket noi internet
     If GetInternetConnectedState = False Then
         MsgBoxUni "Kh" & ChrW(244) & "ng c" & ChrW(243) & " k" & ChrW(7871) & "t n" & ChrW(7889) & "i internet.", vbCritical, "No internet"
@@ -161,8 +175,10 @@ Function layCaptcha() As Boolean
         Exit Function
     End If
     
-    Dim http As Object, cContent As String, sMsg As String
+    Dim http As Object, cContent As String, sMsg As String, newKey As String
+    On Error GoTo HttpErr
     Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    http.setTimeouts 5000, 5000, 15000, 15000
     http.Open "GET", BASE_URL & CAPTCHA_URL, False
     http.setRequestHeader "Accept", "application/json"
     http.setRequestHeader "Request-Id", CreateRequestID
@@ -178,17 +194,25 @@ Function layCaptcha() As Boolean
         Exit Function
     End If
     
-    Set js = JsonConverter.ParseJSON(http.responseText)
-    ckey = js("key")
-    cContent = js("content")
+    On Error GoTo ResponseErr
+    Set js = ParseGdtAuthObject(http.responseText)
+    newKey = GdtRequiredAuthText(js, "key")
+    cContent = GdtRequiredAuthText(js, "content")
     
     DoEvents
     Me.txtNhapCaptcha = detectSVGCaptcha(http.responseText)
+    ckey = newKey
+    layCaptcha = True
     
     Exit Function
     
 HttpErr:
     MsgBox "Loi mang khi lay CAPTCHA: " & err.Description
+    layCaptcha = False
+    Exit Function
+
+ResponseErr:
+    MsgBoxUni UniConvert("Pharn hoofi CAPTCHA khoong howjp leej. Vui lofng laays CAPTCHA mowsi."), vbExclamation
     layCaptcha = False
     
 End Function

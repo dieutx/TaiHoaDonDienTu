@@ -29,6 +29,9 @@ Dim mDownloadEntering As Boolean
 Dim mControlStates As Object
 Dim mRunToken As String
 Dim mRunPurchase As Boolean
+Dim mPageTargets As Object
+Dim mPaginationIncomplete As Boolean
+Dim mRunStarted As Double
 
 Private Function RunToken() As String
     If mDownloadRunning Then
@@ -73,6 +76,18 @@ Private Sub cmdChonFolder_Click()
         If .Show <> -1 Then Exit Sub 'Check if user clicked cancel button
         Me.txtXMLFolderPath = .SelectedItems(1) & "\"
     End With
+End Sub
+
+Private Sub PrepareXmlDestination()
+    Dim fso As Object, folder As String
+    If Not Me.chkXmlZip.Value Then Exit Sub
+    folder = Trim$(CStr(Me.txtXMLFolderPath.Value))
+    If Len(folder) = 0 Then Err.Raise 76, , "Missing XML destination"
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    folder = fso.GetAbsolutePathName(folder)
+    If Not fso.FolderExists(folder) Then Err.Raise 76, , "Missing XML destination"
+    Me.txtXMLFolderPath.Value = folder
+    oSaveUnzipFolder = folder
 End Sub
 
 Private Sub cmdPickTuNgay_Click()
@@ -385,7 +400,7 @@ Private Sub ProcessQueuedListRetries( _
                         queued.SellerTaxCode, queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.InvoiceDate) Then Exit Do
                     batchStartRow = totalRow
                     If Not WriteSummaryPage(requestResult.ResponseText, totalRow, invoiceType, sequenceNumber, _
-                        queued.ApiSource, currentEndpoint, queued.InvoiceDate) Then Exit Do
+                        queued.ApiSource, currentEndpoint, queued.InvoiceDate, parsed) Then Exit Do
                     MarkGdtRetrySuccess queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                         queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, _
                         "Parse " & UniConvert("duwx lieeju"), queued.Attempts + requestResult.Attempts, vbNullString, currentEndpoint
@@ -399,8 +414,8 @@ Private Sub ProcessQueuedListRetries( _
                         invoiceBuffer(invoiceCount, 3) = dataItem("khmshdon")
                         invoiceBuffer(invoiceCount, 4) = IIf(queued.ApiSource = "query", 1, 2)
                         invoiceBuffer(invoiceCount, 5) = ISODateValue(dataItem("tdlap"))
-                        invoiceBuffer(invoiceCount, 6) = batchStartRow + pageIndex - 1
-                        invoiceBuffer(invoiceCount, 7) = CLng(Val(dataItem("tthai") & vbNullString))
+                        invoiceBuffer(invoiceCount, 6) = ListTargetRow(dataItem, batchStartRow + pageIndex - 1)
+                        invoiceBuffer(invoiceCount, 7) = GdtInvoiceStatus(SafeJsonText(dataItem, "tthai"))
                         invoiceCount = invoiceCount + 1
                     Next dataItem
                     retryCount = retryCount + pageIndex
@@ -432,15 +447,29 @@ End Sub
 
 Private Function WriteSummaryPage(ByVal responseText As String, ByRef targetRow As Long, _
     ByVal invoiceType As Long, ByRef sequenceNumber As Long, ByVal apiSource As String, _
-    ByVal endpoint As String, ByVal invoiceDate As Variant) As Boolean
+    ByVal endpoint As String, ByVal invoiceDate As Variant, Optional ByVal parsed As Object = Nothing) As Boolean
     On Error GoTo Failed
-    ghiExcel_TongHop responseText, targetRow, invoiceType, sequenceNumber
+    Dim appendStart As Long
+    appendStart = targetRow
+    If parsed Is Nothing Then Set parsed = JsonConverter.ParseJSON(responseText)
+    PrepareGdtResumePage parsed, apiSource, mPageTargets
+    ghiExcel_TongHop responseText, targetRow, invoiceType, sequenceNumber, parsed, mPageTargets
+    CommitGdtResumePage parsed, apiSource, mPageTargets, appendStart, invoiceType
     WriteSummaryPage = True
     Exit Function
 Failed:
     UpsertGdtErrorReport CurrentDirectionName(), apiSource, "", "", "", "", invoiceDate, _
         "Parse " & UniConvert("duwx lieeju"), endpoint, LastGdtStatus, Err.Description, LastGdtAttempts, 0, "Write failed"
     AppendSimpleLog "Summary page write failed: " & apiSource
+End Function
+
+Private Function ListTargetRow(ByVal invoice As Object, ByVal fallback As Long) As Long
+    Dim identity As String
+    ListTargetRow = fallback
+    If mPageTargets Is Nothing Then Exit Function
+    identity = GdtInvoiceIdentity(SafeJsonText(invoice, "nbmst"), SafeJsonText(invoice, "khmshdon"), _
+        SafeJsonText(invoice, "khhdon"), SafeJsonText(invoice, "shdon"))
+    If mPageTargets.Exists(identity) Then ListTargetRow = CLng(mPageTargets(identity))
 End Function
 
 Private Sub SeedListPageState(ByVal endpoint As String, ByVal seenStates As Object)
@@ -525,6 +554,11 @@ Private Function NextJsonInvoiceTask(ByRef invoiceBuffer As Variant, ByVal invoi
     Do While invoiceIndex < invoiceCount
         apiSource = IIf(invoiceBuffer(invoiceIndex, 4) = 1, "query", "sco-query")
         If detailsOnly Then
+            If CanResumeGdtStage(invoiceBuffer, invoiceIndex, "DETAIL") Then
+                AdvanceInvoiceWork UniConvert("DDax cos chi tieest ") & (invoiceIndex + 1), True
+                invoiceIndex = invoiceIndex + 1
+                GoTo NextCandidate
+            End If
             endpointName = "detail"
         Else
             invoiceStatus = CLng(Val(invoiceBuffer(invoiceIndex, 7) & vbNullString))
@@ -644,7 +678,7 @@ End Sub
 
 Private Sub HandleJsonInvoiceResult(ByVal task As clsGdtXmlTask, ByRef invoiceBuffer As Variant, _
     ByVal invoiceType As Long, ByRef detailRow As Long)
-    Dim invoiceIndex As Long, apiSource As String, requestResult As clsGdtRequestResult
+    Dim invoiceIndex As Long, apiSource As String, requestResult As clsGdtRequestResult, firstDetailRow As Long
     invoiceIndex = task.InvoiceIndex
     apiSource = IIf(invoiceBuffer(invoiceIndex, 4) = 1, "query", "sco-query")
     Set requestResult = task.Result
@@ -653,10 +687,14 @@ Private Sub HandleJsonInvoiceResult(ByVal task As clsGdtXmlTask, ByRef invoiceBu
         Exit Sub
     End If
     PublishLastGdtResult requestResult
+    AppendSimpleLog "DETAIL " & (invoiceIndex + 1) & " | HTTP " & requestResult.StatusCode & _
+        " | attempts=" & requestResult.Attempts & " | " & Format$(task.ElapsedSeconds, "0.0") & "s"
     If requestResult.Success Then
+        firstDetailRow = detailRow
         If WriteDetailRecord(requestResult.ResponseText, detailRow, apiSource, task.Endpoint, _
             CStr(invoiceBuffer(invoiceIndex, 0)), CStr(invoiceBuffer(invoiceIndex, 3)), _
             CStr(invoiceBuffer(invoiceIndex, 1)), CStr(invoiceBuffer(invoiceIndex, 2)), invoiceBuffer(invoiceIndex, 5)) Then
+            CommitGdtDetailRows invoiceBuffer, invoiceIndex, firstDetailRow, detailRow
             MarkGdtRetrySuccess CurrentDirectionName(), apiSource, CStr(invoiceBuffer(invoiceIndex, 0)), _
                 CStr(invoiceBuffer(invoiceIndex, 3)), CStr(invoiceBuffer(invoiceIndex, 1)), _
                 CStr(invoiceBuffer(invoiceIndex, 2)), UniConvert("Laasy chi tieest"), requestResult.Attempts
@@ -859,6 +897,7 @@ End Function
 
 Private Sub ProcessQueuedDetailRetries(ByRef detailRow As Long)
     Dim queued As clsGdtRetryItem, requestResult As clsGdtRequestResult
+    Dim firstRetryRow As Long, retryIndex As Long
     If mFinalRetryQueue Is Nothing Then Exit Sub
     EnsureFinalRetryCooldown
     For Each queued In mFinalRetryQueue
@@ -869,8 +908,19 @@ Private Sub ProcessQueuedDetailRetries(ByRef detailRow As Long)
                 vbNullString, "application/json", "application/json, text/plain, */*", False, 1, "DETAIL")
             PublishLastGdtResult requestResult
             If requestResult.Success Then
+                firstRetryRow = detailRow
                 If Not WriteDetailRecord(requestResult.ResponseText, detailRow, queued.ApiSource, queued.Endpoint, _
                     queued.SellerTaxCode, queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.InvoiceDate) Then GoTo NextDetailRetry
+                If GdtResumeSessionActive() Then
+                For retryIndex = 0 To UBound(arrHDChiTiet, 1) - 1
+                    If GdtInvoiceIdentity(CStr(arrHDChiTiet(retryIndex, 0)), CStr(arrHDChiTiet(retryIndex, 3)), CStr(arrHDChiTiet(retryIndex, 1)), CStr(arrHDChiTiet(retryIndex, 2))) = _
+                        GdtInvoiceIdentity(queued.SellerTaxCode, queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber) And _
+                        IIf(arrHDChiTiet(retryIndex, 4) = 1, "query", "sco-query") = queued.ApiSource Then
+                        CommitGdtDetailRows arrHDChiTiet, retryIndex, firstRetryRow, detailRow
+                        Exit For
+                    End If
+                Next retryIndex
+                End If
                 MarkGdtRetrySuccess queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                     queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, "Parse " & UniConvert("duwx lieeju"), _
                     queued.Attempts + requestResult.Attempts
@@ -892,6 +942,7 @@ NextDetailRetry:
 End Sub
 
 Private Sub ResetProgressUI()
+    mInvoiceWorkTotal = 0: mInvoiceWorkDone = 0
     Me.Controls("lblProgressFill").Width = 0
     Me.Controls("lblProgressPercent").caption = "0%"
     Me.Controls("lblProgressMessage").caption = UniConvert("Sawxn safng")
@@ -941,13 +992,19 @@ End Sub
 
 Private Sub AppendSimpleLog(ByVal message As String)
     Dim logLine As String
-    logLine = Format(Now, "hh:mm:ss") & "  " & message
+    logLine = Format(Now, "dd/mm/yyyy hh:mm:ss") & "  " & message
     If Len(Me.Controls("txtSimpleLog").Value) = 0 Then
         Me.Controls("txtSimpleLog").Value = logLine
     Else
         Me.Controls("txtSimpleLog").Value = Me.Controls("txtSimpleLog").Value & vbCrLf & logLine
     End If
-    If Len(Me.Controls("txtSimpleLog").Value) > 5000 Then Me.Controls("txtSimpleLog").Value = Right$(Me.Controls("txtSimpleLog").Value, 4000)
+    If Len(Me.Controls("txtSimpleLog").Value) > 12000 Then
+        Dim retained As String, boundary As Long
+        retained = Right$(Me.Controls("txtSimpleLog").Value, 10000)
+        boundary = InStr(1, retained, vbCrLf)
+        If boundary > 0 Then retained = Mid$(retained, boundary + 2)
+        Me.Controls("txtSimpleLog").Value = retained
+    End If
     Me.Controls("txtSimpleLog").SelStart = Len(Me.Controls("txtSimpleLog").Value)
 End Sub
 
@@ -1025,6 +1082,7 @@ Private Function TryRegisterNextListState( _
         Exit Function
     End If
     If seenStates.Exists(nextState) Then
+        mPaginationIncomplete = True
         AppendSimpleLog apiSource & UniConvert(": API trar laji state cux; duwfng ddeer trasnh lawjp voo hajn.")
         Exit Function
     End If
@@ -1177,6 +1235,9 @@ End Sub
 Private Sub cmdTaiHoaDon_Click()
     If mDownloadRunning Or mDownloadEntering Then Exit Sub
     mDownloadEntering = True
+    mRunStarted = GdtClockSeconds()
+    mPaginationIncomplete = False
+    GdtReportSession = CreateRequestID()
     On Error GoTo DownloadFailed
     Application.ScreenUpdating = False
     ResetGdtOperationControl
@@ -1220,6 +1281,7 @@ Private Sub cmdTaiHoaDon_Click()
     
     Dim sMsg As String, ret As Long
     Dim lrTongMua As Long, lrTongBan As Long, lrChiTietMua As Long, lrChiTietBan As Long
+    PrepareXmlDestination
     
     'Lay dong cuoi tung Sheet de Xóa
     lrTongMua = ThisWorkbook.Sheets("TongHopHD_Mua").Cells(ThisWorkbook.Sheets("TongHopHD_mua").Rows.count, "C").End(xlUp).row
@@ -1228,7 +1290,7 @@ Private Sub cmdTaiHoaDon_Click()
     lrChiTietBan = ThisWorkbook.Sheets("ChiTietHD_Ban").Cells(ThisWorkbook.Sheets("ChiTietHD_Ban").Rows.count, "C").End(xlUp).row
     
     sMsg = "B" & ChrW(7841) & "n c" & ChrW(243) & " mu" & ChrW(7889) & "n X" & ChrW(243) & "a d" & ChrW(7919) & " li" & ChrW(7879) & "u c" & ChrW(361) & " kh" & ChrW(244) & "ng?"
-    sMsg = sMsg & vbCrLf & "Ch" & ChrW(7885) & "n [Yes] " & ChrW(273) & ChrW(7875) & " X" & ChrW(243) & "a ho" & ChrW(7863) & "c [No] " & ChrW(273) & ChrW(7875) & " ghi k" & ChrW(7871) & " ti" & ChrW(7871) & "p."
+    sMsg = sMsg & vbCrLf & UniConvert("Chojn [Yes] ddeer Xosa hoawjc [No] ddeer tari boor sung phaan cofn thieesu.")
     ret = MsgBoxUni(sMsg, vbYesNo + vbInformation, UniConvert("Thoong baso"))
     
     'Timer----------
@@ -1250,9 +1312,11 @@ Private Sub cmdTaiHoaDon_Click()
             ThisWorkbook.Sheets("TongHopHD_Ban").Range("A3:BZ" & lrTongBan).ClearContents
             ThisWorkbook.Sheets("ChiTietHD_Ban").Range("A3:BZ" & lrChiTietBan).ClearContents
         End If
+        BeginGdtResume GdtReportAccount, IIf(mRunPurchase, 1, 2), False
         Call taiHoaDon_Total
         
     Else
+        BeginGdtResume GdtReportAccount, IIf(mRunPurchase, 1, 2), True
         If IIf(mDownloadRunning, mRunPurchase, Me.optMua.Value) Then
             Call taiHoaDon_Total(lrTongMua + 1, lrChiTietMua + 1)
         Else
@@ -1261,9 +1325,9 @@ Private Sub cmdTaiHoaDon_Click()
     End If
     
     '----------------------
-    kt = Timer - bd
+    kt = GdtClockSeconds() - mRunStarted
     Dim s As String
-    s = " Thoi gian xu ly: " & Format(kt / 86400, "hh:mm:ss")
+    s = UniConvert(" Thowfi gian xuwr lys: ") & GdtElapsedText(kt)
     '----------------------
     Me.lblStatus.caption = s
     Me.lblStatus.Visible = True
@@ -1272,10 +1336,20 @@ Private Sub cmdTaiHoaDon_Click()
         AppendSimpleLog Me.Controls("lblProgressMessage").caption
     ElseIf GdtStopRequested Then
         Me.Controls("lblProgressMessage").caption = UniConvert("DDax duwfng theo yeeu caafu. Duwx lieeju ddax tari vaaxn dduwowjc giuwx laji.")
+        If Len(GdtStopReason) > 0 Then Me.Controls("lblProgressMessage").caption = GdtStopReason
         AppendSimpleLog Me.Controls("lblProgressMessage").caption
     Else
-        SetProgress 100, UniConvert("Hoafn taast. ") & Trim$(s), True
+        Dim remainingErrors As Long, completion As String
+        remainingErrors = CountGdtSessionErrors(CurrentDirectionName())
+        completion = UniConvert("Hoafn taast. ")
+        If remainingErrors > 0 Or mPaginationIncomplete Then
+            completion = UniConvert("DDax xuwr lys, cofn looxi: ") & remainingErrors & ". "
+            If mPaginationIncomplete Then completion = completion & UniConvert("Danh sasch cos theer chuwa dduwr. ")
+        End If
+        SetProgress 100, completion & Trim$(s), True
     End If
+    AppendSimpleLog "Resume: duplicate=" & GdtDuplicatesSkipped & "; completed stages=" & GdtStagesSkipped
+    EndGdtResume
 
     SetDownloadControlState False
     Application.ScreenUpdating = True
@@ -1287,11 +1361,19 @@ Private Sub cmdTaiHoaDon_Click()
     Exit Sub
 
 DownloadFailed:
-    AppendSimpleLog UniConvert("Looxi: ") & Err.Description
+    Dim downloadError As String
+    downloadError = Err.Description
+    Resume DownloadFailureCleanup
+DownloadFailureCleanup:
+    On Error Resume Next
+    UpsertGdtErrorReport CurrentDirectionName(), "core", "", "", "", "", Empty, "Download", "INTERNAL:DOWNLOAD", 0, downloadError, 0, 0, "Failed"
+    AppendSimpleLog UniConvert("Looxi: ") & downloadError
     MsgBoxUni UniConvert("Cos looxi phast sinh. Vui lofng kieerm tra BaoCao_LoiTaiHD."), vbExclamation, UniConvert("Thoong baso")
     SetDownloadControlState False
     Application.ScreenUpdating = True
     Application.StatusBar = False
+    FinalizeGdtResumeDetails
+    EndGdtResume
 End Sub
 
 Public Sub ReportRetryProgress(ByVal message As String)
@@ -1398,7 +1480,7 @@ nextPage:
             GoTo startSco
         End If
         batchStartRow = row
-        If Not WriteSummaryPage(res, row, loaiHD, stt, "query", url2, arrDate(k, 1)) Then GoTo startSco
+        If Not WriteSummaryPage(res, row, loaiHD, stt, "query", url2, arrDate(k, 1), js) Then GoTo startSco
         MarkGdtRetrySuccess CurrentDirectionName(), "query", vbNullString, vbNullString, vbNullString, _
             vbNullString, UniConvert("Laasy danh sasch"), LastGdtAttempts, vbNullString, url2
         MarkGdtRetrySuccess CurrentDirectionName(), "query", vbNullString, vbNullString, vbNullString, _
@@ -1416,8 +1498,8 @@ nextPage:
             arrHDChiTiet_tmp(n, 3) = item("khmshdon")
             arrHDChiTiet_tmp(n, 4) = 1  'query
             arrHDChiTiet_tmp(n, 5) = ISODateValue(item("tdlap"))
-            arrHDChiTiet_tmp(n, 6) = batchStartRow + pageIndex - 1
-            arrHDChiTiet_tmp(n, 7) = CLng(Val(item("tthai") & vbNullString))
+            arrHDChiTiet_tmp(n, 6) = ListTargetRow(item, batchStartRow + pageIndex - 1)
+            arrHDChiTiet_tmp(n, 7) = GdtInvoiceStatus(SafeJsonText(item, "tthai"))
             n = n + 1
         Next
         queryCount = queryCount + pageIndex
@@ -1457,7 +1539,7 @@ nextPage_sco:
             GoTo nextDatePeriod
         End If
         batchStartRow = row
-        If Not WriteSummaryPage(res, row, loaiHD, stt, "sco-query", url2, arrDate(k, 1)) Then GoTo nextDatePeriod
+        If Not WriteSummaryPage(res, row, loaiHD, stt, "sco-query", url2, arrDate(k, 1), js) Then GoTo nextDatePeriod
         MarkGdtRetrySuccess CurrentDirectionName(), "sco-query", vbNullString, vbNullString, vbNullString, _
             vbNullString, UniConvert("Laasy danh sasch"), LastGdtAttempts, vbNullString, url2
         MarkGdtRetrySuccess CurrentDirectionName(), "sco-query", vbNullString, vbNullString, vbNullString, _
@@ -1475,8 +1557,8 @@ nextPage_sco:
             arrHDChiTiet_tmp(n, 3) = item("khmshdon")
             arrHDChiTiet_tmp(n, 4) = 2  'sco-query
             arrHDChiTiet_tmp(n, 5) = ISODateValue(item("tdlap"))
-            arrHDChiTiet_tmp(n, 6) = batchStartRow + pageIndex - 1
-            arrHDChiTiet_tmp(n, 7) = CLng(Val(item("tthai") & vbNullString))
+            arrHDChiTiet_tmp(n, 6) = ListTargetRow(item, batchStartRow + pageIndex - 1)
+            arrHDChiTiet_tmp(n, 7) = GdtInvoiceStatus(SafeJsonText(item, "tthai"))
             n = n + 1
         Next
         scoCount = scoCount + pageIndex
@@ -1545,9 +1627,9 @@ errLog:
     Application.ScreenUpdating = True
     Application.StatusBar = False
     
-    If Not GdtStopRequested And Not GdtAuthenticationFailed Then MsgBox "Xong."
 
 cleanup:
+    FinalizeGdtResumeDetails
     FinalizeInvoiceSheets loaiHD
     Erase arrDate
     Erase arrHDChiTiet
@@ -1657,6 +1739,11 @@ Sub taiXML_zip(soHD As Long)
         If GdtStopRequested Or GdtAuthenticationFailed Then Exit Do
         If Not GdtPauseRequested Then
             Do While nextIndex < soHD And tasks.Count < throttle.CurrentConcurrency
+                If CanResumeGdtStage(arrHDChiTiet, nextIndex, "XML", CStr(Me.txtXMLFolderPath.Value), CStr(oSaveUnzipFolder)) Then
+                    AdvanceInvoiceWork UniConvert("DDax cos XML ") & (nextIndex + 1), True
+                    nextIndex = nextIndex + 1
+                    GoTo NextXmlCandidate
+                End If
                 endpoint = "https://hoadondientu.gdt.gov.vn/api/" & IIf(arrHDChiTiet(nextIndex, 4) = 1, "query", "sco-query") & _
                     "/invoices/export-xml?nbmst=" & arrHDChiTiet(nextIndex, 0) & "&khhdon=" & arrHDChiTiet(nextIndex, 1) & _
                     "&shdon=" & arrHDChiTiet(nextIndex, 2) & "&khmshdon=" & arrHDChiTiet(nextIndex, 3)
@@ -1664,6 +1751,7 @@ Sub taiXML_zip(soHD As Long)
                 task.Configure nextIndex, endpoint, RunToken()
                 tasks.Add task
                 nextIndex = nextIndex + 1
+NextXmlCandidate:
             Loop
         End If
         active = 0
@@ -1698,12 +1786,15 @@ Sub taiXML_zip(soHD As Long)
     If Not GdtStopRequested And Not GdtAuthenticationFailed Then ProcessQueuedXmlRetries
     Exit Sub
 Failed:
-    AppendSimpleLog "XML scheduler: " & Err.Description
+    Dim failureNumber As Long, failureText As String
+    failureNumber = Err.Number: failureText = Err.Description
+    AppendSimpleLog "XML scheduler: " & failureText
     If Not tasks Is Nothing Then
         For Each task In tasks
             task.Cancel
         Next task
     End If
+    Err.Raise failureNumber, "taiXML_zip", failureText
 End Sub
 
 Private Sub HandleXmlResult(ByVal task As clsGdtXmlTask)
@@ -1712,9 +1803,12 @@ Private Sub HandleXmlResult(ByVal task As clsGdtXmlTask)
     apiSource = IIf(arrHDChiTiet(m, 4) = 1, "query", "sco-query")
     Set result = task.Result
     PublishLastGdtResult result
+    AppendSimpleLog "XML " & (m + 1) & " | HTTP " & result.StatusCode & " | attempts=" & result.Attempts & _
+        " | " & Format$(task.ElapsedSeconds, "0.0") & "s"
     If result.Success Then
         If TrySaveXml(result.ResponseBody, apiSource, task.Endpoint, CStr(arrHDChiTiet(m, 0)), _
             CStr(arrHDChiTiet(m, 3)), CStr(arrHDChiTiet(m, 1)), CStr(arrHDChiTiet(m, 2)), arrHDChiTiet(m, 5)) Then
+            MarkGdtStageComplete arrHDChiTiet, m, "XML", 0, CStr(Me.txtXMLFolderPath.Value), CStr(oSaveUnzipFolder)
             MarkGdtRetrySuccess CurrentDirectionName(), apiSource, CStr(arrHDChiTiet(m, 0)), CStr(arrHDChiTiet(m, 3)), _
                 CStr(arrHDChiTiet(m, 1)), CStr(arrHDChiTiet(m, 2)), UniConvert("Tari XML"), result.Attempts
         End If
@@ -1786,6 +1880,17 @@ Private Sub ProcessQueuedXmlRetries()
             If requestResult.Success Then
                 If Not TrySaveXml(requestResult.ResponseBody, queued.ApiSource, queued.Endpoint, queued.SellerTaxCode, _
                     queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.InvoiceDate) Then GoTo NextXmlRetry
+                Dim xmlRetryIndex As Long
+                If GdtResumeSessionActive() Then
+                For xmlRetryIndex = 0 To UBound(arrHDChiTiet, 1) - 1
+                    If GdtInvoiceIdentity(CStr(arrHDChiTiet(xmlRetryIndex, 0)), CStr(arrHDChiTiet(xmlRetryIndex, 3)), CStr(arrHDChiTiet(xmlRetryIndex, 1)), CStr(arrHDChiTiet(xmlRetryIndex, 2))) = _
+                        GdtInvoiceIdentity(queued.SellerTaxCode, queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber) And _
+                        IIf(arrHDChiTiet(xmlRetryIndex, 4) = 1, "query", "sco-query") = queued.ApiSource Then
+                        MarkGdtStageComplete arrHDChiTiet, xmlRetryIndex, "XML", 0, CStr(Me.txtXMLFolderPath.Value), CStr(oSaveUnzipFolder)
+                        Exit For
+                    End If
+                Next xmlRetryIndex
+                End If
                 MarkGdtRetrySuccess queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                     queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.Stage, _
                     queued.Attempts + requestResult.Attempts

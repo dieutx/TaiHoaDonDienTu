@@ -2,6 +2,17 @@
 
 Roadmap chỉ ghi nhận hướng cải thiện. Không item nào được coi là đã cam kết triển khai nếu chưa có Issue và phạm vi được maintainer chấp thuận.
 
+## Core review 13/10/2026
+
+Bằng chứng trước sửa: [CORE_REVIEW_2026-10-13.md](CORE_REVIEW_2026-10-13.md). Phần đã triển khai ở source đang phát triển và giới hạn: [CORE_FIXES_2026-10-13.md](CORE_FIXES_2026-10-13.md); chưa thuộc release công khai 6.7.6.
+
+- [Đã vá] Text/số/ngày trong các writer được sửa, fallback mã trạng thái mới, rollback upsert, loại trùng và tải bổ sung chi tiết/XML.
+- [Đã vá một phần] Lỗi phiên, cursor lặp, scheduler, log và thời gian; còn thống kê đầy đủ thành công/không XML/chưa chạy theo công đoạn.
+- [Đã vá] Retry-After số giây/IMF-fixdate và overflow; chưa nhận định dạng ngày HTTP lỗi thời.
+- [Đã vá một phần] Đọc account/số dòng theo khối, chỉ renumber khi xóa, dùng JSON đã parse và cache thuế; còn benchmark/thay writer từng ô.
+- [Đã triển khai có giới hạn] Resume sau lưu/đóng Excel bằng quét lại kỳ, không lưu cursor/credential. Cần checksum và kiểm tra nội dung chi tiết đã sửa thủ công.
+- [Còn đề xuất] Tải lại riêng lỗi được chọn từ báo cáo, kể cả LIST/RELATED; dọn bản trùng lịch sử có kiểm soát.
+
 ## Pre-public security review
 
 - [Ưu tiên cao] Sanitize giá trị giống JWT tại `template/App_Template.xlsm`, sheet `MENU`, ô `D7`; thu hồi/rotate phiên liên quan và build lại release.
