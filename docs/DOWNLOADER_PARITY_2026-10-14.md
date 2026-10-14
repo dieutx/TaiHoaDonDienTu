@@ -64,3 +64,16 @@ không lưu và hash artifact phải giữ nguyên.
 
 Chưa xác minh trên GDT thật hoặc Office 32-bit. Không tăng version, sửa
 template hoặc publish workbook release trong thay đổi này.
+
+## Kết quả kiểm tra cuối
+
+Bản build riêng trong `work/review/vba-release/` của repo PowerShell đã đạt
+kiểm tra cấu trúc/source và cả 6 UserForm, public workbook, detail, related,
+35 ca ngày, review fixes, extended review, compatibility, 44 nhóm core/resume,
+fixture parity mới và JSON song song. Không có file dữ liệu thật trong diff.
+
+Runner đi đến test cập nhật cuối rồi exit 1 do bản sao verification chưa có
+`dist/`. Tạo thư mục đó và chạy lại riêng `Test-UpdateRuntime.ps1`: phiên bản
+mới/cùng bản/JSON sai/offline đều PASS, exit 0. Mọi bài kiểm tra đã đạt qua
+các lần chạy trên; không ghi rằng một lần runner đã kết thúc với thông báo
+`RELEASE CHECKS PASSED`. Template và workbook của người dùng được giữ nguyên.
