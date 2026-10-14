@@ -1813,10 +1813,69 @@ Private Sub HandleXmlResult(ByVal task As clsGdtXmlTask)
                 CStr(arrHDChiTiet(m, 1)), CStr(arrHDChiTiet(m, 2)), UniConvert("Tari XML"), result.Attempts
         End If
     ElseIf Not GdtStopRequested Then
+        If RecoverXmlWithDetail(m, task.Endpoint, result) Then Exit Sub
+        PublishLastGdtResult result
         QueueFinalRetry apiSource, CStr(arrHDChiTiet(m, 0)), CStr(arrHDChiTiet(m, 3)), _
             CStr(arrHDChiTiet(m, 1)), CStr(arrHDChiTiet(m, 2)), arrHDChiTiet(m, 5), UniConvert("Tari XML"), task.Endpoint, "XML"
     End If
 End Sub
+
+Private Function RecoverXmlWithDetail(ByVal invoiceIndex As Long, ByVal xmlEndpoint As String, _
+    ByVal xmlResult As clsGdtRequestResult) As Boolean
+    Dim apiSource As String, seller As String, template As String, series As String, number As String
+    Dim endpoint As String, action As String, parsed As Object, detailResult As clsGdtRequestResult
+    Dim ws As Worksheet, detailRow As Long, firstRow As Long, note As String
+    On Error GoTo Failed
+    If xmlResult.StatusCode <> 500 And xmlResult.StatusCode <> 504 Then Exit Function
+    If GdtStopRequested Or GdtAuthenticationFailed Then Exit Function
+    apiSource = IIf(arrHDChiTiet(invoiceIndex, 4) = 1, "query", "sco-query")
+    seller = CStr(arrHDChiTiet(invoiceIndex, 0)): template = CStr(arrHDChiTiet(invoiceIndex, 3))
+    series = CStr(arrHDChiTiet(invoiceIndex, 1)): number = CStr(arrHDChiTiet(invoiceIndex, 2))
+    If CanResumeGdtStage(arrHDChiTiet, invoiceIndex, "DETAIL") Then
+        note = "Existing verified detail retained; no original XML."
+        GoTo Recovered
+    End If
+    ' Verified query/detail endpoint, with the current session token and retry policy.
+    endpoint = BuildRelationEndpoint("query", "detail", seller, template, series, number)
+    action = "Xem%20h%C3%B3a%20%C4%91%C6%A1n%20(h%C3%B3a%20%C4%91%C6%A1n%20" & _
+        IIf(mRunPurchase, "mua%20v%C3%A0o)", "b%C3%A1n%20ra)")
+    AppendSimpleLog "XML HTTP " & xmlResult.StatusCode & "; fetching API detail: " & number
+    WaitGdtMilliseconds GetSleepDelayMs()
+    If Not WaitForGdtControl() Then Exit Function
+    Set detailResult = ExecuteGdtRequest("GET", endpoint, RunToken(), vbNullString, _
+        "application/json", "application/json, text/plain, */*", False, GDT_MAX_RETRIES, "DETAIL", action)
+    PublishLastGdtResult detailResult
+    If Not detailResult.Success Then Err.Raise 5, , "API detail HTTP " & detailResult.StatusCode
+    Set parsed = JsonConverter.ParseJSON(detailResult.ResponseText)
+    If TypeName(parsed) <> "Dictionary" Then Err.Raise 5, , "Invalid API detail object"
+    If GdtJsonHasError(parsed) Then Err.Raise 5, , "API detail error response"
+    If GdtInvoiceIdentity(SafeJsonText(parsed, "nbmst"), SafeJsonText(parsed, "khmshdon"), _
+        SafeJsonText(parsed, "khhdon"), SafeJsonText(parsed, "shdon")) <> _
+        GdtInvoiceIdentity(seller, template, series, number) Then Err.Raise 5, , "API detail invoice identity mismatch"
+    Set ws = ThisWorkbook.Worksheets(IIf(mRunPurchase, "ChiTietHD_Mua", "ChiTietHD_Ban"))
+    detailRow = ws.Cells(ws.Rows.Count, 3).End(xlUp).Row + 1
+    If detailRow < 3 Then detailRow = 3
+    firstRow = detailRow
+    If Not WriteDetailRecord(detailResult.ResponseText, detailRow, apiSource, endpoint, seller, template, _
+        series, number, arrHDChiTiet(invoiceIndex, 5)) Then Err.Raise 5, , "API detail parse/write failed"
+    CommitGdtDetailRows arrHDChiTiet, invoiceIndex, firstRow, detailRow
+    MarkGdtRetrySuccess CurrentDirectionName(), apiSource, seller, template, series, number, _
+        UniConvert("Laasy chi tieest"), detailResult.Attempts
+    MarkGdtRetrySuccess CurrentDirectionName(), apiSource, seller, template, series, number, _
+        "Parse " & UniConvert("duwx lieeju"), detailResult.Attempts
+    note = "API detail written to detail sheet; list summary retained; no original XML."
+Recovered:
+    UpsertGdtErrorReport CurrentDirectionName(), apiSource, seller, template, series, number, _
+        arrHDChiTiet(invoiceIndex, 5), UniConvert("Tari XML"), xmlEndpoint, xmlResult.StatusCode, _
+        xmlResult.ErrorMessage, xmlResult.Attempts, xmlResult.RetryAfterSeconds, "Recovered from API detail (no XML)", note
+    AppendSimpleLog "API detail recovered: " & number & " (no XML)"
+    RecoverXmlWithDetail = True
+    Exit Function
+Failed:
+    xmlResult.ErrorMessage = xmlResult.ErrorMessage & "; API detail fallback failed: " & Err.Description
+    AppendSimpleLog "API detail fallback failed: " & number
+    Err.Clear
+End Function
 
 Private Function TrySaveXml(ByVal body As Variant, ByVal apiSource As String, ByVal endpoint As String, _
     ByVal seller As String, ByVal template As String, ByVal series As String, ByVal number As String, ByVal invoiceDate As Variant) As Boolean
@@ -1895,6 +1954,18 @@ Private Sub ProcessQueuedXmlRetries()
                     queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.Stage, _
                     queued.Attempts + requestResult.Attempts
             Else
+                Dim detailRetryIndex As Long
+                For detailRetryIndex = 0 To UBound(arrHDChiTiet, 1) - 1
+                    If GdtInvoiceIdentity(CStr(arrHDChiTiet(detailRetryIndex, 0)), CStr(arrHDChiTiet(detailRetryIndex, 3)), _
+                        CStr(arrHDChiTiet(detailRetryIndex, 1)), CStr(arrHDChiTiet(detailRetryIndex, 2))) = _
+                        GdtInvoiceIdentity(queued.SellerTaxCode, queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber) And _
+                        IIf(arrHDChiTiet(detailRetryIndex, 4) = 1, "query", "sco-query") = queued.ApiSource Then
+                        requestResult.Attempts = requestResult.Attempts + queued.Attempts
+                        If RecoverXmlWithDetail(detailRetryIndex, queued.Endpoint, requestResult) Then GoTo NextXmlRetry
+                        requestResult.Attempts = requestResult.Attempts - queued.Attempts
+                        Exit For
+                    End If
+                Next detailRetryIndex
                 UpsertGdtErrorReport queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                     queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.InvoiceDate, _
                     queued.Stage, queued.Endpoint, requestResult.StatusCode, requestResult.ErrorMessage, _

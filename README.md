@@ -109,3 +109,6 @@ Dự án phát triển từ ý tưởng và công cụ Excel VBA do thành viên
 [Tải hóa đơn điện tử – Giải Pháp Excel](https://www.giaiphapexcel.com/diendan/threads/t%E1%BA%A3i-h%C3%B3a-%C4%91%C6%A1n-%C4%91i%E1%BB%87n-t%E1%BB%AD-https-hoadondientu-gdt-gov-vn-excel-vba.171723/)
 
 Đây là dự án cộng đồng, không phải sản phẩm chính thức của cơ quan thuế. Repository hiện chưa công bố giấy phép phần mềm; xem thêm [NOTICE.md](NOTICE.md).
+
+Source đang phát triển: phục hồi dữ liệu chi tiết qua API khi XML lỗi 500/504,
+giữ giãn cách cấu hình sau 429. Xem [phạm vi và kiểm thử](docs/DOWNLOADER_PARITY_2026-10-14.md).
