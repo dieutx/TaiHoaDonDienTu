@@ -195,10 +195,10 @@ Public Function ExtendedRelationRetry(ByVal baseUrl As String, ByVal mode As Lon
     queued.InvoiceSeries = "FIXTURE": queued.InvoiceNumber = "42": queued.TargetRow = 480
     If mode = 2 Then
         queued.ResponseKind = "RELATIVE": queued.Stage = "RELATIVE"
-        queued.Endpoint = baseUrl & "/relative?invalid=yes"
+        queued.Endpoint = baseUrl & "/api/query/invoices/relative?invalid=yes"
     Else
         queued.ResponseKind = "RELATED": queued.Stage = "RELATED"
-        If mode = 0 Then queued.Endpoint = baseUrl & "/bad-related" Else queued.Endpoint = baseUrl & "/error-related"
+        If mode = 0 Then queued.Endpoint = baseUrl & "/api/query/invoices/related?mode=bad" Else queued.Endpoint = baseUrl & "/api/query/invoices/related?mode=error"
     End If
     Set ws = EnsureGdtErrorReportSheet()
     ws.Rows("2:100").ClearContents
@@ -206,7 +206,7 @@ Public Function ExtendedRelationRetry(ByVal baseUrl As String, ByVal mode As Lon
     mFinalRetryQueue.Add queued
     ProcessQueuedRelationRetries 1
     If ws.Cells(2, 10).Value2 <> queued.Stage Then Err.Raise 5, , "HTTP 200 with invalid related response cleared original error; mode=" & mode
-    If mode = 2 Then queued.Endpoint = baseUrl & "/relative?valid=yes" Else queued.Endpoint = baseUrl & "/empty-related"
+    If mode = 2 Then queued.Endpoint = baseUrl & "/api/query/invoices/relative?valid=yes" Else queued.Endpoint = baseUrl & "/api/query/invoices/related?mode=empty"
     ProcessQueuedRelationRetries 1
     If ws.Cells(ws.Rows.Count, 1).End(xlUp).Row <> 1 Then Err.Raise 5, , "valid related retry left stale parse/download errors"
     ExtendedRelationRetry = "PASS"
@@ -287,15 +287,15 @@ End Function
                     $responseText = $summaryJson
                     if ($path -eq '/token') {
                         $responseText = if ($authorization -eq 'Bearer fixture-original') { '{"ok":true}' } else { '{"ok":false}' }
-                    } elseif ($path -eq '/bad-related') {
+                    } elseif ($path -eq '/api/query/invoices/related?mode=bad') {
                         $responseText = '{bad json'
-                    } elseif ($path -eq '/error-related') {
+                    } elseif ($path -eq '/api/query/invoices/related?mode=error') {
                         $responseText = '{"error":"fixture"}'
-                    } elseif ($path -eq '/empty-related') {
+                    } elseif ($path -eq '/api/query/invoices/related?mode=empty') {
                         $responseText = '{"hdtbssrses":[]}'
-                    } elseif ($path -eq '/relative?invalid=yes') {
+                    } elseif ($path -eq '/api/query/invoices/relative?invalid=yes') {
                         $responseText = '{}'
-                    } elseif ($path -eq '/relative?valid=yes') {
+                    } elseif ($path -eq '/api/query/invoices/relative?valid=yes') {
                         $responseText = '[]'
                     }
                     $body = [Text.Encoding]::UTF8.GetBytes($responseText)

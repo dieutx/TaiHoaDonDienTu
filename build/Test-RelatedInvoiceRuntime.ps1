@@ -21,6 +21,12 @@ try {
     $excel.EnableEvents = $false
     $excel.AutomationSecurity = 1
     $workbook = $excel.Workbooks.Open($BuiltWorkbook, 0, $false)
+    $layoutSheet = $workbook.Worksheets.Item('TongHopHD_Ban')
+    foreach ($row in @(3, 5, 6, 7)) {
+        $layoutSheet.Rows.Item($row).WrapText = $true
+        $layoutSheet.Rows.Item($row).VerticalAlignment = -4107 # xlBottom
+    }
+    Release-ComObject $layoutSheet
     $testModule = $workbook.VBProject.VBComponents.Add(1)
     $testModule.Name = 'modCodexRelatedSmokeTest'
 
@@ -207,6 +213,14 @@ try {
     Release-ComObject $sheet; $sheet = $null
 
     $workbook.VBProject.VBComponents.Remove($testModule)
+    $layoutSheet = $workbook.Worksheets.Item('TongHopHD_Ban')
+    foreach ($row in @(3, 5, 6, 7)) {
+        if ($layoutSheet.Rows.Item($row).WrapText -ne $false -or
+            $layoutSheet.Rows.Item($row).VerticalAlignment -ne -4108) {
+            throw "Related writer re-enabled wrapping or changed vertical alignment at row $row."
+        }
+    }
+    Release-ComObject $layoutSheet
     Release-ComObject $testModule; $testModule = $null
     $workbook.Close($false); Release-ComObject $workbook; $workbook = $null
 

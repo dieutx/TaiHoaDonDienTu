@@ -51,6 +51,11 @@ try {
     }
 
     foreach ($sheet in @($workbook.Worksheets)) {
+        $cells = $sheet.Cells
+        if ($cells.WrapText -ne $false -or $cells.VerticalAlignment -ne -4108) {
+            throw "Sheet $($sheet.Name) must disable Wrap Text and use vertical center alignment."
+        }
+        Release-ComObject $cells
         $ownerRange = switch ($sheet.Name) {
             'TongHopHD_Mua' { 'BM3:BN1048576' }
             'TongHopHD_Ban' { 'BM3:BN1048576' }

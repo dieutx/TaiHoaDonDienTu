@@ -64,6 +64,8 @@ Public Sub Tick(ByVal throttle As clsGdtXmlThrottle, ByVal activeCount As Long)
         Result.ResponseBody = Empty
         Result.ResponseText = vbNullString
         Result.RetryAfterSeconds = 0
+        Result.NotBefore = 0
+        Result.InvalidJsonBody = False
         mStarted = atTime
         If mFirstStarted = 0 Then mFirstStarted = atTime
         throttle.Started atTime
@@ -101,10 +103,20 @@ Public Sub Tick(ByVal throttle As clsGdtXmlThrottle, ByVal activeCount As Long)
     Result.ResponseText = responseTextValue
     Result.ResponseBody = responseBodyValue
     If IsSuccessfulGdtStatus(Result.StatusCode) And readOk Then
-        Result.Success = True
-        Result.ErrorMessage = vbNullString
-        Result.ShouldQueueFinalRetry = False
-        Complete
+        If Not mExpectBinary And IsGdtMarkupResponse(Result.ResponseText) Then
+            ' HTTP 200 with a web page body: the JSON API never answered, so this
+            ' is a transport failure and the slow down policy applies.
+            Result.InvalidJsonBody = True
+            Result.ErrorMessage = BuildGdtMarkupResponseMessage(Result.StatusCode, _
+                Result.ResponseText, ReadGdtResponseContentType(mHttp))
+            throttle.RateLimited CalculateGdtRetrySeconds(Result.Attempts, Result.RetryAfterSeconds, 0), atTime
+            RetryOrComplete atTime
+        Else
+            Result.Success = True
+            Result.ErrorMessage = vbNullString
+            Result.ShouldQueueFinalRetry = False
+            Complete
+        End If
     ElseIf Result.StatusCode = 401 Or Result.StatusCode = 403 Then
         GdtAuthenticationFailed = True
         Result.AuthenticationFailure = True
@@ -116,6 +128,7 @@ Public Sub Tick(ByVal throttle As clsGdtXmlThrottle, ByVal activeCount As Long)
         Complete
     Else
         Result.RetryAfterSeconds = ReadRetryAfterSeconds(mHttp)
+        If Result.RetryAfterSeconds > 0 Then Result.NotBefore = GdtClockSeconds() + Result.RetryAfterSeconds
         Result.ErrorMessage = BuildHttpErrorMessage(Result.StatusCode, Result.ResponseText)
         If Not readOk Then Result.StatusCode = 0: Result.ErrorMessage = readError
         If Result.StatusCode = 429 Then throttle.RateLimited Result.RetryAfterSeconds, atTime
@@ -134,12 +147,15 @@ TransportFailed:
 End Sub
 
 Private Sub RetryOrComplete(ByVal atTime As Double)
+    Dim retryable As Boolean
+
     Running = False
     Set mHttp = Nothing
-    If IsRetryableGdtStatus(Result.StatusCode) And Result.Attempts < mMaxAttempts Then
+    retryable = IsRetryableGdtStatus(Result.StatusCode) Or Result.InvalidJsonBody
+    If retryable And Result.Attempts < mMaxAttempts Then
         mDue = atTime + CalculateGdtRetrySeconds(Result.Attempts, Result.RetryAfterSeconds)
     Else
-        Result.ShouldQueueFinalRetry = IsRetryableGdtStatus(Result.StatusCode)
+        Result.ShouldQueueFinalRetry = retryable
         Complete
     End If
 End Sub

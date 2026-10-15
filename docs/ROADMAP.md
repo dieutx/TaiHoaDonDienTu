@@ -35,6 +35,12 @@ Bằng chứng trước sửa: [CORE_REVIEW_2026-10-13.md](CORE_REVIEW_2026-10-1
 
 ## User Experience
 
+- Review source 15/10/2026, cần fixture runtime riêng trước khi sửa:
+  - `cmdTaiHoaDon_Click`: các nhánh thoát sớm do ngày/đầu vào không hợp lệ cần trả chip trạng thái về chờ thay vì để `running`.
+  - `HandleJsonInvoiceResult`: chỉ ghi log thành công sau khi parse, kiểm tra định danh và ghi Excel thành công; hiện log được thêm trước writer.
+  - `RefreshSummary`: tách nhãn số chi tiết đã ghi với số XML đã lưu, tránh nhãn “Đã tải” dùng riêng `mDetailDone` khi chỉ chọn XML.
+  - `RefreshEta`: ghi rõ ETA của pha chi tiết, loại thời gian tạm dừng và tránh ngụ ý XML đã hoàn tất khi chi tiết xong.
+  - Đặt tên nút tải lại/báo cáo theo hành vi hiện có; triển khai tải lại riêng từ báo cáo trong task riêng.
 - Bổ sung screenshot đã sanitize cho luồng đăng nhập và tải hóa đơn.
 - Cải thiện hướng dẫn xử lý lỗi ngay trên form mà không thay đổi API flow.
 - Chuẩn hóa thông báo lỗi mạng, xác thực và parse response.

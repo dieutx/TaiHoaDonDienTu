@@ -366,6 +366,15 @@ Failed:
 End Function
 '@)
     $formCode = $book.VBProject.VBComponents.Item('frmTaiHoaDon').CodeModule
+    # This fixture changes the XML checkbox programmatically. Keep its real
+    # state updates, but print the informational prompt instead of blocking
+    # unattended Excel on a modal dialog. The workbook is never saved.
+    $xmlClickStart = $formCode.ProcStartLine('chkXmlZip_Click', 0)
+    $xmlClickCount = $formCode.ProcCountLines('chkXmlZip_Click', 0)
+    $xmlClickText = $formCode.Lines($xmlClickStart, $xmlClickCount)
+    if ($xmlClickText -notmatch '(?m)^\s*MsgBoxUni ') { throw 'XML checkbox information prompt not found.' }
+    $formCode.DeleteLines($xmlClickStart, $xmlClickCount)
+    $formCode.InsertLines($xmlClickStart, ($xmlClickText -replace '(?m)^(\s*)MsgBoxUni ', '$1Debug.Print '))
     $formCode.AddFromString(@'
 Public Function CoreTestLog() As String
     On Error GoTo Failed

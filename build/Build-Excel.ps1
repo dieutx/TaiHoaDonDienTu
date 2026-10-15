@@ -15,7 +15,7 @@ $normalizedVersion = $Version.TrimStart('v')
 $errorReportSheetName = 'BaoCao_LoiTaiHD'
 $templatePath = Join-Path $RepositoryRoot 'template\App_Template.xlsm'
 $distDir = Join-Path $RepositoryRoot 'dist'
-$outputPath = if ($OutputPath) { [IO.Path]::GetFullPath($OutputPath) } else { Join-Path $distDir "App_v$normalizedVersion.xlsm" }
+$outputPath = if ($OutputPath) { [IO.Path]::GetFullPath($OutputPath) } else { Join-Path $distDir "TaiHoaDonDienTu_v$normalizedVersion.xlsm" }
 if (-not (Test-Path -LiteralPath $templatePath)) { throw "Template not found: $templatePath" }
 $outputDirectory = [IO.Path]::GetDirectoryName($outputPath)
 if (-not (Test-Path -LiteralPath $outputDirectory)) { New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null }
@@ -167,7 +167,7 @@ try {
     $headerRange = $reportSheet.Range('A1:Q1')
     $headerRange.Font.Bold = $true
     $headerRange.Interior.Color = 15917529
-    $headerRange.WrapText = $true
+    $headerRange.WrapText = $false
     $headerRange.AutoFilter() | Out-Null
     $columnWidths = @(7, 19, 14, 12, 20, 18, 18, 16, 16, 18, 45, 12, 45, 14, 13, 24, 35)
     for ($column = 1; $column -le $columnWidths.Count; $column++) { $reportSheet.Columns.Item($column).ColumnWidth = $columnWidths[$column - 1] }
@@ -255,6 +255,14 @@ try {
     $excel.CutCopyMode = $false
     Write-Host 'Detail-invoice columns and tax-ID formats ready on purchase and sales sheets.'
 
+    foreach ($sheet in @($workbook.Worksheets)) {
+        $cells = $sheet.Cells
+        $cells.WrapText = $false
+        $cells.VerticalAlignment = -4108 # xlCenter, vertically
+        Release-ComObject $cells; Release-ComObject $sheet
+    }
+    Write-Host 'All worksheet cells use no wrapping and vertical center alignment.'
+
     $workbook.SaveAs($outputPath, 52)
     Write-Host 'Workbook saved; closing build Excel instance...'
     $workbook.Close($true); Release-ComObject $workbook; $workbook = $null
@@ -274,11 +282,11 @@ Write-Host 'Build Excel instance closed.'
 
 if (-not $SkipTest) {
     $powerShellExe = (Get-Process -Id $PID).Path
-    & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Build.ps1') -BuiltWorkbook $outputPath -RepositoryRoot $RepositoryRoot
+    & $powerShellExe -Mta -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Build.ps1') -BuiltWorkbook $outputPath -RepositoryRoot $RepositoryRoot
     if ($LASTEXITCODE -ne 0) { throw "BUILD FAILED: structural test process returned exit code $LASTEXITCODE." }
-    & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-PublicWorkbook.ps1') -WorkbookPath $outputPath
+    & $powerShellExe -Mta -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-PublicWorkbook.ps1') -WorkbookPath $outputPath
     if ($LASTEXITCODE -ne 0) { throw "BUILD FAILED: public workbook test process returned exit code $LASTEXITCODE." }
-    & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-DetailInvoiceRuntime.ps1') -BuiltWorkbook $outputPath
+    & $powerShellExe -Mta -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-DetailInvoiceRuntime.ps1') -BuiltWorkbook $outputPath
     if ($LASTEXITCODE -ne 0) { throw "BUILD FAILED: detail-invoice runtime test process returned exit code $LASTEXITCODE." }
 }
 if ($SkipTest) {

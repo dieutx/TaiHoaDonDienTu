@@ -32,6 +32,49 @@ Dim mRunPurchase As Boolean
 Dim mPageTargets As Object
 Dim mPaginationIncomplete As Boolean
 Dim mRunStarted As Double
+Dim mRunSource As String
+Dim mInvoiceCount As Long
+Dim mElapsedShown As String
+Dim mDetailDone As Long
+Dim mXmlSaved As Long
+Dim mXmlMissing As Long
+Dim mFailedCount As Long
+Dim mRunFinishedAt As Double
+Dim mRunState As String
+Dim mUiReady As Boolean
+Dim mRunFinished As Boolean
+Dim mTechnicalLogVisible As Boolean
+Dim mListStarted As Boolean
+Dim mListComplete As Boolean
+Dim mListRowsReceived As Long
+Dim mListPagesReceived As Long
+Dim mListContext As String
+Dim mDetailStartedAt As Double
+Dim mLogExpanded As Boolean
+Private Const UI_STATE_IDLE As String = "idle"
+Private Const UI_STATE_RUNNING As String = "running"
+Private Const UI_STATE_PAUSED As String = "paused"
+Private Const UI_STATE_DONE As String = "done"
+Private Const UI_STATE_STOPPED As String = "stopped"
+Private Const UI_STATE_FAILED As String = "failed"
+
+Private Const UI_ELAPSED_ZERO As String = "00:00:00"
+Private Const UI_EMPTY_VALUE As String = "-"
+Private Const UI_LOG_ROW_LIMIT As Long = 400
+
+' Layout grid.  Content spans 15..767.3 points; the action column keeps the
+' 563.3..767.3 edges the action-row audit already pins.
+Private Const UL_LEFT As Single = 15
+Private Const UL_INNER_LEFT As Single = 27
+Private Const UL_INNER_WIDTH As Single = 728
+Private Const UL_INPUT_H As Single = 24
+Private Const UL_COL_A As Single = 340
+Private Const UL_COL_B As Single = 180
+Private Const UL_COL_C As Single = 204
+Private Const UL_COL_BX As Single = 371
+Private Const UL_COL_CX As Single = 563.3
+Private Const UL_FORM_HEIGHT As Single = 706
+
 
 Private Function RunToken() As String
     If mDownloadRunning Then
@@ -48,6 +91,11 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     End If
 End Sub
 
+Private Sub UserForm_Activate()
+    ' MSForms may restore the dynamic ListBox size when its window is created.
+    If mUiReady Then LayoutLogArea
+End Sub
+
 Private Sub cboDonVi_Change()
     Me.lblTenDV.caption = Me.cboDonVi.Column(2)
     cToken = Me.cboDonVi.Column(3)
@@ -57,11 +105,11 @@ Private Sub chkXmlZip_Click()
     Me.txtXMLFolderPath.Enabled = Me.chkXmlZip
     Me.cmdChonFolder.Enabled = Me.chkXmlZip
     Me.cmdChiTietXML.Enabled = Me.chkXmlZip
+    SetNoticeVisible CBool(Me.chkXmlZip.Value)
     If Me.chkXmlZip = True Then
         MsgBoxUni "B" & ChrW(7841) & "n ph" & ChrW(7843) & "i ch" & ChrW(7885) & "n " & ChrW(273) & ChrW(432) & ChrW(7901) & "ng d" & ChrW(7851) & _
                 "n th" & ChrW(432) & " m" & ChrW(7909) & "c " & ChrW(273) & ChrW(7875) & " l" & ChrW(432) & "u file zip ho" & ChrW(7863) & "c d" & ChrW(249) & _
                 "ng " & ChrW(273) & ChrW(432) & ChrW(7903) & "ng d" & ChrW(7851) & "n m" & ChrW(7863) & "c " & ChrW(273) & ChrW(7883) & "nh.", vbInformation, UniConvert("Thoong baso")
-    Me.txtXMLFolderPath.SetFocus
     End If
 End Sub
 
@@ -177,7 +225,7 @@ Function correctDate(ByRef textDate As String, ByRef err As Boolean) As Date
     Dim dtNgayNhap As Date
     err = False
     On Error GoTo InvalidDate
-    
+
     If Len(textDate) < 10 Or Len(textDate) > 10 Then
         correctDate = Date
         err = True
@@ -216,7 +264,7 @@ Private Sub UserForm_Initialize()
     Call optMua_Change
     Me.cboKQKT.ListIndex = 0
     Me.cboTTHD.ListIndex = 0
-    Me.lblStatus.Visible = False
+    Me.lblStatus.Visible = True
     Me.lblSaiNgay.Visible = False
     Me.txtXMLFolderPath = Environ("USERPROFILE") & "\Documents\"
     Me.txtXMLFolderPath.Enabled = False
@@ -285,9 +333,13 @@ Private Sub QueueFinalRetry( _
     item.Attempts = LastGdtAttempts
     item.TargetRow = targetRow
     item.ActionHeader = actionHeader
+    item.NotBefore = LastGdtNotBefore
 
     For Each existing In mFinalRetryQueue
-        If existing.UniqueKey = item.UniqueKey Then Exit Sub
+        If existing.UniqueKey = item.UniqueKey Then
+            If existing.NotBefore < item.NotBefore Then existing.NotBefore = item.NotBefore
+            Exit Sub
+        End If
     Next existing
     mFinalRetryQueue.Add item
     AppendSimpleLog UniConvert("DDax dduwa vafo hafng ddowji cuoosi phieen. Soos mujc: ") & mFinalRetryQueue.Count
@@ -301,6 +353,14 @@ Private Sub EnsureFinalRetryCooldown()
     WaitForFinalGdtRetry
     mFinalRetryCooldownDone = True
 End Sub
+
+Private Function WaitForQueuedGdtRetry(ByVal item As clsGdtRetryItem) As Boolean
+    Do While GdtClockSeconds() < item.NotBefore
+        If Not WaitForGdtControl() Or GdtAuthenticationFailed Then Exit Function
+        GdtPumpWait
+    Loop
+    WaitForQueuedGdtRetry = WaitForGdtControl() And Not GdtAuthenticationFailed
+End Function
 
 Private Function TryParseGdtJson( _
     ByVal responseText As String, _
@@ -380,7 +440,8 @@ Private Sub ProcessQueuedListRetries( _
     EnsureFinalRetryCooldown
     For Each queued In mFinalRetryQueue
         If Not WaitForGdtControl() Then Exit Sub
-        If queued.ResponseKind = "LIST" Then
+        If queued.ResponseKind = "LIST" And IncludesInvoiceSource(queued.ApiSource) Then
+            If Not WaitForQueuedGdtRetry(queued) Then Exit Sub
             currentEndpoint = queued.Endpoint
             Set seenStates = CreateObject("Scripting.Dictionary")
             SeedListPageState currentEndpoint, seenStates
@@ -419,6 +480,12 @@ Private Sub ProcessQueuedListRetries( _
                         invoiceCount = invoiceCount + 1
                     Next dataItem
                     retryCount = retryCount + pageIndex
+                    mListRowsReceived = invoiceCount
+                    mListPagesReceived = mListPagesReceived + 1
+                    RefreshDashboard
+                    AppendLogRow queued.ApiSource & UniConvert(" - thuwr laji trang ") & retryPageNumber, _
+                        "HTTP " & requestResult.StatusCode & " - " & pageIndex & UniConvert(" hosa ddown"), _
+                        Format$(ElapsedTimerSeconds(retryStarted), "0.0") & "s", CStr(queued.Attempts + requestResult.Attempts)
                     MarkGdtRetrySuccess queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                         queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.Stage, _
                         queued.Attempts + requestResult.Attempts, UniConvert("Danh sasch ddax tari thafnh coong"), currentEndpoint
@@ -555,7 +622,7 @@ Private Function NextJsonInvoiceTask(ByRef invoiceBuffer As Variant, ByVal invoi
         apiSource = IIf(invoiceBuffer(invoiceIndex, 4) = 1, "query", "sco-query")
         If detailsOnly Then
             If CanResumeGdtStage(invoiceBuffer, invoiceIndex, "DETAIL") Then
-                AdvanceInvoiceWork UniConvert("DDax cos chi tieest ") & (invoiceIndex + 1), True
+                AdvanceInvoiceWork UniConvert("DDax cos chi tieest ") & (invoiceIndex + 1) & "/" & mInvoiceCount, True
                 invoiceIndex = invoiceIndex + 1
                 GoTo NextCandidate
             End If
@@ -605,6 +672,7 @@ Private Sub ProcessJsonInvoiceRequests(ByRef invoiceBuffer As Variant, ByVal inv
     Set throttle = New clsGdtXmlThrottle
     throttle.Configure GDT_JSON_CONCURRENCY, GetSleepDelayMs()
     phaseName = IIf(detailsOnly, "DETAIL", "RELATED")
+    If detailsOnly Then mDetailStartedAt = GdtClockSeconds()
     AppendSimpleLog phaseName & " scheduler: " & throttle.CurrentConcurrency & " connections, " & throttle.CurrentIntervalMs & " ms"
     Do While nextIndex < invoiceCount Or tasks.Count > 0
         If GdtStopRequested Or GdtAuthenticationFailed Then Exit Do
@@ -676,6 +744,17 @@ Failed:
     Err.Raise failureNumber, "ProcessJsonInvoiceRequests", failureText
 End Sub
 
+Private Function DetailResultLabel(ByVal requestResult As clsGdtRequestResult) As String
+    If requestResult.Success Then
+        DetailResultLabel = UniConvert("DDax tari chi tieest")
+    ElseIf requestResult.InvalidJsonBody Then
+        ' HTTP 200 with a web page body: the status alone would read as success.
+        DetailResultLabel = UniConvert("Looxi: pharn hoofi khoong phari JSON")
+    Else
+        DetailResultLabel = UniConvert("Looxi HTTP ") & requestResult.StatusCode
+    End If
+End Function
+
 Private Sub HandleJsonInvoiceResult(ByVal task As clsGdtXmlTask, ByRef invoiceBuffer As Variant, _
     ByVal invoiceType As Long, ByRef detailRow As Long)
     Dim invoiceIndex As Long, apiSource As String, requestResult As clsGdtRequestResult, firstDetailRow As Long
@@ -687,20 +766,25 @@ Private Sub HandleJsonInvoiceResult(ByVal task As clsGdtXmlTask, ByRef invoiceBu
         Exit Sub
     End If
     PublishLastGdtResult requestResult
-    AppendSimpleLog "DETAIL " & (invoiceIndex + 1) & " | HTTP " & requestResult.StatusCode & _
+    AppendSimpleLog "DETAIL " & (invoiceIndex + 1) & "/" & mInvoiceCount & " | HTTP " & requestResult.StatusCode & _
         " | attempts=" & requestResult.Attempts & " | " & Format$(task.ElapsedSeconds, "0.0") & "s"
+    AppendLogRow CStr(invoiceBuffer(invoiceIndex, 1)) & "-" & CStr(invoiceBuffer(invoiceIndex, 2)) & _
+        " (" & (invoiceIndex + 1) & "/" & mInvoiceCount & ")", _
+        DetailResultLabel(requestResult), _
+        Format$(task.ElapsedSeconds, "0.0") & "s", IIf(requestResult.Attempts > 1, "x" & requestResult.Attempts, vbNullString)
     If requestResult.Success Then
         firstDetailRow = detailRow
         If WriteDetailRecord(requestResult.ResponseText, detailRow, apiSource, task.Endpoint, _
             CStr(invoiceBuffer(invoiceIndex, 0)), CStr(invoiceBuffer(invoiceIndex, 3)), _
             CStr(invoiceBuffer(invoiceIndex, 1)), CStr(invoiceBuffer(invoiceIndex, 2)), invoiceBuffer(invoiceIndex, 5)) Then
             CommitGdtDetailRows invoiceBuffer, invoiceIndex, firstDetailRow, detailRow
+            mDetailDone = mDetailDone + 1
             MarkGdtRetrySuccess CurrentDirectionName(), apiSource, CStr(invoiceBuffer(invoiceIndex, 0)), _
                 CStr(invoiceBuffer(invoiceIndex, 3)), CStr(invoiceBuffer(invoiceIndex, 1)), _
                 CStr(invoiceBuffer(invoiceIndex, 2)), UniConvert("Laasy chi tieest"), requestResult.Attempts
             MarkGdtRetrySuccess CurrentDirectionName(), apiSource, CStr(invoiceBuffer(invoiceIndex, 0)), _
                 CStr(invoiceBuffer(invoiceIndex, 3)), CStr(invoiceBuffer(invoiceIndex, 1)), _
-                CStr(invoiceBuffer(invoiceIndex, 2)), "Parse " & UniConvert("duwx lieeju"), requestResult.Attempts
+                CStr(invoiceBuffer(invoiceIndex, 2)), "Parse " & UniConvert("duwx lieeju"), requestResult.Attempts, vbNullString, task.Endpoint
         End If
     ElseIf Not GdtStopRequested Then
         errMsg = errMsg & UniConvert("Looxi tari hoas ddown chi tieest: ") & invoiceBuffer(invoiceIndex, 1) & "_" & _
@@ -709,7 +793,7 @@ Private Sub HandleJsonInvoiceResult(ByVal task As clsGdtXmlTask, ByRef invoiceBu
             CStr(invoiceBuffer(invoiceIndex, 1)), CStr(invoiceBuffer(invoiceIndex, 2)), invoiceBuffer(invoiceIndex, 5), _
             UniConvert("Laasy chi tieest"), task.Endpoint, "DETAIL"
     End If
-    AdvanceInvoiceWork UniConvert("DDax xuwr lys chi tieest ") & (invoiceIndex + 1)
+    AdvanceInvoiceWork UniConvert("DDax xuwr lys chi tieest ") & (invoiceIndex + 1) & "/" & mInvoiceCount
 End Sub
 
 Private Sub ProcessOneRelationRequest( _
@@ -764,7 +848,7 @@ Private Sub ProcessOneRelationRequest( _
                 writeSucceeded = True
                 MarkGdtRetrySuccess CurrentDirectionName(), apiSource, CStr(invoiceBuffer(invoiceIndex, 0)), _
                     CStr(invoiceBuffer(invoiceIndex, 3)), CStr(invoiceBuffer(invoiceIndex, 1)), _
-                    CStr(invoiceBuffer(invoiceIndex, 2)), "Parse " & UniConvert("duwx lieeju"), requestResult.Attempts
+                    CStr(invoiceBuffer(invoiceIndex, 2)), "Parse " & UniConvert("duwx lieeju"), requestResult.Attempts, vbNullString, endpoint
             Else
                 WriteRelationRequestError "RELATIVE", invoiceType, CLng(invoiceBuffer(invoiceIndex, 6)), _
                     requestResult.StatusCode, UniConvert("Pharn hoofi API khoong howjp leej"), requestResult.Attempts
@@ -777,7 +861,7 @@ Private Sub ProcessOneRelationRequest( _
         If writeSucceeded Then
         MarkGdtRetrySuccess CurrentDirectionName(), apiSource, CStr(invoiceBuffer(invoiceIndex, 0)), _
             CStr(invoiceBuffer(invoiceIndex, 3)), CStr(invoiceBuffer(invoiceIndex, 1)), _
-            CStr(invoiceBuffer(invoiceIndex, 2)), "Parse " & UniConvert("duwx lieeju"), requestResult.Attempts
+            CStr(invoiceBuffer(invoiceIndex, 2)), "Parse " & UniConvert("duwx lieeju"), requestResult.Attempts, vbNullString, endpoint
         MarkGdtRetrySuccess CurrentDirectionName(), apiSource, CStr(invoiceBuffer(invoiceIndex, 0)), _
             CStr(invoiceBuffer(invoiceIndex, 3)), CStr(invoiceBuffer(invoiceIndex, 1)), _
             CStr(invoiceBuffer(invoiceIndex, 2)), stageName, requestResult.Attempts
@@ -829,6 +913,7 @@ Private Sub ProcessQueuedRelationRetries(ByVal invoiceType As Long)
     For Each queued In mFinalRetryQueue
         If Not WaitForGdtControl() Then Exit Sub
         If queued.ResponseKind = "RELATIVE" Or queued.ResponseKind = "RELATED" Then
+            If Not WaitForQueuedGdtRetry(queued) Then Exit Sub
             ShowInvoiceWork UniConvert("Thuwr laji ") & LCase$(queued.ResponseKind) & ": " & queued.InvoiceNumber, True
             Set requestResult = ExecuteGdtRequest("GET", queued.Endpoint, RunToken(), vbNullString, _
                 "application/json", "application/json, text/plain, */*", False, 1, _
@@ -858,7 +943,7 @@ Private Sub ProcessQueuedRelationRetries(ByVal invoiceType As Long)
                 If writeSucceeded Then
                     MarkGdtRetrySuccess queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                         queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, "Parse " & UniConvert("duwx lieeju"), _
-                        queued.Attempts + requestResult.Attempts
+                        queued.Attempts + requestResult.Attempts, vbNullString, queued.Endpoint
                     MarkGdtRetrySuccess queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                         queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.Stage, _
                         queued.Attempts + requestResult.Attempts
@@ -886,6 +971,7 @@ Private Function WriteDetailRecord(ByVal responseText As String, ByRef targetRow
     Dim parsed As Object
     If Not TryParseGdtJson(responseText, parsed, apiSource, endpoint, seller, template, series, number, invoiceDate) Then Exit Function
     On Error GoTo Failed
+    RequireGdtDetailIdentity parsed, seller, template, series, number
     ghiExcel_ChiTiet responseText, targetRow, IIf(mRunPurchase, "mua", "ban")
     WriteDetailRecord = True
     Exit Function
@@ -903,6 +989,7 @@ Private Sub ProcessQueuedDetailRetries(ByRef detailRow As Long)
     For Each queued In mFinalRetryQueue
         If Not WaitForGdtControl() Then Exit Sub
         If queued.ResponseKind = "DETAIL" Then
+            If Not WaitForQueuedGdtRetry(queued) Then Exit Sub
             ShowInvoiceWork UniConvert("Thuwr laji chi tieest: ") & queued.InvoiceNumber, True
             Set requestResult = ExecuteGdtRequest("GET", queued.Endpoint, RunToken(), _
                 vbNullString, "application/json", "application/json, text/plain, */*", False, 1, "DETAIL")
@@ -911,6 +998,7 @@ Private Sub ProcessQueuedDetailRetries(ByRef detailRow As Long)
                 firstRetryRow = detailRow
                 If Not WriteDetailRecord(requestResult.ResponseText, detailRow, queued.ApiSource, queued.Endpoint, _
                     queued.SellerTaxCode, queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.InvoiceDate) Then GoTo NextDetailRetry
+                mDetailDone = mDetailDone + 1
                 If GdtResumeSessionActive() Then
                 For retryIndex = 0 To UBound(arrHDChiTiet, 1) - 1
                     If GdtInvoiceIdentity(CStr(arrHDChiTiet(retryIndex, 0)), CStr(arrHDChiTiet(retryIndex, 3)), CStr(arrHDChiTiet(retryIndex, 1)), CStr(arrHDChiTiet(retryIndex, 2))) = _
@@ -923,7 +1011,7 @@ Private Sub ProcessQueuedDetailRetries(ByRef detailRow As Long)
                 End If
                 MarkGdtRetrySuccess queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                     queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, "Parse " & UniConvert("duwx lieeju"), _
-                    queued.Attempts + requestResult.Attempts
+                    queued.Attempts + requestResult.Attempts, vbNullString, queued.Endpoint
                 MarkGdtRetrySuccess queued.Direction, queued.ApiSource, queued.SellerTaxCode, _
                     queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.Stage, _
                     queued.Attempts + requestResult.Attempts
@@ -943,20 +1031,50 @@ End Sub
 
 Private Sub ResetProgressUI()
     mInvoiceWorkTotal = 0: mInvoiceWorkDone = 0
+    mInvoiceCount = 0
+    mListStarted = False: mListComplete = False
+    mListRowsReceived = 0: mListPagesReceived = 0: mListContext = vbNullString
+    mDetailStartedAt = 0: mLogExpanded = False
+    mDetailDone = 0
+    mXmlSaved = 0
+    mXmlMissing = 0
+    mFailedCount = 0
+    mRunFinished = False
+    mRunFinishedAt = 0
+    mElapsedShown = vbNullString
+    Me.lblStatus.caption = UI_ELAPSED_ZERO
     Me.Controls("lblProgressFill").Width = 0
     Me.Controls("lblProgressPercent").caption = "0%"
     Me.Controls("lblProgressMessage").caption = UniConvert("Sawxn safng")
     Me.Controls("txtSimpleLog").Value = vbNullString
+    If mUiReady Then
+        UiCtl("lstLog").Clear
+        SetNoticeVisible CBool(Me.chkXmlZip.Value)
+        SetRunState UI_STATE_IDLE
+        RefreshDashboard
+        RefreshSummary
+    End If
     SetDownloadControlState False
 End Sub
 
 Private Sub SetProgress(ByVal percentComplete As Long, ByVal message As String, Optional ByVal addToLog As Boolean = False)
     If percentComplete < 0 Then percentComplete = 0
     If percentComplete > 100 Then percentComplete = 100
-    Me.Controls("lblProgressFill").Width = Me.Controls("lblProgressBack").Width * percentComplete / 100
-    Me.Controls("lblProgressPercent").caption = CStr(percentComplete) & "%"
+    If mListStarted And Not mListComplete Then
+        Me.Controls("lblProgressFill").Width = 0
+        Me.Controls("lblProgressPercent").caption = UniConvert("DDang laasy danh sasch")
+    Else
+        Me.Controls("lblProgressFill").Width = Me.Controls("lblProgressBack").Width * percentComplete / 100
+        Me.Controls("lblProgressPercent").caption = CStr(percentComplete) & "%"
+    End If
     Me.Controls("lblProgressMessage").caption = message
-    Application.StatusBar = CStr(percentComplete) & "% - " & message
+    If mListStarted And Not mListComplete Then
+        Application.StatusBar = message
+    Else
+        Application.StatusBar = CStr(percentComplete) & "% - " & message
+    End If
+    TickElapsedTime
+    RefreshDashboard
     If addToLog Then AppendSimpleLog message
     DoEvents
 End Sub
@@ -966,6 +1084,10 @@ Private Sub BeginInvoiceProgress(ByVal invoiceCount As Long, Optional ByVal rela
     workKinds = 0
     If Me.chkCT.Value = True Then workKinds = workKinds + 1
     If Me.chkXmlZip.Value = True Then workKinds = workKinds + 1
+    mInvoiceCount = invoiceCount
+    mListComplete = True
+    mListRowsReceived = invoiceCount
+    AppendSimpleLog UniConvert("Toorng soos hosa ddown caafn xuwr lys: ") & invoiceCount
     mInvoiceWorkTotal = (invoiceCount * workKinds) + relatedCallCount
     mInvoiceWorkDone = 0
     If mInvoiceWorkTotal > 0 Then
@@ -1008,6 +1130,18 @@ Private Sub AppendSimpleLog(ByVal message As String)
     Me.Controls("txtSimpleLog").SelStart = Len(Me.Controls("txtSimpleLog").Value)
 End Sub
 
+Public Sub TickElapsedTime()
+    Dim statusText As String
+    If Not mDownloadRunning Then Exit Sub
+    If mRunStarted <= 0 Then Exit Sub
+    statusText = UiElapsedText()
+    If statusText <> mElapsedShown Then
+        mElapsedShown = statusText
+        Me.lblStatus.caption = statusText
+        RefreshEta
+    End If
+End Sub
+
 Private Function ElapsedTimerSeconds(ByVal started As Double) As Double
     ElapsedTimerSeconds = Timer - started
     If ElapsedTimerSeconds < 0 Then ElapsedTimerSeconds = ElapsedTimerSeconds + 86400#
@@ -1025,12 +1159,20 @@ Private Function ListPageLabel( _
         UniConvert(" - trang ") & pageNumber
 End Function
 
+Private Function ShortListPageLabel(ByVal periodIndex As Long, ByVal periodTotal As Long, _
+    ByVal apiSource As String, ByVal pageNumber As Long) As String
+    ShortListPageLabel = IIf(apiSource = "sco-query", "MTT", UniConvert("Thoong thuwowfng")) & _
+        " | " & UniConvert("trang ") & pageNumber & " | " & UniConvert("kyf ") & periodIndex & "/" & periodTotal
+End Function
+
 Private Sub ReportListPageStart( _
     ByVal periodIndex As Long, _
     ByVal periodTotal As Long, _
     ByVal apiSource As String, _
     ByVal pageNumber As Long)
 
+    mListStarted = True
+    mListContext = ShortListPageLabel(periodIndex, periodTotal, apiSource, pageNumber)
     SetProgress 4 + CLng((periodIndex / periodTotal) * 5), _
         ListPageLabel(periodIndex, periodTotal, apiSource, pageNumber) & _
         UniConvert(": ddang guwri yeeu caafu; timeout ") & GDT_HTTP_TIMEOUT_SECONDS & UniConvert(" giaay"), True
@@ -1047,12 +1189,18 @@ Private Sub ReportListPageComplete( _
     ByVal hasMore As Boolean)
 
     Dim message As String
+    mListRowsReceived = mListRowsReceived + pageCount
+    mListPagesReceived = mListPagesReceived + 1
+    RefreshDashboard
     message = ListPageLabel(periodIndex, periodTotal, apiSource, pageNumber) & _
         ": HTTP " & LastGdtStatus & UniConvert(", nhaajn ") & pageCount & _
         UniConvert(" HDD, toorng ") & cumulativeCount & ", " & _
         Format(ElapsedTimerSeconds(started), "0.0") & UniConvert(" giaay")
     If hasMore Then message = message & UniConvert(", cos trang tieesp") Else message = message & UniConvert(", heest trang")
     AppendSimpleLog message
+    AppendLogRow ShortListPageLabel(periodIndex, periodTotal, apiSource, pageNumber), _
+        "HTTP " & LastGdtStatus & " - " & pageCount & UniConvert(" hosa ddown"), _
+        Format(ElapsedTimerSeconds(started), "0.0") & "s", vbNullString
 End Sub
 
 Private Sub ReportListPageFailure( _
@@ -1066,6 +1214,9 @@ Private Sub ReportListPageFailure( _
         ": HTTP " & LastGdtStatus & UniConvert(", thaast baji sau ") & _
         LastGdtAttempts & UniConvert(" laafn, ") & _
         Format(ElapsedTimerSeconds(started), "0.0") & UniConvert(" giaay")
+    AppendLogRow ShortListPageLabel(periodIndex, periodTotal, apiSource, pageNumber), _
+        "HTTP " & LastGdtStatus & UniConvert(" - thaast baji"), _
+        Format(ElapsedTimerSeconds(started), "0.0") & "s", CStr(LastGdtAttempts)
 End Sub
 
 Private Function TryRegisterNextListState( _
@@ -1097,10 +1248,12 @@ Private Sub SetDownloadControlState(ByVal running As Boolean)
     If running And Not mDownloadRunning Then
         mRunToken = cToken
         mRunPurchase = CBool(Me.optMua.Value)
+        mRunSource = SelectedInvoiceSource()
         GdtReportAccount = CStr(Me.cboDonVi.Value)
         Set mControlStates = CreateObject("Scripting.Dictionary")
         For Each ctl In Me.Controls
             If TypeName(ctl) <> "Label" And ctl.Name <> "txtSimpleLog" And _
+                ctl.Name <> "lstLog" And ctl.Name <> "cmdToggleTechLog" And _
                 ctl.Name <> "cmdPauseResume" And ctl.Name <> "cmdStopDownload" Then
                 mControlStates(ctl.Name) = CBool(ctl.Enabled)
                 ctl.Enabled = False
@@ -1114,6 +1267,7 @@ Private Sub SetDownloadControlState(ByVal running As Boolean)
         End If
         Set mControlStates = Nothing
         mRunToken = vbNullString
+        mRunSource = vbNullString
         mDownloadEntering = False
     End If
     mDownloadRunning = running
@@ -1122,6 +1276,7 @@ Private Sub SetDownloadControlState(ByVal running As Boolean)
     Me.Controls("cmdPauseResume").caption = UniConvert("Tajm duwfng")
     Me.Controls("cmdStopDownload").Enabled = running
     On Error GoTo 0
+    RefreshSummary
 End Sub
 
 Public Sub TogglePauseDownload()
@@ -1130,9 +1285,13 @@ Public Sub TogglePauseDownload()
     If GdtPauseRequested Then
         Me.Controls("cmdPauseResume").caption = UniConvert("Tieesp tujc")
         AppendSimpleLog UniConvert("DDax tajm duwfng. Baasm Tieesp tujc ddeer chajy tieesp.")
+        SetRunState UI_STATE_PAUSED
+        AppendLogRow UniConvert("Phieen tari"), UniConvert("Tajm duwfng"), vbNullString, vbNullString
     Else
         Me.Controls("cmdPauseResume").caption = UniConvert("Tajm duwfng")
         AppendSimpleLog UniConvert("Tieesp tujc xuwr lys.")
+        SetRunState UI_STATE_RUNNING
+        AppendLogRow UniConvert("Phieen tari"), UniConvert("Tieesp tujc xuwr lys"), vbNullString, vbNullString
     End If
     DoEvents
 End Sub
@@ -1143,6 +1302,7 @@ Public Sub RequestStopDownload()
     Me.Controls("cmdPauseResume").Enabled = False
     Me.Controls("cmdStopDownload").Enabled = False
     AppendSimpleLog UniConvert("DDax yeeu caafu duwfng; chowf request hieejn taji keest thusc.")
+    AppendLogRow UniConvert("Phieen tari"), UniConvert("DDax yeeu caafu duwfng"), vbNullString, vbNullString
     DoEvents
 End Sub
 
@@ -1171,8 +1331,12 @@ End Function
 
 
 Private Sub EnsureRuntimeControls()
+    ' EnsureRuntimeControls runs before EnsureModernUiControls and ApplyModernLayout.
+    ' Visual flags (lblStatus, lblSaiNgay, checkbox defaults, XML path, folders and
+    ' the retry queue) are set up once during form initialization.
     Dim ctl As Object
     Dim handler As clsUiButtonHandler
+    If mUiReady Then Exit Sub
     Set mUiHandlers = New Collection
 
     Set ctl = Me.fraChonNgay.Controls.Add("Forms.CommandButton.1", "cmdPickTuNgay", True)
@@ -1189,10 +1353,24 @@ Private Sub EnsureRuntimeControls()
     ctl.ZOrder 0
     Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me: handler.ActionName = "OpenEndDatePicker": mUiHandlers.Add handler
 
+    Set ctl = Me.Controls.Add("Forms.Label.1", "lblInvoiceSource", True)
+    ctl.caption = UniConvert("Nguoofn hosa ddown"): ctl.Left = Me.cboTTHD.Left: ctl.Top = Me.Label22.Top: ctl.Width = Me.cboTTHD.Width: ctl.Height = Me.Label22.Height
+    ctl.Font.Name = Me.Label14.Font.Name: ctl.Font.Size = Me.Label14.Font.Size
+    Set ctl = Me.Controls.Add("Forms.ComboBox.1", "cboInvoiceSource", True)
+    ctl.Left = Me.cboTTHD.Left: ctl.Top = Me.cboDonVi.Top: ctl.Width = Me.cboTTHD.Width: ctl.Height = Me.cboDonVi.Height
+    ctl.Font.Name = Me.cboTTHD.Font.Name: ctl.Font.Size = Me.cboTTHD.Font.Size
+    ctl.Style = 2
+    ctl.Clear
+    ctl.AddItem UniConvert("Taast car")
+    ctl.AddItem UniConvert("Hosa ddown thoong thuwowfng")
+    ctl.AddItem UniConvert("Hosa ddown tuwf masy tisnh tieefn")
+    ctl.ListIndex = 0
+    ctl.ControlTipText = UniConvert("Chojn nguoofn cho car hosa ddown mua vafo vaf basn ra")
+
     Set ctl = Me.Controls.Add("Forms.Label.1", "lblProgressMessage", True)
-    ctl.caption = UniConvert("Sawxn safng"): ctl.Left = 15: ctl.Top = 378: ctl.Width = 515: ctl.Height = 24: ctl.Font.Bold = True
+    ctl.caption = UniConvert("Sawxn safng"): ctl.Left = 15: ctl.Top = 378: ctl.Width = Me.cmdTaiHoaDon.Left + Me.cmdTaiHoaDon.Width - 15: ctl.Height = 18: ctl.Font.Bold = True
     Set ctl = Me.Controls.Add("Forms.Label.1", "lblProgressBack", True)
-    ctl.caption = "": ctl.Left = 15: ctl.Top = 399: ctl.Width = 752: ctl.Height = 18: ctl.BackColor = RGB(217, 217, 217): ctl.SpecialEffect = 1
+    ctl.caption = "": ctl.Left = 15: ctl.Top = 399: ctl.Width = 752: ctl.Height = 18: ctl.BackColor = RGB(217, 217, 217): ctl.SpecialEffect = 0
     Set ctl = Me.Controls.Add("Forms.Label.1", "lblProgressFill", True)
     ctl.caption = "": ctl.Left = 15: ctl.Top = 399: ctl.Width = 1: ctl.Height = 18: ctl.BackColor = RGB(128, 208, 128)
     Set ctl = Me.Controls.Add("Forms.Label.1", "lblProgressPercent", True)
@@ -1202,14 +1380,24 @@ Private Sub EnsureRuntimeControls()
     ctl.MultiLine = True: ctl.WordWrap = True: ctl.ScrollBars = 2: ctl.Locked = True: ctl.TabStop = False
 
     Set ctl = Me.Controls.Add("Forms.CommandButton.1", "cmdPauseResume", True)
-    ctl.caption = UniConvert("Tajm duwfng"): ctl.Left = 545: ctl.Top = 375: ctl.Width = 100: ctl.Height = 24: ctl.Enabled = False
+    ctl.caption = UniConvert("Tajm duwfng"): ctl.Left = Me.cmdTaiHoaDon.Left: ctl.Top = Me.cmdChiTietXML.Top + Me.cmdChiTietXML.Height + 6
+    ctl.Width = (Me.cmdTaiHoaDon.Width - 6) / 2: ctl.Height = 30: ctl.Enabled = False
+    ctl.Font.Name = Me.cmdTaiHoaDon.Font.Name: ctl.Font.Size = Me.cmdTaiHoaDon.Font.Size
     ctl.ControlTipText = UniConvert("Tajm duwfng hoawjc tieesp tujc sau request hieejn taji")
     Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me: handler.ActionName = "TogglePauseDownload": mUiHandlers.Add handler
 
     Set ctl = Me.Controls.Add("Forms.CommandButton.1", "cmdStopDownload", True)
-    ctl.caption = UniConvert("Duwfng"): ctl.Left = 652: ctl.Top = 375: ctl.Width = 100: ctl.Height = 24: ctl.Enabled = False
+    ctl.caption = UniConvert("Duwfng"): ctl.Left = Me.Controls("cmdPauseResume").Left + Me.Controls("cmdPauseResume").Width + 6
+    ctl.Top = Me.Controls("cmdPauseResume").Top: ctl.Width = Me.Controls("cmdPauseResume").Width: ctl.Height = Me.Controls("cmdPauseResume").Height: ctl.Enabled = False
+    ctl.Font.Name = Me.cmdTaiHoaDon.Font.Name: ctl.Font.Size = Me.cmdTaiHoaDon.Font.Size
     ctl.ControlTipText = UniConvert("Duwfng an toafn sau request hieejn taji")
     Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me: handler.ActionName = "RequestStopDownload": mUiHandlers.Add handler
+    EnsureModernUiControls
+    ApplyModernLayout
+    mUiReady = True
+    SetRunState UI_STATE_IDLE
+    RefreshDashboard
+    RefreshSummary
 End Sub
 
 Public Sub optMua_Change()
@@ -1232,6 +1420,45 @@ Public Sub optMua_Change()
 
 End Sub
 
+Private Function SelectedInvoiceSource() As String
+    Select Case Me.Controls("cboInvoiceSource").ListIndex
+        Case 0: SelectedInvoiceSource = "all"
+        Case 1: SelectedInvoiceSource = "query"
+        Case 2: SelectedInvoiceSource = "sco-query"
+        Case Else: Err.Raise 5, , "Select an invoice source"
+    End Select
+End Function
+
+Private Function IncludesInvoiceSource(ByVal source As String) As Boolean
+    Dim selected As String
+    If mDownloadRunning Then selected = mRunSource Else selected = SelectedInvoiceSource()
+    IncludesInvoiceSource = (Len(selected) = 0 Or selected = "all" Or selected = source)
+End Function
+
+Private Sub ClearSelectedSourceRows(ByVal invoiceType As Long)
+    Dim name As Variant, ws As Worksheet, sourceColumn As Long, data As Variant
+    Dim r As Long, last As Long, groupEnd As Long, remove As Boolean
+    For Each name In Array(IIf(invoiceType = 1, "TongHopHD_Mua", "TongHopHD_Ban"), IIf(invoiceType = 1, "ChiTietHD_Mua", "ChiTietHD_Ban"))
+        Set ws = ThisWorkbook.Worksheets(CStr(name))
+        sourceColumn = IIf(Left$(CStr(name), 7) = "TongHop", 66, 36)
+        last = ws.Cells(ws.Rows.Count, 3).End(xlUp).Row
+        groupEnd = 0
+        If last >= 3 Then
+            data = ws.Cells(3, sourceColumn - 1).Resize(last - 2, 2).Value2
+            For r = UBound(data, 1) To 1 Step -1
+                remove = (CStr(data(r, 1)) = GdtReportAccount And CStr(data(r, 2)) = mRunSource)
+                If remove Then
+                    If groupEnd = 0 Then groupEnd = r + 2
+                ElseIf groupEnd > 0 Then
+                    ws.Rows(CStr(r + 3) & ":" & groupEnd).Delete
+                    groupEnd = 0
+                End If
+            Next r
+            If groupEnd > 0 Then ws.Rows("3:" & groupEnd).Delete
+        End If
+    Next name
+End Sub
+
 Private Sub cmdTaiHoaDon_Click()
     If mDownloadRunning Or mDownloadEntering Then Exit Sub
     mDownloadEntering = True
@@ -1248,6 +1475,8 @@ Private Sub cmdTaiHoaDon_Click()
     ResetProgressUI
     mDownloadEntering = True
     SetDownloadControlState True
+    SetRunState UI_STATE_RUNNING
+    AppendLogRow UniConvert("Phieen tari: ") & Me.Controls("cboInvoiceSource").Value, UniConvert("Bawst ddaafu"), vbNullString, vbNullString
     SetProgress 1, UniConvert("DDang kieerm tra duwx lieeju ddaafu vafo..."), True
     
     'Cap ngay phai hop le: ham nay cung tao lai bang ky thoi gian cho lan tai nay
@@ -1282,6 +1511,7 @@ Private Sub cmdTaiHoaDon_Click()
     Dim sMsg As String, ret As Long
     Dim lrTongMua As Long, lrTongBan As Long, lrChiTietMua As Long, lrChiTietBan As Long
     PrepareXmlDestination
+    ValidateGdtResumeLayout IIf(mRunPurchase, 1, 2)
     
     'Lay dong cuoi tung Sheet de Xóa
     lrTongMua = ThisWorkbook.Sheets("TongHopHD_Mua").Cells(ThisWorkbook.Sheets("TongHopHD_mua").Rows.count, "C").End(xlUp).row
@@ -1291,16 +1521,29 @@ Private Sub cmdTaiHoaDon_Click()
     
     sMsg = "B" & ChrW(7841) & "n c" & ChrW(243) & " mu" & ChrW(7889) & "n X" & ChrW(243) & "a d" & ChrW(7919) & " li" & ChrW(7879) & "u c" & ChrW(361) & " kh" & ChrW(244) & "ng?"
     sMsg = sMsg & vbCrLf & UniConvert("Chojn [Yes] ddeer Xosa hoawjc [No] ddeer tari boor sung phaan cofn thieesu.")
+    If mRunSource <> "all" Then sMsg = sMsg & vbCrLf & UniConvert("Chir xosa duwx lieeju ddax xasc ddijnh dduwng ddown vij vaf nguoofn: ") & Me.Controls("cboInvoiceSource").Value
     ret = MsgBoxUni(sMsg, vbYesNo + vbInformation, UniConvert("Thoong baso"))
     
     'Timer----------
     Dim bd As Single, kt As Single
     bd = Timer
     SetProgress 3, UniConvert("DDang chuaarn bij tari hosa ddown..."), True
+    AppendSimpleLog UniConvert("Nguoofn hosa ddown: ") & Me.Controls("cboInvoiceSource").Value
     SetDownloadControlState True
     '----------------
     
     If ret = vbYes Then
+        If mRunSource <> "all" Then
+            ClearSelectedSourceRows IIf(mRunPurchase, 1, 2)
+            BeginGdtResume GdtReportAccount, IIf(mRunPurchase, 1, 2), False, mRunSource
+            Dim suffix As String, nextSummary As Long, nextDetail As Long
+            suffix = IIf(mRunPurchase, "Mua", "Ban")
+            nextSummary = ThisWorkbook.Sheets("TongHopHD_" & suffix).Cells(ThisWorkbook.Sheets("TongHopHD_" & suffix).Rows.Count, 3).End(xlUp).Row + 1
+            nextDetail = ThisWorkbook.Sheets("ChiTietHD_" & suffix).Cells(ThisWorkbook.Sheets("ChiTietHD_" & suffix).Rows.Count, 3).End(xlUp).Row + 1
+            If nextSummary < 3 Then nextSummary = 3
+            If nextDetail < 3 Then nextDetail = 3
+            taiHoaDon_Total nextSummary, nextDetail
+        Else
         If IIf(mDownloadRunning, mRunPurchase, Me.optMua.Value) Then
             If lrTongMua < 3 Then lrTongMua = 3
             If lrChiTietMua < 3 Then lrChiTietMua = 3
@@ -1312,11 +1555,12 @@ Private Sub cmdTaiHoaDon_Click()
             ThisWorkbook.Sheets("TongHopHD_Ban").Range("A3:BZ" & lrTongBan).ClearContents
             ThisWorkbook.Sheets("ChiTietHD_Ban").Range("A3:BZ" & lrChiTietBan).ClearContents
         End If
-        BeginGdtResume GdtReportAccount, IIf(mRunPurchase, 1, 2), False
+        BeginGdtResume GdtReportAccount, IIf(mRunPurchase, 1, 2), False, mRunSource
         Call taiHoaDon_Total
+        End If
         
     Else
-        BeginGdtResume GdtReportAccount, IIf(mRunPurchase, 1, 2), True
+        BeginGdtResume GdtReportAccount, IIf(mRunPurchase, 1, 2), True, mRunSource
         If IIf(mDownloadRunning, mRunPurchase, Me.optMua.Value) Then
             Call taiHoaDon_Total(lrTongMua + 1, lrChiTietMua + 1)
         Else
@@ -1325,30 +1569,42 @@ Private Sub cmdTaiHoaDon_Click()
     End If
     
     '----------------------
-    kt = GdtClockSeconds() - mRunStarted
+    mRunFinishedAt = GdtClockSeconds()
     Dim s As String
-    s = UniConvert(" Thowfi gian xuwr lys: ") & GdtElapsedText(kt)
+    s = UiElapsedText()
+    mElapsedShown = s
     '----------------------
     Me.lblStatus.caption = s
     Me.lblStatus.Visible = True
     If GdtAuthenticationFailed Then
         Me.Controls("lblProgressMessage").caption = UniConvert("Token heest hajn. Vui lofng ddawng nhaajp laji.")
         AppendSimpleLog Me.Controls("lblProgressMessage").caption
+        SetRunState UI_STATE_FAILED
+        AppendLogRow UniConvert("Phieen tari"), UniConvert("Token heest hajn"), Trim$(s), vbNullString
     ElseIf GdtStopRequested Then
         Me.Controls("lblProgressMessage").caption = UniConvert("DDax duwfng theo yeeu caafu. Duwx lieeju ddax tari vaaxn dduwowjc giuwx laji.")
         If Len(GdtStopReason) > 0 Then Me.Controls("lblProgressMessage").caption = GdtStopReason
         AppendSimpleLog Me.Controls("lblProgressMessage").caption
+        SetRunState UI_STATE_STOPPED
+        AppendLogRow UniConvert("Phieen tari"), UniConvert("DDax duwfng theo yeeu caafu"), Trim$(s), vbNullString
     Else
         Dim remainingErrors As Long, completion As String
         remainingErrors = CountGdtSessionErrors(CurrentDirectionName())
+        mFailedCount = remainingErrors
         completion = UniConvert("Hoafn taast. ")
         If remainingErrors > 0 Or mPaginationIncomplete Then
             completion = UniConvert("DDax xuwr lys, cofn looxi: ") & remainingErrors & ". "
             If mPaginationIncomplete Then completion = completion & UniConvert("Danh sasch cos theer chuwa dduwr. ")
+            SetRunState UI_STATE_FAILED
+            AppendLogRow UniConvert("Phieen tari"), UniConvert("Hoafn taast, cofn looxi: ") & remainingErrors, Trim$(s), CStr(remainingErrors)
+        Else
+            SetRunState UI_STATE_DONE
+            AppendLogRow UniConvert("Phieen tari"), UniConvert("Hoafn taast"), Trim$(s), vbNullString
         End If
         SetProgress 100, completion & Trim$(s), True
     End If
     AppendSimpleLog "Resume: duplicate=" & GdtDuplicatesSkipped & "; completed stages=" & GdtStagesSkipped
+    mRunFinished = True
     EndGdtResume
 
     SetDownloadControlState False
@@ -1368,12 +1624,18 @@ DownloadFailureCleanup:
     On Error Resume Next
     UpsertGdtErrorReport CurrentDirectionName(), "core", "", "", "", "", Empty, "Download", "INTERNAL:DOWNLOAD", 0, downloadError, 0, 0, "Failed"
     AppendSimpleLog UniConvert("Looxi: ") & downloadError
+    mRunFinishedAt = GdtClockSeconds()
+    mRunFinished = True
+    mFailedCount = CountGdtSessionErrors(CurrentDirectionName())
+    SetRunState UI_STATE_FAILED
+    AppendLogRow UniConvert("Phieen tari"), UniConvert("Looxi: ") & downloadError, UiElapsedText(), vbNullString
     MsgBoxUni UniConvert("Cos looxi phast sinh. Vui lofng kieerm tra BaoCao_LoiTaiHD."), vbExclamation, UniConvert("Thoong baso")
     SetDownloadControlState False
     Application.ScreenUpdating = True
     Application.StatusBar = False
     FinalizeGdtResumeDetails
     EndGdtResume
+    RefreshSummary
 End Sub
 
 Public Sub ReportRetryProgress(ByVal message As String)
@@ -1430,6 +1692,7 @@ Sub taiHoaDon_Total(Optional rowTotalstart As Long = 3, Optional rowDetailStart 
         loaiHD = 2 'ban
     End If
     n = 0   'n: so luong HD
+    mListStarted = True
     'Duyet tung khoan thoi gian de trich xuat hoa don
     For k = 1 To UBound(arrDate)
         If Not WaitForGdtControl() Then GoTo cleanup
@@ -1457,6 +1720,7 @@ Sub taiHoaDon_Total(Optional rowTotalstart As Long = 3, Optional rowDetailStart 
             End If
         End If
         url2 = url & sort & "&size=" & size & "&search=" & search
+        If Not IncludesInvoiceSource("query") Then GoTo startSco
         
 nextPage:
         If Not WaitForGdtControl() Then GoTo cleanup
@@ -1517,6 +1781,7 @@ nextPage:
            '******************************************
         '// Chay sco query de lay hd tu may tinh tien
 startSco:
+        If Not IncludesInvoiceSource("sco-query") Then GoTo nextDatePeriod
         url2 = url_sco & sort & "&size=" & size & "&search=" & search
 nextPage_sco:
         If Not WaitForGdtControl() Then GoTo cleanup
@@ -1613,7 +1878,7 @@ nextDatePeriod: 'arrDate ke tiep
 taiXML:
     If Me.chkXmlZip = True Then
         ShowInvoiceWork UniConvert("DDang tari vaf giari ne_sn XML/HTML..."), True
-        Me.lblStatus.caption = "B" & ChrW(7855) & "t " & ChrW(273) & ChrW(7847) & "u t" & ChrW(7843) & "i file XML/HTML v" & ChrW(224) & " gi" & ChrW(7843) & "i n" & ChrW(233) & "n..."
+        AppendSimpleLog "B" & ChrW(7855) & "t " & ChrW(273) & ChrW(7847) & "u t" & ChrW(7843) & "i file XML/HTML v" & ChrW(224) & " gi" & ChrW(7843) & "i n" & ChrW(233) & "n..."
         
         DoEvents
         taiXML_zip n
@@ -1811,12 +2076,19 @@ Private Sub HandleXmlResult(ByVal task As clsGdtXmlTask)
             MarkGdtStageComplete arrHDChiTiet, m, "XML", 0, CStr(Me.txtXMLFolderPath.Value), CStr(oSaveUnzipFolder)
             MarkGdtRetrySuccess CurrentDirectionName(), apiSource, CStr(arrHDChiTiet(m, 0)), CStr(arrHDChiTiet(m, 3)), _
                 CStr(arrHDChiTiet(m, 1)), CStr(arrHDChiTiet(m, 2)), UniConvert("Tari XML"), result.Attempts
+            mXmlSaved = mXmlSaved + 1
+            AppendLogRow "XML " & CStr(arrHDChiTiet(m, 1)) & "-" & CStr(arrHDChiTiet(m, 2)), _
+                UniConvert("DDax tari XML"), Format$(task.ElapsedSeconds, "0.0") & "s", _
+                IIf(result.Attempts > 1, "x" & result.Attempts, vbNullString)
         End If
     ElseIf Not GdtStopRequested Then
         If RecoverXmlWithDetail(m, task.Endpoint, result) Then Exit Sub
         PublishLastGdtResult result
         QueueFinalRetry apiSource, CStr(arrHDChiTiet(m, 0)), CStr(arrHDChiTiet(m, 3)), _
             CStr(arrHDChiTiet(m, 1)), CStr(arrHDChiTiet(m, 2)), arrHDChiTiet(m, 5), UniConvert("Tari XML"), task.Endpoint, "XML"
+        AppendLogRow "XML " & CStr(arrHDChiTiet(m, 1)) & "-" & CStr(arrHDChiTiet(m, 2)), _
+            UniConvert("Looxi HTTP ") & result.StatusCode & UniConvert(" - chowf thuwr laji"), _
+            Format$(task.ElapsedSeconds, "0.0") & "s", CStr(result.Attempts)
     End If
 End Sub
 
@@ -1849,9 +2121,7 @@ Private Function RecoverXmlWithDetail(ByVal invoiceIndex As Long, ByVal xmlEndpo
     Set parsed = JsonConverter.ParseJSON(detailResult.ResponseText)
     If TypeName(parsed) <> "Dictionary" Then Err.Raise 5, , "Invalid API detail object"
     If GdtJsonHasError(parsed) Then Err.Raise 5, , "API detail error response"
-    If GdtInvoiceIdentity(SafeJsonText(parsed, "nbmst"), SafeJsonText(parsed, "khmshdon"), _
-        SafeJsonText(parsed, "khhdon"), SafeJsonText(parsed, "shdon")) <> _
-        GdtInvoiceIdentity(seller, template, series, number) Then Err.Raise 5, , "API detail invoice identity mismatch"
+    RequireGdtDetailIdentity parsed, seller, template, series, number
     Set ws = ThisWorkbook.Worksheets(IIf(mRunPurchase, "ChiTietHD_Mua", "ChiTietHD_Ban"))
     detailRow = ws.Cells(ws.Rows.Count, 3).End(xlUp).Row + 1
     If detailRow < 3 Then detailRow = 3
@@ -1859,12 +2129,15 @@ Private Function RecoverXmlWithDetail(ByVal invoiceIndex As Long, ByVal xmlEndpo
     If Not WriteDetailRecord(detailResult.ResponseText, detailRow, apiSource, endpoint, seller, template, _
         series, number, arrHDChiTiet(invoiceIndex, 5)) Then Err.Raise 5, , "API detail parse/write failed"
     CommitGdtDetailRows arrHDChiTiet, invoiceIndex, firstRow, detailRow
+    mDetailDone = mDetailDone + 1
     MarkGdtRetrySuccess CurrentDirectionName(), apiSource, seller, template, series, number, _
         UniConvert("Laasy chi tieest"), detailResult.Attempts
     MarkGdtRetrySuccess CurrentDirectionName(), apiSource, seller, template, series, number, _
-        "Parse " & UniConvert("duwx lieeju"), detailResult.Attempts
+        "Parse " & UniConvert("duwx lieeju"), detailResult.Attempts, vbNullString, endpoint
     note = "API detail written to detail sheet; list summary retained; no original XML."
 Recovered:
+    mXmlMissing = mXmlMissing + 1
+    AppendLogRow "XML " & series & "-" & number, UniConvert("Khoong cos XML, ddax laasy chi tieest"), vbNullString, vbNullString
     UpsertGdtErrorReport CurrentDirectionName(), apiSource, seller, template, series, number, _
         arrHDChiTiet(invoiceIndex, 5), UniConvert("Tari XML"), xmlEndpoint, xmlResult.StatusCode, _
         xmlResult.ErrorMessage, xmlResult.Attempts, xmlResult.RetryAfterSeconds, "Recovered from API detail (no XML)", note
@@ -1933,12 +2206,14 @@ Private Sub ProcessQueuedXmlRetries()
     For Each queued In mFinalRetryQueue
         If Not WaitForGdtControl() Then Exit Sub
         If queued.ResponseKind = "XML" Then
+            If Not WaitForQueuedGdtRetry(queued) Then Exit Sub
             ShowInvoiceWork UniConvert("Thuwr laji XML: ") & queued.InvoiceNumber, True
             Set requestResult = ExecuteGdtBinaryRequest(queued.Endpoint, RunToken(), 1, "XML")
             PublishLastGdtResult requestResult
             If requestResult.Success Then
                 If Not TrySaveXml(requestResult.ResponseBody, queued.ApiSource, queued.Endpoint, queued.SellerTaxCode, _
                     queued.TemplateCode, queued.InvoiceSeries, queued.InvoiceNumber, queued.InvoiceDate) Then GoTo NextXmlRetry
+                mXmlSaved = mXmlSaved + 1
                 Dim xmlRetryIndex As Long
                 If GdtResumeSessionActive() Then
                 For xmlRetryIndex = 0 To UBound(arrHDChiTiet, 1) - 1
@@ -1978,6 +2253,701 @@ NextXmlRetry:
             If requestResult.AuthenticationFailure Then Exit For
         End If
     Next queued
+End Sub
+
+'=========================================================================
+' Modern enterprise layout: page surfaces, progress dashboard, structured
+' log table, XML notice and completion summary.
+'
+' Every designer control keeps its name and stays in the FRX coordinate blob;
+' this section only repositions, retitles and reuses them at runtime.  New
+' controls are created at runtime in EnsureModernUiControls, so nothing here
+' changes a component, control, sheet or FRM/FRX pairing.
+'=========================================================================
+
+
+Private Function UiCtl(ByVal controlName As String) As Object
+    Set UiCtl = Me.Controls.Item(controlName)
+End Function
+
+Private Function AddUiLabel(ByVal controlName As String, ByVal captionText As String) As Object
+    Dim ctl As Object
+    Set ctl = Me.Controls.Add("Forms.Label.1", controlName, True)
+    ctl.caption = captionText
+    Set AddUiLabel = ctl
+End Function
+
+Private Function AddUiButton(ByVal controlName As String, ByVal captionText As String, ByVal actionName As String) As Object
+    Dim ctl As Object
+    Dim handler As clsUiButtonHandler
+    Set ctl = Me.Controls.Add("Forms.CommandButton.1", controlName, True)
+    ctl.caption = captionText
+    Set handler = New clsUiButtonHandler
+    Set handler.Button = ctl
+    Set handler.Owner = Me
+    handler.ActionName = actionName
+    mUiHandlers.Add handler
+    Set AddUiButton = ctl
+End Function
+
+Private Sub PlaceUi(ByVal controlName As String, ByVal leftPos As Single, ByVal topPos As Single, ByVal widthPos As Single, ByVal heightPos As Single)
+    Dim ctl As Object
+    Set ctl = UiCtl(controlName)
+    ctl.Left = leftPos: ctl.Top = topPos: ctl.Width = widthPos: ctl.Height = heightPos
+End Sub
+
+Private Sub PlaceInside(ByVal parentName As String, ByVal controlName As String, ByVal leftPos As Single, ByVal topPos As Single, ByVal widthPos As Single, ByVal heightPos As Single)
+    Dim ctl As Object
+    Set ctl = UiCtl(parentName).Controls.Item(controlName)
+    ctl.Left = leftPos: ctl.Top = topPos: ctl.Width = widthPos: ctl.Height = heightPos
+End Sub
+
+Private Sub StyleUiLabel(ByVal controlName As String, ByVal size As Single, ByVal bold As Boolean, ByVal color As Long)
+    Dim ctl As Object
+    Set ctl = UiCtl(controlName)
+    ctl.BackStyle = 0
+    UiFont ctl, size, bold, color
+End Sub
+
+Private Sub StyleUiField(ByVal controlName As String)
+    Dim ctl As Object
+    Set ctl = UiCtl(controlName)
+    ctl.BackColor = UI_CARD
+    UiFont ctl, 9.5, False, UI_TEXT
+End Sub
+
+Private Sub StyleUiChip(ByVal controlName As String, ByVal captionText As String, ByVal backColor As Long, ByVal foreColor As Long)
+    Dim ctl As Object
+    Set ctl = UiCtl(controlName)
+    ctl.caption = captionText
+    ctl.BackColor = backColor
+    ctl.ForeColor = foreColor
+End Sub
+
+Private Sub StyleUiButton(ByVal controlName As String, ByVal backColor As Long, ByVal foreColor As Long, ByVal size As Single, ByVal bold As Boolean)
+    Dim ctl As Object
+    Set ctl = UiCtl(controlName)
+    ctl.BackColor = backColor
+    UiFont ctl, size, bold, foreColor
+End Sub
+
+Private Sub EnsureModernUiControls()
+    Dim ctl As Object
+    Dim handler As clsUiButtonHandler
+
+    ' Surfaces ------------------------------------------------------------
+    Set ctl = AddUiLabel("lblHeaderRule", vbNullString)
+    ctl.BackColor = UI_BORDER
+
+    ' Group titles, notice, dashboard, log table and summary -------------
+    Set ctl = AddUiLabel("lblSectionInfo", UCase(UniConvert("Thoong tin hosa ddown")))
+    Set ctl = AddUiLabel("lblSectionRange", UCase(UniConvert("Phajm vi duwx lieeju")))
+    Set ctl = AddUiLabel("lblSectionData", UCase(UniConvert("Duwx lieeju tari xuoosng")))
+    Set ctl = AddUiLabel("lblAdvancedTitle", UCase(UniConvert("Tufy chojn naang cao")))
+    Set ctl = AddUiLabel("lblLogTitle", UCase(UniConvert("Nhaajt kys xuwr lys")))
+    Set ctl = AddUiLabel("lblNoticeIcon", ChrW(8505))
+    Set ctl = AddUiLabel("lblNoticeTitle", UniConvert("Luwu ys veef duwx lieeju XML"))
+    Set ctl = AddUiLabel("lblDashCard", vbNullString)
+    Set ctl = AddUiLabel("lblDashStatus", UniConvert("Chuwa tari"))
+    Set ctl = AddUiLabel("lblDashPhase1", vbNullString)
+    Set ctl = AddUiLabel("lblDashPhase2", vbNullString)
+    Set ctl = AddUiLabel("lblMetricDoneTitle", UCase(UniConvert("DDax xuwr lys chi tieest")))
+    Set ctl = AddUiLabel("lblMetricDone", "0/0")
+    Set ctl = AddUiLabel("lblMetricRemainingTitle", UCase(UniConvert("Cofn laji")))
+    Set ctl = AddUiLabel("lblMetricRemaining", "0")
+    Set ctl = AddUiLabel("lblMetricElapsedTitle", UCase(UniConvert("Thowfi gian ddax chajy")))
+    Set ctl = AddUiLabel("lblMetricEtaTitle", UCase(UniConvert("Duwj kieesn cofn laji")))
+    Set ctl = AddUiLabel("lblMetricEta", UI_EMPTY_VALUE)
+    Set ctl = AddUiLabel("lblLogCard", vbNullString)
+    Set ctl = AddUiLabel("lblLogHeaderTime", UCase(UniConvert("Thowfi gian")))
+    Set ctl = AddUiLabel("lblLogHeaderInvoice", UCase(UniConvert("Hosa ddown")))
+    Set ctl = AddUiLabel("lblLogHeaderStatus", UCase(UniConvert("Trajng thasi")))
+    Set ctl = AddUiLabel("lblLogHeaderDuration", UCase(UniConvert("Thowfi gian tari")))
+    Set ctl = AddUiLabel("lblLogHeaderRetry", UCase(UniConvert("Thuwr laji")))
+    Set ctl = AddUiLabel("lblSummaryCard", vbNullString)
+    Set ctl = AddUiLabel("lblSummaryTitle", UniConvert("Keest quar phieen tari"))
+    Set ctl = AddUiLabel("lblSumFoundTitle", UCase(UniConvert("Toorng hosa ddown tifm thaasy")))
+    Set ctl = AddUiLabel("lblSumFound", UI_EMPTY_VALUE)
+    Set ctl = AddUiLabel("lblSumDownloadedTitle", UCase(UniConvert("DDax tari")))
+    Set ctl = AddUiLabel("lblSumDownloaded", UI_EMPTY_VALUE)
+    Set ctl = AddUiLabel("lblSumNoXmlTitle", UCase(UniConvert("Khoong cos XML")))
+    Set ctl = AddUiLabel("lblSumNoXml", UI_EMPTY_VALUE)
+    Set ctl = AddUiLabel("lblSumFailedTitle", UCase(UniConvert("Tari thaast baji")))
+    Set ctl = AddUiLabel("lblSumFailed", UI_EMPTY_VALUE)
+    Set ctl = AddUiLabel("lblSumElapsedTitle", UCase(UniConvert("Thowfi gian xuwr lys")))
+    Set ctl = AddUiLabel("lblSumElapsed", UI_EMPTY_VALUE)
+
+    Me.Label21.caption = UniConvert("Moojt soos hosa ddown khoong cos teejp XML treen coorng thuees. Do ddos, " & _
+        "soos luwowjng teejp XML tari dduwowjc cos theer ist hown toorng soos hosa ddown. Heej thoosng sex " & _
+        "thoosng kee casc truwowfng howjp chuwa cos XML ddeer phujc vuj ddoosi soast.")
+    Me.Label21.WordWrap = True
+
+    Set ctl = AddUiButton("cmdToggleTechLog", UniConvert("Xem log kyx thuaajt"), "ToggleTechnicalLog")
+    ctl.ControlTipText = UniConvert("Hieejn hoawjc aarn nhaajt kys kyx thuaajt goosc")
+    Set ctl = AddUiButton("cmdToggleSummary", UniConvert("Mowr roojng nhaajt kys"), "ToggleDownloadSummary")
+    Set ctl = AddUiLabel("lblLogDetail", UniConvert("Chojn moojt dofng nhaajt kys ddeer xem chi tieest."))
+    ctl.WordWrap = True
+    Set ctl = AddUiButton("cmdRetryFailed", UniConvert("Thuwr laji hosa ddown looxi"), "RetryFailedInvoices")
+    ctl.ControlTipText = UniConvert("Mowr baso caso hosa ddown cofn looxi vaf huwowsng daaxn tari boor sung")
+    Set ctl = AddUiButton("cmdExportReport", UniConvert("Baso caso ddoosi chieesu"), "OpenReconciliationReport")
+    ctl.ControlTipText = UniConvert("Mowr trang BaoCao_LoiTaiHD ddeer ddoosi chieesu")
+    Set ctl = AddUiButton("cmdOpenFolder", UniConvert("Mowr thuw mujc luwu"), "OpenXmlFolder")
+    ctl.ControlTipText = UniConvert("Mowr thuw mujc luwu file XML/HTML")
+
+    Set ctl = Me.Controls.Add("Forms.ListBox.1", "lstLog", True)
+    ctl.ColumnCount = 5
+    ctl.ColumnWidths = "64;280;236;72;60"
+    ctl.ListStyle = 0
+    ctl.MultiSelect = 0
+    ctl.IntegralHeight = True
+    Set handler = New clsUiButtonHandler
+    Set handler.LogList = ctl: Set handler.Owner = Me: handler.ActionName = "ShowSelectedLog"
+    mUiHandlers.Add handler
+End Sub
+
+Private Sub ApplyModernLayout()
+    Dim pickButton As Object
+    Me.Width = 796.5 + (Me.Width - Me.InsideWidth)
+    Me.Height = UL_FORM_HEIGHT + (Me.Height - Me.InsideHeight)
+    Me.BackColor = UI_PAGE_BG
+
+    ' Header band ---------------------------------------------------------
+    Me.Frame1.BorderStyle = 0
+    Me.Frame1.BackColor = UI_CARD
+    PlaceUi "Frame1", 0, 0, 796.5, 40
+    PlaceUi "Label11", 16, 11, 200, 18
+    StyleUiLabel "Label11", 12, True, UI_BLUE
+    PlaceUi "Label20", 206, 14, 240, 15
+    StyleUiLabel "Label20", 9, False, UI_MUTED
+    PlaceUi "lblHeaderRule", 0, 40, 796.5, 1
+
+    ' Group 1: invoice information ----------------------------------------
+    Me.fraLoaiHD.BorderStyle = 0
+    Me.fraLoaiHD.BackColor = UI_BLUE_SOFT
+    Me.fraChonNgay.BorderStyle = 0
+    Me.fraChonNgay.BackColor = UI_PAGE_BG
+    Me.fraLoaiDuLieu.BorderStyle = 0
+    Me.fraLoaiDuLieu.SpecialEffect = 0
+    Me.fraLoaiDuLieu.BackColor = UI_PAGE_BG
+
+    PlaceUi "lblSectionInfo", UL_LEFT, 48, UL_COL_A, 13
+    StyleUiLabel "lblSectionInfo", 8, True, UI_MUTED
+    PlaceUi "Label22", UL_LEFT, 63, UL_COL_A, 14
+    StyleUiLabel "Label22", 8.5, False, UI_MUTED
+    PlaceUi "cboDonVi", UL_LEFT, 79, UL_COL_A, UL_INPUT_H
+    StyleUiField "cboDonVi"
+    PlaceUi "lblInvoiceSource", UL_COL_BX, 63, UL_COL_B, 14
+    StyleUiLabel "lblInvoiceSource", 8.5, False, UI_MUTED
+    PlaceUi "cboInvoiceSource", UL_COL_BX, 79, UL_COL_B, UL_INPUT_H
+    StyleUiField "cboInvoiceSource"
+    PlaceUi "Label7", UL_COL_CX, 63, UL_COL_C, 14
+    StyleUiLabel "Label7", 8.5, False, UI_MUTED
+    PlaceUi "fraLoaiHD", UL_COL_CX, 79, UL_COL_C, 26
+    PlaceInside "fraLoaiHD", "optMua", 0, 3, 100, 20
+    PlaceInside "fraLoaiHD", "optBan", 104, 3, 100, 20
+    UiFont Me.fraLoaiHD.Controls.Item("optMua"), 9.5, False, UI_TEXT
+    UiFont Me.fraLoaiHD.Controls.Item("optBan"), 9.5, False, UI_TEXT
+    ' MSForms option buttons have no Style property, so the pair is presented
+    ' as a flat, transparent segmented group on the tinted frame instead.
+    Me.fraLoaiHD.Controls.Item("optMua").BackStyle = 0
+    Me.fraLoaiHD.Controls.Item("optBan").BackStyle = 0
+    Me.fraLoaiHD.Controls.Item("optMua").SpecialEffect = 0
+    Me.fraLoaiHD.Controls.Item("optBan").SpecialEffect = 0
+    PlaceUi "lblTenDV", UL_LEFT, 110, 540, 18
+    StyleUiLabel "lblTenDV", 10.5, True, UI_BLUE_DARK
+
+    ' Group 2: data range -------------------------------------------------
+    PlaceUi "lblSectionRange", UL_LEFT, 134, UL_COL_A, 13
+    StyleUiLabel "lblSectionRange", 8, True, UI_MUTED
+    PlaceUi "Label12", UL_LEFT, 149, 140, 14
+    StyleUiLabel "Label12", 8.5, False, UI_MUTED
+    PlaceUi "Label13", 160, 149, 195, 14
+    StyleUiLabel "Label13", 8, False, UI_MUTED
+    PlaceUi "fraChonNgay", UL_LEFT, 165, UL_COL_A, 66
+    PlaceInside "fraChonNgay", "Label9", 10, 8, 52, 18
+    UiFont Me.fraChonNgay.Controls.Item("Label9"), 8.5, False, UI_MUTED
+    PlaceInside "fraChonNgay", "txtTuNgay", 66, 8, 200, UL_INPUT_H
+    PlaceInside "fraChonNgay", "cmdPickTuNgay", 270, 8, 24, UL_INPUT_H
+    PlaceInside "fraChonNgay", "Label10", 10, 38, 52, 18
+    UiFont Me.fraChonNgay.Controls.Item("Label10"), 8.5, False, UI_MUTED
+    PlaceInside "fraChonNgay", "txtDenNgay", 66, 38, 200, UL_INPUT_H
+    PlaceInside "fraChonNgay", "cmdPickDenNgay", 270, 38, 24, UL_INPUT_H
+    UiFont Me.fraChonNgay.Controls.Item("txtTuNgay"), 9.5, False, UI_TEXT
+    UiFont Me.fraChonNgay.Controls.Item("txtDenNgay"), 9.5, False, UI_TEXT
+    Me.fraChonNgay.Controls.Item("txtTuNgay").BackColor = UI_CARD
+    Me.fraChonNgay.Controls.Item("txtDenNgay").BackColor = UI_CARD
+    Me.fraChonNgay.Controls.Item("txtTuNgay").TextAlign = 1
+    Me.fraChonNgay.Controls.Item("txtDenNgay").TextAlign = 1
+    ' The two date-picker buttons live inside fraChonNgay, so they are reached
+    ' through their frame instead of the form control collection.
+    Set pickButton = Me.fraChonNgay.Controls.Item("cmdPickTuNgay")
+    pickButton.BackColor = UI_BLUE_SOFT
+    UiFont pickButton, 9, False, UI_BLUE_DARK
+    Set pickButton = Me.fraChonNgay.Controls.Item("cmdPickDenNgay")
+    pickButton.BackColor = UI_BLUE_SOFT
+    UiFont pickButton, 9, False, UI_BLUE_DARK
+    PlaceUi "Label14", UL_COL_BX, 149, UL_COL_B, 14
+    StyleUiLabel "Label14", 8.5, False, UI_MUTED
+    PlaceUi "cboTTHD", UL_COL_BX, 165, UL_COL_B, UL_INPUT_H
+    StyleUiField "cboTTHD"
+    PlaceUi "Label15", UL_COL_BX, 197, UL_COL_B, 14
+    StyleUiLabel "Label15", 8.5, False, UI_MUTED
+    PlaceUi "cboKQKT", UL_COL_BX, 213, UL_COL_B, UL_INPUT_H
+    StyleUiField "cboKQKT"
+    PlaceUi "lblSaiNgay", UL_LEFT, 235, UL_COL_A, 14
+    StyleUiLabel "lblSaiNgay", 8.5, False, UI_DANGER
+
+    ' Group 3: download selection -----------------------------------------
+    PlaceUi "lblSectionData", UL_LEFT, 255, UL_COL_A, 13
+    StyleUiLabel "lblSectionData", 8, True, UI_MUTED
+    PlaceUi "Label17", UL_LEFT, 270, UL_COL_A, 14
+    StyleUiLabel "Label17", 8.5, False, UI_MUTED
+    PlaceUi "fraLoaiDuLieu", UL_LEFT, 285, UL_COL_A, 30
+    PlaceInside "fraLoaiDuLieu", "chkTH", 0, 6, 108, 20
+    Me.chkTH.Caption = UniConvert("Toorng howjp")
+    Me.chkTH.BackStyle = 0
+    UiFont Me.chkTH, 9, False, UI_TEXT
+    PlaceInside "fraLoaiDuLieu", "chkCT", 112, 6, 120, 20
+    Me.chkCT.Caption = UniConvert("Chi tieest")
+    Me.chkCT.BackStyle = 0
+    UiFont Me.chkCT, 9, False, UI_TEXT
+    PlaceInside "fraLoaiDuLieu", "chkXmlZip", 236, 6, 104, 20
+    Me.chkXmlZip.Caption = "XML/HTML"
+    Me.chkXmlZip.BackStyle = 0
+    UiFont Me.chkXmlZip, 9, False, UI_TEXT
+    PlaceUi "Label16", UL_COL_BX, 270, UL_COL_B, 14
+    StyleUiLabel "Label16", 8.5, False, UI_MUTED
+    PlaceUi "txtXMLFolderPath", UL_COL_BX, 291, 148, UL_INPUT_H
+    UiFont Me.txtXMLFolderPath, 8.5, False, UI_TEXT
+    Me.txtXMLFolderPath.BackColor = UI_CARD
+    PlaceUi "cmdChonFolder", 523.3, 291, 32, UL_INPUT_H
+    StyleUiButton "cmdChonFolder", UI_BLUE_SOFT, UI_BLUE_DARK, 8.5, False
+
+    ' Action column -------------------------------------------------------
+    PlaceUi "cmdTaiHoaDon", UL_COL_CX, 255, UL_COL_C, 38
+    StyleUiButton "cmdTaiHoaDon", UI_BLUE, UI_CARD, 10, True
+    PlaceUi "cmdChiTietXML", UL_COL_CX, 301, UL_COL_C, 32
+    StyleUiButton "cmdChiTietXML", UI_BLUE_SOFT, UI_BLUE_DARK, 9, False
+    PlaceUi "cmdPauseResume", UL_COL_CX, 339, 99, 30
+    StyleUiButton "cmdPauseResume", UI_BLUE_SOFT, UI_BLUE_DARK, 9, False
+    PlaceUi "cmdStopDownload", UL_COL_CX + 105, 339, 99, 30
+    StyleUiButton "cmdStopDownload", UI_DANGER, UI_CARD, 9, True
+
+    ' XML notice ----------------------------------------------------------
+    Me.Label21.BackStyle = 1
+    Me.Label21.BackColor = UI_INFO_BG
+    PlaceUi "Label21", 39, 336, 512, 24
+    StyleUiLabel "Label21", 8.5, False, UI_MUTED
+    PlaceUi "lblNoticeIcon", UL_LEFT, 321, 24, 39
+    Me.Controls("lblNoticeIcon").BackStyle = 1
+    Me.Controls("lblNoticeIcon").BackColor = UI_INFO_BG
+    StyleUiLabel "lblNoticeIcon", 10.5, True, UI_BLUE
+    Me.Controls("lblNoticeIcon").TextAlign = 2
+    PlaceUi "lblNoticeTitle", 39, 321, 512, 15
+    Me.Controls("lblNoticeTitle").BackStyle = 1
+    Me.Controls("lblNoticeTitle").BackColor = UI_INFO_BG
+    StyleUiLabel "lblNoticeTitle", 9, True, UI_BLUE_DARK
+
+    ' Advanced options ----------------------------------------------------
+    PlaceUi "lblAdvancedTitle", UL_LEFT, 366, UL_COL_A, 13
+    StyleUiLabel "lblAdvancedTitle", 8, True, UI_MUTED
+    Me.Label18.caption = UniConvert("Khoarng casch thowfi gian giuwxa mooxi laafn tari (mili giaay)")
+    PlaceUi "Label18", UL_LEFT, 382, 270, 16
+    StyleUiLabel "Label18", 8.5, False, UI_MUTED
+    PlaceUi "txtSleep", 293, 379, 72, UL_INPUT_H
+    Me.txtSleep.BackColor = UI_CARD
+    UiFont Me.txtSleep, 9.5, False, UI_TEXT
+    Me.txtSleep.TextAlign = 2
+    Me.Label19.caption = UniConvert("DDawjt quas thaasp cos theer bij coorng thuees chawjn (HTTP 429). Mawjc ddijnh 500 ms.")
+    PlaceUi "Label19", 377, 380, 390, 24
+    StyleUiLabel "Label19", 8, False, UI_MUTED
+    Me.Label19.WordWrap = True
+
+    ' Progress dashboard --------------------------------------------------
+    PlaceUi "lblDashCard", UL_LEFT, 410, UL_INNER_WIDTH + 24, 108
+    Me.Controls("lblDashCard").BackStyle = 1
+    Me.Controls("lblDashCard").BackColor = UI_CARD
+    Me.Controls("lblDashCard").ZOrder 1
+    PlaceUi "lblDashStatus", UL_INNER_LEFT, 418, 110, 20
+    Me.Controls("lblDashStatus").BackStyle = 1
+    StyleUiChip "lblDashStatus", UniConvert("Chuwa tari"), UI_BLUE_SOFT, UI_BLUE_DARK
+    UiFont Me.Controls("lblDashStatus"), 8.5, True, UI_BLUE_DARK
+    Me.Controls("lblDashStatus").TextAlign = 2
+    PlaceUi "lblDashPhase1", 147, 418, 302, 20
+    StyleUiLabel "lblDashPhase1", 8.5, False, UI_MUTED
+    PlaceUi "lblDashPhase2", 457, 418, 298, 20
+    StyleUiLabel "lblDashPhase2", 8.5, False, UI_MUTED
+    PlaceUi "lblProgressBack", UL_INNER_LEFT, 444, UL_INNER_WIDTH, 14
+    Me.Controls("lblProgressBack").SpecialEffect = 0
+    Me.Controls("lblProgressBack").BackColor = UI_TRACK
+    PlaceUi "lblProgressFill", UL_INNER_LEFT, 444, 0, 14
+    Me.Controls("lblProgressFill").BackColor = UI_BLUE
+    PlaceUi "lblProgressPercent", UL_INNER_LEFT, 444, UL_INNER_WIDTH, 14
+    UiFont Me.Controls("lblProgressPercent"), 8.5, True, UI_TEXT
+    Me.Controls("lblProgressPercent").TextAlign = 2
+    PlaceUi "lblProgressMessage", UL_INNER_LEFT, 462, UL_INNER_WIDTH, 16
+    StyleUiLabel "lblProgressMessage", 8.5, False, UI_MUTED
+    PlaceUi "lblMetricDoneTitle", UL_INNER_LEFT, 484, 182, 11
+    PlaceUi "lblMetricRemainingTitle", 209, 484, 182, 11
+    PlaceUi "lblMetricElapsedTitle", 391, 484, 182, 11
+    PlaceUi "lblMetricEtaTitle", 573, 484, 182, 11
+    PlaceUi "lblMetricDone", UL_INNER_LEFT, 495, 182, 16
+    PlaceUi "lblMetricRemaining", 209, 495, 182, 16
+    PlaceUi "lblMetricEta", 573, 495, 182, 16
+    StyleUiLabel "lblMetricDoneTitle", 7.5, True, UI_MUTED
+    StyleUiLabel "lblMetricRemainingTitle", 7.5, True, UI_MUTED
+    StyleUiLabel "lblMetricElapsedTitle", 7.5, True, UI_MUTED
+    StyleUiLabel "lblMetricEtaTitle", 7.5, True, UI_MUTED
+    StyleUiLabel "lblMetricDone", 11, True, UI_TEXT
+    StyleUiLabel "lblMetricRemaining", 11, True, UI_TEXT
+    StyleUiLabel "lblMetricEta", 11, True, UI_TEXT
+    Me.lblStatus.BackStyle = 1
+    Me.lblStatus.BackColor = UI_CARD
+    PlaceUi "lblStatus", 391, 495, 182, 16
+    StyleUiLabel "lblStatus", 11, True, UI_TEXT
+    Me.lblStatus.TextAlign = 1
+    Me.lblStatus.Visible = True
+    Me.lblStatus.ZOrder 0
+
+    ' Log table -----------------------------------------------------------
+    PlaceUi "lblLogTitle", UL_LEFT, 524, 300, 13
+    StyleUiLabel "lblLogTitle", 8, True, UI_MUTED
+    PlaceUi "cmdToggleTechLog", 627, 522, 140, 17
+    StyleUiButton "cmdToggleTechLog", UI_BLUE_SOFT, UI_BLUE_DARK, 8, False
+    PlaceUi "lblLogCard", UL_LEFT, 540, UL_INNER_WIDTH + 24, 74
+    Me.Controls("lblLogCard").BackStyle = 1
+    Me.Controls("lblLogCard").BackColor = UI_CARD
+    Me.Controls("lblLogCard").ZOrder 1
+    PlaceUi "cmdToggleSummary", 475, 522, 144, 17
+    StyleUiButton "cmdToggleSummary", UI_BLUE_SOFT, UI_BLUE_DARK, 8, False
+    UiCtl("lblLogHeaderInvoice").caption = UCase(UniConvert("Hosa ddown / Trang tari"))
+    PlaceUi "lblLogHeaderTime", UL_INNER_LEFT, 548, 64, 12
+    PlaceUi "lblLogHeaderInvoice", 91, 548, 280, 12
+    PlaceUi "lblLogHeaderStatus", 371, 548, 236, 12
+    PlaceUi "lblLogHeaderDuration", 607, 548, 72, 12
+    PlaceUi "lblLogHeaderRetry", 679, 548, 60, 12
+    StyleUiLabel "lblLogHeaderTime", 7.5, True, UI_MUTED
+    StyleUiLabel "lblLogHeaderInvoice", 7.5, True, UI_MUTED
+    StyleUiLabel "lblLogHeaderStatus", 7.5, True, UI_MUTED
+    StyleUiLabel "lblLogHeaderDuration", 7.5, True, UI_MUTED
+    StyleUiLabel "lblLogHeaderRetry", 7.5, True, UI_MUTED
+    UiFont UiCtl("lstLog"), 9, False, UI_TEXT
+    UiCtl("lstLog").BackColor = UI_CARD
+    UiCtl("lstLog").SpecialEffect = 0
+    UiCtl("lstLog").BorderStyle = 0
+    ' MSForms can restore the ListBox default size when its font is changed.
+    PlaceUi "lstLog", UL_INNER_LEFT, 562, UL_INNER_WIDTH, 44
+    PlaceUi "txtSimpleLog", UL_INNER_LEFT, 562, UL_INNER_WIDTH, 44
+    UiFont Me.Controls("txtSimpleLog"), 7.5, False, UI_TEXT
+    Me.Controls("txtSimpleLog").BackColor = UI_CARD
+    Me.Controls("txtSimpleLog").Visible = False
+    PlaceUi "lblLogDetail", UL_INNER_LEFT, 654, UL_INNER_WIDTH, 36
+    UiFont UiCtl("lblLogDetail"), 8.5, False, UI_TEXT
+    UiCtl("lblLogDetail").BackStyle = 1
+    UiCtl("lblLogDetail").BackColor = UI_INFO_BG
+
+    ' Completion summary ---------------------------------------------------
+    PlaceUi "lblSummaryCard", UL_LEFT, 620, UL_INNER_WIDTH + 24, 78
+    Me.Controls("lblSummaryCard").BackStyle = 1
+    Me.Controls("lblSummaryCard").BackColor = UI_CARD
+    Me.Controls("lblSummaryCard").ZOrder 1
+    PlaceUi "lblSummaryTitle", UL_INNER_LEFT, 627, 300, 16
+    StyleUiLabel "lblSummaryTitle", 10, True, UI_BLUE_DARK
+    PlaceUi "cmdRetryFailed", 419, 627, 112, 24
+    StyleUiButton "cmdRetryFailed", UI_BLUE_SOFT, UI_BLUE_DARK, 8, False
+    PlaceUi "cmdExportReport", 535, 627, 112, 24
+    StyleUiButton "cmdExportReport", UI_BLUE_SOFT, UI_BLUE_DARK, 8, False
+    PlaceUi "cmdOpenFolder", 651, 627, 112, 24
+    StyleUiButton "cmdOpenFolder", UI_BLUE_SOFT, UI_BLUE_DARK, 8, False
+    PlaceUi "lblSumFoundTitle", UL_INNER_LEFT, 657, 145, 11
+    PlaceUi "lblSumDownloadedTitle", 172, 657, 145, 11
+    PlaceUi "lblSumNoXmlTitle", 317, 657, 145, 11
+    PlaceUi "lblSumFailedTitle", 462, 657, 145, 11
+    PlaceUi "lblSumElapsedTitle", 607, 657, 145, 11
+    PlaceUi "lblSumFound", UL_INNER_LEFT, 668, 145, 16
+    PlaceUi "lblSumDownloaded", 172, 668, 145, 16
+    PlaceUi "lblSumNoXml", 317, 668, 145, 16
+    PlaceUi "lblSumFailed", 462, 668, 145, 16
+    PlaceUi "lblSumElapsed", 607, 668, 145, 16
+    StyleUiLabel "lblSumFoundTitle", 7.5, True, UI_MUTED
+    StyleUiLabel "lblSumDownloadedTitle", 7.5, True, UI_MUTED
+    StyleUiLabel "lblSumNoXmlTitle", 7.5, True, UI_MUTED
+    StyleUiLabel "lblSumFailedTitle", 7.5, True, UI_MUTED
+    StyleUiLabel "lblSumElapsedTitle", 7.5, True, UI_MUTED
+    StyleUiLabel "lblSumFound", 11.5, True, UI_TEXT
+    StyleUiLabel "lblSumDownloaded", 11.5, True, UI_SUCCESS
+    StyleUiLabel "lblSumNoXml", 11.5, True, UI_WARN
+    StyleUiLabel "lblSumFailed", 11.5, True, UI_DANGER
+    StyleUiLabel "lblSumElapsed", 11.5, True, UI_TEXT
+End Sub
+
+'------------------------- runtime state -------------------------------
+
+Private Function UiElapsedSeconds() As Double
+    Dim reference As Double
+    If mRunStarted <= 0 Then Exit Function
+    If mDownloadRunning Then
+        reference = GdtClockSeconds()
+    ElseIf mRunFinishedAt > 0 Then
+        reference = mRunFinishedAt
+    Else
+        reference = mRunStarted
+    End If
+    UiElapsedSeconds = reference - mRunStarted
+End Function
+
+Private Function UiElapsedText() As String
+    UiElapsedText = GdtElapsedText(UiElapsedSeconds())
+End Function
+
+Private Function UiDetailRemaining() As Long
+    Dim remaining As Long
+    remaining = mInvoiceCount - mDetailDone
+    If remaining < 0 Then remaining = 0
+    UiDetailRemaining = remaining
+End Function
+
+Private Function UiSummaryValue(ByVal hasRun As Boolean, ByVal value As Long) As String
+    If hasRun Then
+        UiSummaryValue = CStr(value)
+    Else
+        UiSummaryValue = UI_EMPTY_VALUE
+    End If
+End Function
+
+Private Sub SetRunState(ByVal newState As String)
+    mRunState = newState
+    If Not mUiReady Then Exit Sub
+    Select Case newState
+    Case UI_STATE_RUNNING
+        StyleUiChip "lblDashStatus", UniConvert("DDang tari"), UI_BLUE_SOFT, UI_BLUE_DARK
+    Case UI_STATE_PAUSED
+        StyleUiChip "lblDashStatus", UniConvert("Tajm duwfng"), UI_WARN_SOFT, UI_WARN
+    Case UI_STATE_DONE
+        StyleUiChip "lblDashStatus", UniConvert("Hoafn taast"), UI_SUCCESS_SOFT, UI_SUCCESS
+    Case UI_STATE_STOPPED
+        StyleUiChip "lblDashStatus", UniConvert("DDax duwfng"), UI_TRACK, UI_TEXT
+    Case UI_STATE_FAILED
+        StyleUiChip "lblDashStatus", UniConvert("Cos looxi"), UI_DANGER_SOFT, UI_DANGER
+    Case Else
+        StyleUiChip "lblDashStatus", UniConvert("Chuwa tari"), UI_BLUE_SOFT, UI_BLUE_DARK
+    End Select
+    RefreshSummary
+End Sub
+
+Private Sub RefreshDashboard()
+    Dim phaseText As String
+    If Not mUiReady Then Exit Sub
+    If mListStarted And Not mListComplete Then
+        phaseText = UniConvert("1. Danh sasch: ") & mListContext
+    ElseIf mListComplete Then
+        phaseText = UniConvert("1. Danh sasch: ") & mInvoiceCount & UniConvert(" hosa ddown")
+    Else
+        phaseText = UniConvert("1. Danh sasch: chuwa bawst ddaafu")
+    End If
+    UiCtl("lblDashPhase1").caption = phaseText
+    If mListStarted And Not mListComplete Then
+        phaseText = UniConvert("2. Chi tieest: chowf danh sasch")
+    ElseIf mListComplete And Not CBool(Me.chkCT.Value) Then
+        phaseText = UniConvert("2. Chi tieest: khoong chojn")
+    ElseIf mInvoiceCount > 0 Then
+        phaseText = UniConvert("2. Chi tieest: ") & mDetailDone & "/" & mInvoiceCount & _
+            " (" & UiPercentText(mDetailDone, mInvoiceCount) & ")"
+    ElseIf mListComplete Then
+        phaseText = UniConvert("2. Chi tieest: khoong cos hosa ddown")
+    Else
+        phaseText = UniConvert("2. Chi tieest: chuwa bawst ddaafu")
+    End If
+    UiCtl("lblDashPhase2").caption = phaseText
+    If mListStarted And Not mListComplete Then
+        UiCtl("lblMetricDoneTitle").caption = UCase(UniConvert("Hosa ddown ddax nhaajn"))
+        UiCtl("lblMetricRemainingTitle").caption = UCase(UniConvert("Trang ddax nhaajn"))
+        UiCtl("lblMetricDone").caption = CStr(mListRowsReceived)
+        UiCtl("lblMetricRemaining").caption = CStr(mListPagesReceived)
+    Else
+        UiCtl("lblMetricDoneTitle").caption = UCase(UniConvert("DDax xuwr lys chi tieest"))
+        UiCtl("lblMetricRemainingTitle").caption = UCase(UniConvert("Cofn laji"))
+        If mListComplete And CBool(Me.chkCT.Value) Then
+            UiCtl("lblMetricDone").caption = mDetailDone & "/" & mInvoiceCount
+            UiCtl("lblMetricRemaining").caption = CStr(UiDetailRemaining())
+        Else
+            UiCtl("lblMetricDone").caption = UI_EMPTY_VALUE
+            UiCtl("lblMetricRemaining").caption = UI_EMPTY_VALUE
+        End If
+    End If
+    Me.lblStatus.caption = UiElapsedText()
+    mElapsedShown = Me.lblStatus.caption
+    RefreshEta
+End Sub
+
+Private Sub RefreshEta()
+    Dim etaText As String
+    If Not mUiReady Then Exit Sub
+    If mDetailStartedAt <= 0 Or Not mListComplete Or Not CBool(Me.chkCT.Value) Then
+        UiCtl("lblMetricEta").caption = UI_EMPTY_VALUE
+        Exit Sub
+    End If
+    ' A paused run keeps the last estimate; a finished run has none to give.
+    If Not mDownloadRunning Then
+        UiCtl("lblMetricEta").caption = UI_EMPTY_VALUE
+        Exit Sub
+    End If
+    If GdtPauseRequested Then Exit Sub
+    etaText = UiEtaText(mDetailDone, mInvoiceCount, GdtClockSeconds() - mDetailStartedAt)
+    If Len(etaText) = 0 Then etaText = UniConvert("DDang uwowsc tisnh")
+    UiCtl("lblMetricEta").caption = etaText
+End Sub
+
+Private Sub RefreshSummary()
+    Dim hasRun As Boolean
+    If Not mUiReady Then Exit Sub
+    hasRun = mRunFinished
+    LayoutLogArea
+    UiCtl("lblSumFound").caption = UiSummaryValue(hasRun, IIf(mListComplete, mInvoiceCount, mListRowsReceived))
+    If hasRun And mListStarted And Not mListComplete Then
+        UiCtl("lblProgressPercent").caption = UniConvert("Danh sasch chuwa hoafn taast")
+        UiCtl("lblDashPhase2").caption = UniConvert("2. Chi tieest: chuwa xuwr lys")
+    End If
+    UiCtl("lblSumDownloaded").caption = UiSummaryValue(hasRun, mDetailDone)
+    UiCtl("lblSumNoXml").caption = UiSummaryValue(hasRun, mXmlMissing)
+    UiCtl("lblSumFailed").caption = UiSummaryValue(hasRun, mFailedCount)
+    UiCtl("lblSumElapsed").caption = IIf(hasRun, UiElapsedText(), UI_EMPTY_VALUE)
+    UiCtl("cmdRetryFailed").Enabled = hasRun And Not mDownloadRunning And mFailedCount > 0
+    UiCtl("cmdExportReport").Enabled = Not mDownloadRunning
+    UiCtl("cmdOpenFolder").Enabled = (Not mDownloadRunning) And CBool(Me.chkXmlZip.Value)
+End Sub
+
+'------------------------- structured log ------------------------------
+
+Private Sub LayoutLogArea()
+    Dim showSummary As Boolean, name As Variant, logHeight As Single
+    If Not mUiReady Then Exit Sub
+    showSummary = mRunFinished And Not mLogExpanded
+    For Each name In Array("lblSummaryCard", "lblSummaryTitle", "cmdRetryFailed", "cmdExportReport", "cmdOpenFolder", _
+        "lblSumFoundTitle", "lblSumFound", "lblSumDownloadedTitle", "lblSumDownloaded", _
+        "lblSumNoXmlTitle", "lblSumNoXml", "lblSumFailedTitle", "lblSumFailed", "lblSumElapsedTitle", "lblSumElapsed")
+        UiCtl(CStr(name)).Visible = showSummary
+    Next name
+    logHeight = IIf(showSummary, 44, 88)
+    PlaceUi "lstLog", UL_INNER_LEFT, 562, UL_INNER_WIDTH, logHeight
+    PlaceUi "txtSimpleLog", UL_INNER_LEFT, 562, UL_INNER_WIDTH, IIf(showSummary, 44, 128)
+    UiCtl("lblLogCard").Height = IIf(showSummary, 74, 158)
+    UiCtl("lblLogDetail").Visible = Not showSummary And Not mTechnicalLogVisible
+    UiCtl("cmdToggleSummary").Visible = mRunFinished
+    UiCtl("cmdToggleSummary").Enabled = mRunFinished And Not mDownloadRunning
+    UiCtl("cmdToggleSummary").caption = IIf(showSummary, UniConvert("Mowr roojng nhaajt kys"), UniConvert("Xem keest quar phieen tari"))
+End Sub
+
+Public Sub ToggleDownloadSummary()
+    If mDownloadRunning Or Not mRunFinished Then Exit Sub
+    mLogExpanded = Not mLogExpanded
+    LayoutLogArea
+End Sub
+
+Private Sub AppendLogRow(ByVal invoiceText As String, ByVal statusText As String, ByVal durationText As String, ByVal retryText As String)
+    Dim logTable As Object
+    Dim followTail As Boolean, firstVisible As Long, selectedIndex As Long
+    If Not mUiReady Then Exit Sub
+    Set logTable = UiCtl("lstLog")
+    followTail = (logTable.ListCount = 0 Or logTable.ListIndex < 0 Or logTable.ListIndex = logTable.ListCount - 1)
+    selectedIndex = logTable.ListIndex
+    logTable.AddItem Format$(Now, "hh:mm:ss")
+    logTable.List(logTable.ListCount - 1, 1) = invoiceText
+    logTable.List(logTable.ListCount - 1, 2) = statusText
+    logTable.List(logTable.ListCount - 1, 3) = durationText
+    logTable.List(logTable.ListCount - 1, 4) = retryText
+    Do While logTable.ListCount > UI_LOG_ROW_LIMIT
+        logTable.RemoveItem 0
+        selectedIndex = selectedIndex - 1
+    Loop
+    If Not followTail And selectedIndex < 0 Then followTail = True
+    LayoutLogArea
+    If followTail Then
+        logTable.ListIndex = logTable.ListCount - 1
+        firstVisible = logTable.ListCount - IIf(mRunFinished And Not mLogExpanded, 3, 6)
+        If firstVisible < 0 Then firstVisible = 0
+        logTable.TopIndex = firstVisible
+        ShowSelectedLog
+    Else
+        logTable.ListIndex = selectedIndex
+        ShowSelectedLog
+    End If
+End Sub
+
+Public Sub ShowSelectedLog()
+    Dim table As Object, row As Long, detail As String
+    If Not mUiReady Then Exit Sub
+    Set table = UiCtl("lstLog")
+    row = table.ListIndex
+    If row < 0 Then
+        detail = UniConvert("Chojn moojt dofng nhaajt kys ddeer xem chi tieest.")
+    Else
+        detail = CStr(table.List(row, 0)) & " | " & CStr(table.List(row, 1)) & vbCrLf & CStr(table.List(row, 2))
+        If Len(CStr(table.List(row, 3))) > 0 Then detail = detail & " | " & CStr(table.List(row, 3))
+        If Len(CStr(table.List(row, 4))) > 0 Then detail = detail & " | " & UniConvert("Thuwr laji: ") & CStr(table.List(row, 4))
+    End If
+    UiCtl("lblLogDetail").caption = detail
+    UiCtl("lstLog").ControlTipText = Replace(detail, vbCrLf, " | ")
+End Sub
+
+Private Sub SetNoticeVisible(ByVal visible As Boolean)
+    If Not mUiReady Then Exit Sub
+    UiCtl("lblNoticeIcon").Visible = visible
+    UiCtl("lblNoticeTitle").Visible = visible
+    Me.Label21.Visible = visible
+End Sub
+
+'------------------------- command handlers ----------------------------
+
+Public Sub ToggleTechnicalLog()
+    If Not mUiReady Then Exit Sub
+    mTechnicalLogVisible = Not mTechnicalLogVisible
+    UiCtl("lstLog").Visible = Not mTechnicalLogVisible
+    UiCtl("txtSimpleLog").Visible = mTechnicalLogVisible
+    UiCtl("cmdToggleTechLog").caption = IIf(mTechnicalLogVisible, UniConvert("Aanr log kyx thuaajt"), UniConvert("Xem log kyx thuaajt"))
+    LayoutLogArea
+End Sub
+
+' The project already retries through the anti-duplicate top-up run, so this
+' button opens the report that lists the remaining failures and points at that
+' path.  It never starts a download on its own.
+Public Sub RetryFailedInvoices()
+    If mDownloadRunning Then Exit Sub
+    AppendSimpleLog UniConvert("Thuwr laji hosa ddown looxi: mowr trang baso caso.")
+    AppendLogRow UniConvert("Phieen tari"), UniConvert("Mowr BaoCao_LoiTaiHD"), vbNullString, CStr(mFailedCount)
+    ShowGdtErrorReportSheet
+    MsgBoxUni UniConvert("Casc hosa ddown cofn looxi dduwowjc lieejt kee trong trang BaoCao_LoiTaiHD. " & _
+        "Baasm [Tari hosa ddown] vaf chojn [No] ddeer tari boor sung: heej thoosng boor qua phaafn ddax hoafn " & _
+        "taast vaf thuwr laji cos hosa ddown cofn thieesu."), vbInformation, UniConvert("Thuwr laji hosa ddown looxi")
+End Sub
+
+Public Sub OpenReconciliationReport()
+    If mDownloadRunning Then Exit Sub
+    AppendSimpleLog UniConvert("Mowr trang baso caso ddoosi chieesu: BaoCao_LoiTaiHD.")
+    AppendLogRow UniConvert("Baso caso ddoosi chieesu"), UniConvert("BaoCao_LoiTaiHD"), vbNullString, vbNullString
+    ShowGdtErrorReportSheet
+End Sub
+
+Public Sub OpenXmlFolder()
+    Dim fso As Object, folder As String
+    If mDownloadRunning Then Exit Sub
+    folder = Trim$(CStr(Me.txtXMLFolderPath.Value))
+    If Len(folder) = 0 Then
+        MsgBoxUni UniConvert("Chuwa chojn thuw mujc luwu file XML/ZIP."), vbExclamation, UniConvert("Mowr thuw mujc luwu")
+        Exit Sub
+    End If
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If Not fso.FolderExists(folder) Then
+        MsgBoxUni UniConvert("Thuw mujc khoong toofn taji: ") & folder, vbExclamation, UniConvert("Mowr thuw mujc luwu")
+        Exit Sub
+    End If
+    AppendLogRow UniConvert("Mowr thuw mujc luwu"), folder, vbNullString, vbNullString
+    Shell "explorer.exe " & Chr(34) & folder & Chr(34), vbNormalFocus
+End Sub
+
+Private Sub ShowGdtErrorReportSheet()
+    EnsureGdtErrorReportSheet
+    ThisWorkbook.Worksheets("BaoCao_LoiTaiHD").Activate
 End Sub
 
 

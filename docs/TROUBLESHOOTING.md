@@ -35,6 +35,14 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 - Với API `relative`/`related`, xem lỗi cuối cùng ngay tại cột **Chuỗi hóa đơn liên quan** hoặc **Thông tin liên quan**.
 - Kiểm tra `BaoCao_LoiTaiHD` và chỉ chia sẻ log đã sanitize.
 
+## HTTP 200 nhưng phản hồi là HTML (báo cáo lỗi `Parse dữ liệu`)
+
+- Hiện tượng: `BaoCao_LoiTaiHD` có dòng với **Công đoạn lỗi** `Parse dữ liệu`, **HTTP status** 200 và **Nội dung lỗi** dạng `Error parsing JSON: <!DOCTYPE h...`. Phản hồi là trang web (HTML) thay cho JSON; log này chưa đủ để kết luận nguyên nhân là phiên đăng nhập, gateway/WAF hay chuyển hướng.
+- Từ v6.7.7, phản hồi bắt đầu bằng `<` được coi là lỗi tạm thời: request được thử lại trong cùng lượt, hết lượt thì vào hàng retry cuối phiên. Báo cáo giữ HTTP thật và ghi rõ `phản hồi không phải JSON mà là trang HTML/XML` kèm `Content-Type` và đoạn đầu phản hồi. Nếu vẫn lỗi sau retry, chi tiết chưa được tải thành công.
+- Nhiều dòng lỗi liên tiếp có thể liên quan phiên đăng nhập hoặc gateway: thử đăng nhập lại rồi chạy lại. Kiểm tra `BaoCao_LoiTaiHD` khi phiên kết thúc; lỗi đã phục hồi được gỡ khỏi báo cáo.
+- Nếu lỗi lặp lại nhiều lần: tăng khoảng nghỉ trên form, thử lại vào giờ khác, hoặc kiểm tra proxy/VPN của máy.
+- Chỉ chia sẻ thông báo đã sanitize; không đăng endpoint kèm MST thật nếu không cần.
+
 ## Lỗi request-id hoặc API thay đổi
 
 - Xác nhận đang dùng release mới nhất.
@@ -56,7 +64,7 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 - Bản sửa 6.7.6 đợi giải nén hoàn tất, hỗ trợ XML/HTML trong thư mục con của ZIP và lưu tên file có MST người bán để tránh trùng số hóa đơn. Lỗi lưu/giải nén của từng hóa đơn được ghi trong `BaoCao_LoiTaiHD`; các hóa đơn khác tiếp tục được xử lý.
 - Nếu ZIP tải lại bị hỏng, ZIP hợp lệ đã có vẫn được giữ; chỉ thay ZIP đích sau khi kiểm tra giải nén thành công.
 
-## Tải bổ sung hoặc resume (source đang phát triển)
+## Tải bổ sung hoặc resume (từ v6.7.7)
 
 - Chọn **No** tại câu hỏi xóa dữ liệu, cùng đơn vị/chiều và kỳ cần tải. Ứng dụng lấy lại danh sách, cập nhật tổng hợp theo định danh và chỉ bỏ chi tiết/XML khi bằng chứng đã hoàn tất còn hợp lệ. Lưu workbook trước khi đóng Excel; đăng nhập lại nếu token hết hạn.
 - Có tổng hợp nhưng thiếu chi tiết/XML thì vẫn tải phần thiếu. Khác nguồn `query`/`sco-query` được giữ riêng; bản trùng lịch sử không tự bị xóa.

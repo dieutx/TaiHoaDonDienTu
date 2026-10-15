@@ -9,6 +9,7 @@ Từ phiên bản 6.7.6, ứng dụng dùng tối đa 4 request MSXML HTTP bất
 - Chi tiết được ghi theo thứ tự danh sách gốc, kể cả khi response về đảo thứ tự. Bộ đệm giới hạn 12 tác vụ/kết quả; khi đầy, ngừng thêm tác vụ cho đến khi ghi được kết quả đầu. Điều này giới hạn bộ nhớ khi một hóa đơn chậm hoặc đang retry.
 - 429 áp dụng cooldown chung, tôn trọng `Retry-After` và giảm tải theo policy XML. JSON 503/504 cũng giảm tải và áp dụng cooldown theo backoff/`Retry-After`; XML giữ policy 429 hiện có. Sau thời gian ổn định, số kết nối và khoảng cách gửi phục hồi dần.
 - Mỗi request giữ retry có giới hạn. Request hết lượt được ghi vào báo cáo lỗi và đưa vào retry cuối phiên nếu đủ điều kiện. Retry cuối phiên hiện vẫn tuần tự. Parse/ghi lỗi không được báo thành công.
+- Phản hồi 2xx mà body là trang web (bắt đầu bằng `<`) không được coi là tải thành công: `clsGdtXmlTask` và `ExecuteGdtRequest` xử lý như lỗi tạm thời, thử lại theo backoff, giảm tải pha hiện tại và đưa vào retry cuối phiên khi hết lượt. Báo cáo ghi `phản hồi không phải JSON mà là trang HTML/XML` kèm `Content-Type` và đoạn đầu phản hồi thay cho lỗi parse JSON. JSON hỏng nhưng vẫn là JSON/markup khác giữ nguyên hành vi cũ.
 - Token được chụp đầu phiên. Tạm dừng chặn request mới/retry và vẫn nhận, ghi kết quả đang chạy. Dừng hoặc 401/403 hủy request còn chờ và chặn request mới.
 
 Task bất đồng bộ đọc response vào biến cục bộ rồi gán lại `ResponseText`/`ResponseBody`, tránh mất nội dung khi truyền trường đối tượng qua tham số ByRef. Regression kiểm tra cả nội dung JSON lẫn ZIP/binary.
@@ -19,7 +20,7 @@ Task bất đồng bộ đọc response vào biến cục bộ rồi gán lại 
 .\build\Test-ParallelJsonRuntime.ps1 -BuiltWorkbook '.\dist\parallel-json-final\TaiHoaDonDienTu_v6.7.6.xlsm'
 ```
 
-Fixture HTTP localhost và Excel kiểm tra kết nối đồng thời thực tế, đúng dòng mua/bán, thứ tự chi tiết, bộ đệm 12 tác vụ với 24 hóa đơn, MST Text, ngày UTC+7, trạng thái hóa đơn, 429/503/504 rồi hồi phục, lỗi hết retry và retry cuối phiên, JSON hỏng, pause/resume, stop/auth, header, request-id và token snapshot. Fixture đổi endpoint chỉ trong bộ nhớ, đóng workbook không lưu. Fixture đo thời gian so với HTTP tuần tự cùng độ trễ giả, kiểm tra cả khoảng nghỉ 1 ms và 600 ms; không dùng credential hay dữ liệu hóa đơn thật.
+Fixture HTTP localhost và Excel kiểm tra kết nối đồng thời thực tế, đúng dòng mua/bán, thứ tự chi tiết, bộ đệm 12 tác vụ với 24 hóa đơn, MST Text, ngày UTC+7, trạng thái hóa đơn, 429/503/504 rồi hồi phục, lỗi hết retry và retry cuối phiên, phản hồi HTML kèm HTTP 200 rồi hồi phục qua retry cuối phiên, JSON hỏng, pause/resume, stop/auth, header, request-id và token snapshot. Fixture đổi endpoint chỉ trong bộ nhớ, đóng workbook không lưu. Fixture đo thời gian so với HTTP tuần tự cùng độ trễ giả, kiểm tra cả khoảng nghỉ 1 ms và 600 ms; không dùng credential hay dữ liệu hóa đơn thật.
 
 Chưa đo tốc độ hoặc tải chịu được trên GDT thật. Tăng kết nối giúp khi request độc lập mất thời gian chờ, nhưng tốc độ còn phụ thuộc khoảng nghỉ, server, Excel và số hóa đơn cần lấy thông tin liên quan. Kết quả đo localhost không phải cam kết tốc độ trên GDT.
 

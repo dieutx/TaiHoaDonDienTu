@@ -310,16 +310,17 @@ function Invoke-WithExcelWorkbook {
     $workbook = $null
     try {
         $excel = New-ExcelApplication
-        $excel.Visible = $false
+        try { $excel.Visible = $false } catch {}
         $excel.DisplayAlerts = $false
         $excel.EnableEvents = $false
         $excel.AskToUpdateLinks = $false
         $excel.AutomationSecurity = 3
         $workbook = $excel.Workbooks.Open($resolvedPath, 0, [bool]$ReadOnly)
+        try { $excel.Visible = $false; $excel.ScreenUpdating = $false } catch {}
         & $Action $workbook $excel -ErrorAction Stop
     } finally {
         if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }
-        if ($null -ne $excel) { try { $excel.Quit() } catch {} }
+        if ($null -ne $excel) { try { $excel.ScreenUpdating = $true } catch {}; try { $excel.Quit() } catch {} }
         Release-ComObject $workbook
         Release-ComObject $excel
         [GC]::Collect(); [GC]::WaitForPendingFinalizers()

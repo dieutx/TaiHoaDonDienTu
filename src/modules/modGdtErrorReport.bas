@@ -50,6 +50,7 @@ Public Sub UpsertGdtErrorReport( _
     Dim ws As Worksheet
     Dim targetRow As Long
     Dim rowData(1 To 1, 1 To GDT_ERROR_COLUMN_COUNT) As Variant
+    Dim textColumn As Variant
 
     Set ws = EnsureGdtErrorReportSheet()
     targetRow = FindGdtErrorRow(ws, direction, apiSource, sellerTaxCode, _
@@ -74,7 +75,13 @@ Public Sub UpsertGdtErrorReport( _
     rowData(1, 16) = finalResult
     rowData(1, 17) = RedactGdtSensitiveText(note)
     ws.Cells(targetRow, 5).Resize(1, 4).NumberFormat = "@"
+    For Each textColumn In Array(3, 4, 5, 6, 7, 8, 10, 11, 13, 16, 17)
+        ws.Cells(targetRow, CLng(textColumn)).NumberFormat = "@"
+        If Left$(CStr(rowData(1, CLng(textColumn))), 1) = "'" Then _
+            rowData(1, CLng(textColumn)) = "'" & CStr(rowData(1, CLng(textColumn)))
+    Next textColumn
     ws.Cells(targetRow, 1).Resize(1, GDT_ERROR_COLUMN_COUNT).Value2 = rowData
+    GdtFormatCellLayout ws.Rows(targetRow)
     ws.Cells(1, 18).Value2 = "Account scope"
     ws.Columns(18).Hidden = True
     ws.Cells(targetRow, 18).NumberFormat = "@"
@@ -152,11 +159,12 @@ Private Sub FormatGdtErrorReport(ByVal ws As Worksheet)
     headers(1, 17) = UniConvert("Ghi chus")
 
     With ws
+        GdtFormatCellLayout .Cells
         .Cells(1, 1).Resize(1, GDT_ERROR_COLUMN_COUNT).Value = headers
         With .Cells(1, 1).Resize(1, GDT_ERROR_COLUMN_COUNT)
             .Font.Bold = True
             .Interior.Color = RGB(217, 225, 242)
-            .WrapText = True
+            .WrapText = False
         End With
         If .AutoFilterMode Then .AutoFilterMode = False
         .Cells(1, 1).Resize(1, GDT_ERROR_COLUMN_COUNT).AutoFilter
@@ -216,6 +224,9 @@ Private Function FindGdtErrorRow( _
 
     For rowIndex = 1 To UBound(data, 1)
         If CStr(data(rowIndex, 18)) <> GdtReportAccount Then GoTo NextRow
+        If failureStage = "Parse " & UniConvert("duwx lieeju") And Len(endpoint) > 0 Then
+            If GdtParseRequestKind(CStr(data(rowIndex, 11))) <> GdtParseRequestKind(endpoint) Then GoTo NextRow
+        End If
         If Len(sellerTaxCode & templateCode & invoiceSeries & invoiceNumber) = 0 Then
             If Len(endpoint) = 0 Then GoTo NextRow
             If CStr(data(rowIndex, 11)) <> endpoint Then GoTo NextRow
@@ -266,6 +277,17 @@ Public Function CountGdtSessionErrors(ByVal direction As String) As Long
             End If
         End If
     Next r
+End Function
+
+Private Function GdtParseRequestKind(ByVal endpoint As String) As String
+    Dim kind As Variant
+    For Each kind In Array("detail", "relative", "related", "purchase", "sold")
+        If InStr(1, endpoint, "/invoices/" & kind & "?", vbTextCompare) > 0 Then
+            GdtParseRequestKind = CStr(kind)
+            Exit Function
+        End If
+    Next kind
+    GdtParseRequestKind = endpoint
 End Function
 
 Private Function NormalizeKeyPart(ByVal value As String) As String

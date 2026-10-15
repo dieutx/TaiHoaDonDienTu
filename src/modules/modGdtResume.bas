@@ -9,6 +9,7 @@ Private mRows As Object, mSeen As Object, mSignatures As Object, mStages As Obje
 Private mDetailCounts As Object, mReplaced As Object
 Private mLegacyRows As Object, mLegacyDetails As Object, mLegacyReplaced As Object
 Private mOriginalDetailLast As Long
+Private mCompletedStages As Object
 Public GdtResumeEnabled As Boolean
 Public GdtDuplicatesSkipped As Long, GdtStagesSkipped As Long
 
@@ -29,11 +30,18 @@ Private Function ScopeKey(ByVal identity As String, ByVal source As String) As S
     ScopeKey = KeyPart(mAccount) & KeyPart(mDirection) & KeyPart(source) & identity
 End Function
 
-Public Sub BeginGdtResume(ByVal account As String, ByVal invoiceType As Long, ByVal appendExisting As Boolean)
-    Dim ws As Worksheet, state As Worksheet, data As Variant, r As Long, lastRow As Long, identity As String
+Public Sub ValidateGdtResumeLayout(ByVal invoiceType As Long)
+    Dim state As Worksheet
     Set state = GetStateSheet(False)
     ValidateOwnerColumns ThisWorkbook.Sheets(IIf(invoiceType = 1, "TongHopHD_Mua", "TongHopHD_Ban")), 65
     ValidateOwnerColumns ThisWorkbook.Sheets(IIf(invoiceType = 1, "ChiTietHD_Mua", "ChiTietHD_Ban")), 35
+End Sub
+
+Public Sub BeginGdtResume(ByVal account As String, ByVal invoiceType As Long, ByVal appendExisting As Boolean, _
+    Optional ByVal sourceFilter As String = "all")
+    Dim ws As Worksheet, state As Worksheet, data As Variant, r As Long, lastRow As Long, identity As String
+    ValidateGdtResumeLayout invoiceType
+    Set state = GetStateSheet(False)
     mAccount = account: mDirection = CStr(invoiceType)
     GdtResumeEnabled = appendExisting
     GdtDuplicatesSkipped = 0: GdtStagesSkipped = 0
@@ -41,6 +49,7 @@ Public Sub BeginGdtResume(ByVal account As String, ByVal invoiceType As Long, By
     Set mSeen = CreateObject("Scripting.Dictionary")
     Set mSignatures = CreateObject("Scripting.Dictionary")
     Set mStages = CreateObject("Scripting.Dictionary")
+    Set mCompletedStages = CreateObject("Scripting.Dictionary")
     Set mDetailCounts = CreateObject("Scripting.Dictionary")
     Set mReplaced = CreateObject("Scripting.Dictionary")
     Set mLegacyRows = CreateObject("Scripting.Dictionary")
@@ -55,7 +64,7 @@ Public Sub BeginGdtResume(ByVal account As String, ByVal invoiceType As Long, By
                 identity = GdtInvoiceIdentity(CStr(data(r, 10)), CStr(data(r, 3)), CStr(data(r, 4)), CStr(data(r, 5)))
                 If Not mRows.Exists(ScopeKey(identity, CStr(data(r, 66)))) Then _
                     mRows.Add ScopeKey(identity, CStr(data(r, 66))), r + 2
-            ElseIf Len(CStr(data(r, 65))) = 0 And Len(account) > 0 Then
+            ElseIf sourceFilter = "all" And Len(CStr(data(r, 65))) = 0 And Len(account) > 0 Then
                 If CStr(data(r, IIf(invoiceType = 1, 16, 10))) = account Then
                     identity = GdtInvoiceIdentity(CStr(data(r, 10)), CStr(data(r, 3)), CStr(data(r, 4)), CStr(data(r, 5)))
                     If Not mLegacyRows.Exists(identity) Then mLegacyRows(identity) = r + 2
@@ -72,7 +81,7 @@ Public Sub BeginGdtResume(ByVal account As String, ByVal invoiceType As Long, By
                 identity = ScopeKey(GdtInvoiceIdentity(CStr(data(r, 8)), CStr(data(r, 1)), CStr(data(r, 2)), CStr(data(r, 3))), CStr(data(r, 36)))
                 If Not mDetailCounts.Exists(identity) Then mDetailCounts(identity) = 0
                 mDetailCounts(identity) = CLng(mDetailCounts(identity)) + 1
-            ElseIf Len(CStr(data(r, 35))) = 0 And Len(account) > 0 Then
+            ElseIf sourceFilter = "all" And Len(CStr(data(r, 35))) = 0 And Len(account) > 0 Then
                 If CStr(data(r, IIf(invoiceType = 1, 14, 8))) = account Then
                     identity = GdtInvoiceIdentity(CStr(data(r, 8)), CStr(data(r, 1)), CStr(data(r, 2)), CStr(data(r, 3)))
                     mLegacyDetails(identity) = True
@@ -109,7 +118,7 @@ End Sub
 Public Sub EndGdtResume()
     GdtResumeEnabled = False
     Set mRows = Nothing: Set mSeen = Nothing: Set mSignatures = Nothing: Set mStages = Nothing
-    Set mDetailCounts = Nothing: Set mReplaced = Nothing
+    Set mDetailCounts = Nothing: Set mReplaced = Nothing: Set mCompletedStages = Nothing
     Set mLegacyRows = Nothing: Set mLegacyDetails = Nothing: Set mLegacyReplaced = Nothing
 End Sub
 
@@ -181,6 +190,7 @@ Private Function GetStateSheet(ByVal create As Boolean) As Worksheet
     If Not create Then Exit Function
     Set ws = ThisWorkbook.Worksheets.Add(After:=ThisWorkbook.Worksheets(ThisWorkbook.Worksheets.Count))
     ws.Name = STATE_SHEET
+    GdtFormatCellLayout ws.Cells
     ws.Cells(1, 1).Value2 = "Identity (v1)": ws.Cells(1, 2).Value2 = "Signature"
     ws.Cells(1, 3).Value2 = "Stage": ws.Cells(1, 4).Value2 = "Rows": ws.Cells(1, 5).Value2 = "Updated"
     ws.Cells(1, 6).Value2 = "File proof"
@@ -196,9 +206,12 @@ End Function
 Public Function CanResumeGdtStage(ByRef buffer As Variant, ByVal index As Long, ByVal stage As String, _
     Optional ByVal zipFolder As String = "", Optional ByVal extractedFolder As String = "") As Boolean
     Dim key As String, signatureKey As String, record As Variant, count As Long
-    If Not GdtResumeEnabled Or mStages Is Nothing Then Exit Function
+    If mStages Is Nothing Then Exit Function
     signatureKey = BufferKey(buffer, index): key = signatureKey & KeyPart(stage)
     If stage = "XML" Then key = key & KeyPart(zipFolder) & KeyPart(extractedFolder)
+    If Not GdtResumeEnabled Then
+        If Not mCompletedStages.Exists(key) Then Exit Function
+    End If
     If Not mSignatures.Exists(signatureKey) Or Not mStages.Exists(key) Then Exit Function
     record = mStages(key)
     If CStr(record(0)) <> CStr(mSignatures(signatureKey)) Then Exit Function
@@ -219,7 +232,9 @@ Public Function CanResumeGdtStage(ByRef buffer As Variant, ByVal index As Long, 
             MarkGdtRetrySuccess direction, source, CStr(buffer(index, 0)), CStr(buffer(index, 3)), CStr(buffer(index, 1)), _
                 CStr(buffer(index, 2)), IIf(stage = "DETAIL", UniConvert("Laasy chi tieest"), UniConvert("Tari XML")), 0
             If stage = "DETAIL" Then MarkGdtRetrySuccess direction, source, CStr(buffer(index, 0)), CStr(buffer(index, 3)), _
-                CStr(buffer(index, 1)), CStr(buffer(index, 2)), "Parse " & UniConvert("duwx lieeju"), 0
+                CStr(buffer(index, 1)), CStr(buffer(index, 2)), "Parse " & UniConvert("duwx lieeju"), 0, vbNullString, _
+                "https://hoadondientu.gdt.gov.vn/api/" & source & "/invoices/detail?nbmst=" & buffer(index, 0) & _
+                "&khmshdon=" & buffer(index, 3) & "&khhdon=" & buffer(index, 1) & "&shdon=" & buffer(index, 2)
         End If
     End If
 End Function
@@ -287,6 +302,7 @@ Public Sub MarkGdtStageComplete(ByRef buffer As Variant, ByVal index As Long, By
     ws.Cells(targetRow, 5).Value2 = CDbl(Now)
     GdtWriteTextCell ws.Cells(targetRow, 6), proof
     mStages(key) = Array(CStr(mSignatures(signatureKey)), rowCount, targetRow, proof)
+    mCompletedStages(key) = True
 End Sub
 
 Public Sub CommitGdtDetailRows(ByRef buffer As Variant, ByVal index As Long, ByVal firstNewRow As Long, ByRef nextRow As Long)

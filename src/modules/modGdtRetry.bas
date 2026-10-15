@@ -95,6 +95,8 @@ Public Function ExecuteGdtRequest( _
         result.ResponseText = vbNullString
         result.ResponseBody = Empty
         result.RetryAfterSeconds = 0
+        result.NotBefore = 0
+        result.InvalidJsonBody = False
 
         On Error GoTo RequestError
         Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
@@ -140,6 +142,19 @@ Public Function ExecuteGdtRequest( _
         End If
 
         If IsSuccessfulGdtStatus(result.StatusCode) Then
+            If Not expectBinary And IsGdtMarkupResponse(result.ResponseText) Then
+                ' The JSON API never answered; retry instead of feeding a web page
+                ' to the invoice parser and losing the download for this session.
+                result.InvalidJsonBody = True
+                result.ErrorMessage = BuildGdtMarkupResponseMessage(result.StatusCode, _
+                    result.ResponseText, ReadGdtResponseContentType(http))
+                If attempt < maxAttempts Then
+                    waitSeconds = CalculateGdtRetrySeconds(attempt, 0)
+                    UpdateGdtRetryStatus statusPrefix, attempt + 1, maxAttempts, result.StatusCode, waitSeconds
+                    WaitGdtSeconds waitSeconds
+                End If
+                GoTo ContinueAttempt
+            End If
             result.Success = True
             result.ErrorMessage = vbNullString
             result.ShouldQueueFinalRetry = False
@@ -169,6 +184,7 @@ Public Function ExecuteGdtRequest( _
         End If
 
         result.RetryAfterSeconds = ReadRetryAfterSeconds(http)
+        If result.RetryAfterSeconds > 0 Then result.NotBefore = GdtClockSeconds() + result.RetryAfterSeconds
         If attempt < maxAttempts Then
             waitSeconds = CalculateGdtRetrySeconds(attempt, result.RetryAfterSeconds)
             UpdateGdtRetryStatus statusPrefix, attempt + 1, maxAttempts, result.StatusCode, waitSeconds
@@ -181,7 +197,8 @@ ContinueAttempt:
     Next attempt
 
     result.ShouldQueueFinalRetry = ShouldQueueGdtFinalRetry( _
-                                       result.StatusCode, transportError, result.Attempts, maxAttempts)
+                                       result.StatusCode, transportError Or result.InvalidJsonBody, _
+                                       result.Attempts, maxAttempts)
     Set ExecuteGdtRequest = result
     Exit Function
 
@@ -310,11 +327,11 @@ Public Function CalculateGdtRetrySeconds( _
 End Function
 
 Public Sub WaitGdtSeconds(ByVal seconds As Long)
-    Dim deadline As Date
+    Dim deadline As Double
 
     If seconds <= 0 Then Exit Sub
-    deadline = DateAdd("s", seconds, Now)
-    Do While Now < deadline
+    deadline = GdtClockSeconds() + seconds
+    Do While GdtClockSeconds() < deadline
         If Not WaitForGdtControl() Then Exit Sub
         GdtPumpWait
     Loop
@@ -423,6 +440,54 @@ Public Function BuildHttpErrorMessage(ByVal statusCode As Long, ByVal responseTe
     Else
         BuildHttpErrorMessage = "HTTP " & CStr(statusCode)
     End If
+End Function
+
+' GDT can answer a JSON request with its own web application page, still under
+' HTTP 200: MSXML follows the redirect to the login/SPA route and reports the
+' final status.  A markup body therefore means the API never answered and must
+' not be treated as a successful download or as malformed invoice data.
+Public Function IsGdtMarkupResponse(ByVal responseText As String) As Boolean
+    Dim trimmed As String
+
+    trimmed = Trim$(Replace$(Replace$(Replace$(responseText, vbCr, " "), vbLf, " "), vbTab, " "))
+    If Len(trimmed) = 0 Then Exit Function
+    If Left$(trimmed, 1) = ChrW(&HFEFF) Then trimmed = Trim$(Mid$(trimmed, 2))
+    IsGdtMarkupResponse = (Len(trimmed) > 0 And Left$(trimmed, 1) = "<")
+End Function
+
+Public Function ReadGdtResponseContentType(ByVal http As Object) As String
+    On Error GoTo MissingHeader
+    ReadGdtResponseContentType = Left$(Trim$(CStr(http.getResponseHeader("Content-Type"))), 80)
+    On Error GoTo 0
+    Exit Function
+
+MissingHeader:
+    Err.Clear
+    On Error GoTo 0
+End Function
+
+Public Function BuildGdtMarkupResponseMessage( _
+    ByVal statusCode As Long, _
+    ByVal responseText As String, _
+    Optional ByVal contentType As String = vbNullString) As String
+
+    Dim preview As String
+    Dim lineBreak As Long
+
+    preview = Trim$(responseText)
+    lineBreak = InStr(1, preview, vbLf)
+    If lineBreak > 0 Then preview = Trim$(Left$(preview, lineBreak - 1))
+    If Len(preview) > 60 Then preview = Left$(preview, 60)
+    BuildGdtMarkupResponseMessage = "HTTP " & CStr(statusCode) & ": " & _
+        UniConvert("pharn hoofi khoong phari JSON maf laf trang HTML/XML")
+    If Len(contentType) > 0 Then _
+        BuildGdtMarkupResponseMessage = BuildGdtMarkupResponseMessage & "; Content-Type: " & contentType
+    BuildGdtMarkupResponseMessage = BuildGdtMarkupResponseMessage & _
+        "; " & UniConvert("ddaafu pharn hoofi: ") & Chr$(34) & preview & Chr$(34) & ". " & _
+        UniConvert("Phieen ddawng nhaajp cos theer ddax heest hajn hoawjc bij chawjn; " & _
+        "thuwr laji hoawjc ddawng nhaajp laji.")
+    If Len(BuildGdtMarkupResponseMessage) > 500 Then _
+        BuildGdtMarkupResponseMessage = Left$(BuildGdtMarkupResponseMessage, 500)
 End Function
 
 Private Sub UpdateGdtRetryStatus( _

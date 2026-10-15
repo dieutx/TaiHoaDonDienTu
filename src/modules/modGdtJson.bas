@@ -1,6 +1,13 @@
 Attribute VB_Name = "modGdtJson"
 Option Explicit
 
+Public Sub RequireGdtDetailIdentity(ByVal invoice As Object, ByVal seller As String, ByVal template As String, _
+    ByVal series As String, ByVal number As String)
+    If GdtInvoiceIdentity(SafeJsonText(invoice, "nbmst"), SafeJsonText(invoice, "khmshdon"), _
+        SafeJsonText(invoice, "khhdon"), SafeJsonText(invoice, "shdon")) <> _
+        GdtInvoiceIdentity(seller, template, series, number) Then Err.Raise 5, , "API detail invoice identity mismatch"
+End Sub
+
 Public Function GdtInvoiceStatus(ByVal raw As String) As Long
     Dim value As Double
     GdtInvoiceStatus = -1

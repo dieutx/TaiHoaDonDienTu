@@ -32,6 +32,11 @@ Public Sub GdtWriteTextCell(ByVal cell As Range, ByVal value As Variant)
     cell.Value2 = literal
 End Sub
 
+Public Sub GdtFormatCellLayout(ByVal target As Range)
+    target.WrapText = False
+    target.VerticalAlignment = xlCenter
+End Sub
+
 Private Function GdtStatusLabel(ByVal raw As String, ByVal labels As Variant, ByVal offset As Long) As String
     Dim code As Double, index As Long
     On Error GoTo Unknown
@@ -281,6 +286,7 @@ Public Function SellerLookupLink(ByVal sellerTaxId As String) As String
 End Function
 
 Private Sub FitInvoiceRow(ByVal ws As Worksheet, ByVal targetRow As Long)
+    GdtFormatCellLayout ws.Rows(targetRow)
     ws.Rows(targetRow).Hidden = False
     ws.Rows(targetRow).AutoFit
     If ws.Rows(targetRow).RowHeight < 18 Then ws.Rows(targetRow).RowHeight = 18
@@ -364,10 +370,10 @@ Private Sub WriteRelatedInvoiceInfo(ByVal invoice As Object, ByVal ws As Workshe
     If invoiceStatus < 2 Or invoiceStatus > 6 Then Exit Sub
 
     ws.Cells(targetRow, 58).Value = SafeJsonText(invoice, "lhdgoc")
-    ws.Cells(targetRow, 59).Value = SafeJsonText(invoice, "khmshdgoc")
-    ws.Cells(targetRow, 60).Value = SafeJsonText(invoice, "khhdgoc")
-    ws.Cells(targetRow, 61).Value = SafeJsonText(invoice, "shdgoc")
-    ws.Cells(targetRow, 63).Value = SafeJsonText(invoice, "gchdgoc")
+    GdtWriteTextCell ws.Cells(targetRow, 59), SafeJsonText(invoice, "khmshdgoc")
+    GdtWriteTextCell ws.Cells(targetRow, 60), SafeJsonText(invoice, "khhdgoc")
+    GdtWriteTextCell ws.Cells(targetRow, 61), SafeJsonText(invoice, "shdgoc")
+    GdtWriteTextCell ws.Cells(targetRow, 63), SafeJsonText(invoice, "gchdgoc")
 
     If Len(SafeJsonText(invoice, "tdlhdgoc")) > 0 Then
         WriteIsoDateCell ws.Cells(targetRow, 62), SafeJsonText(invoice, "tdlhdgoc")
@@ -385,7 +391,7 @@ Private Sub WriteRelatedInvoiceInfo(ByVal invoice As Object, ByVal ws As Workshe
         End If
     End If
     ws.Cells(targetRow, 57).Value = relationSummary
-    ws.Cells(targetRow, 57).WrapText = True
+    GdtFormatCellLayout ws.Rows(targetRow)
 End Sub
 
 Private Function BuildRelatedInvoiceKey(ByVal invoice As Object, ByVal useOriginalFields As Boolean) As String
@@ -470,9 +476,7 @@ Public Sub WriteRelativeInvoiceData( _
     AppendReportLine reportText, reportLine
 
     ws.Cells(targetRow, 57).Value = reportText
-    ws.Cells(targetRow, 57).WrapText = True
-    ws.Rows(targetRow).AutoFit
-    If ws.Rows(targetRow).RowHeight > 150 Then ws.Rows(targetRow).RowHeight = 150
+    FitInvoiceRow ws, targetRow
 End Sub
 
 Public Sub WriteRelatedInformationResponse( _
@@ -512,9 +516,7 @@ KeepRawJson:
 
     If Len(normalized) > 32000 Then normalized = Left$(normalized, 32000)
     ws.Cells(targetRow, 64).Value = normalized
-    ws.Cells(targetRow, 64).WrapText = True
-    ws.Rows(targetRow).AutoFit
-    If ws.Rows(targetRow).RowHeight > 150 Then ws.Rows(targetRow).RowHeight = 150
+    FitInvoiceRow ws, targetRow
 End Sub
 
 Public Sub WriteRelationRequestError( _
@@ -552,9 +554,7 @@ Public Sub WriteRelationRequestError( _
     If Len(displayText) > 32000 Then displayText = Left$(displayText, 32000)
 
     ws.Cells(targetRow, targetColumn).Value = displayText
-    ws.Cells(targetRow, targetColumn).WrapText = True
-    ws.Rows(targetRow).AutoFit
-    If ws.Rows(targetRow).RowHeight > 150 Then ws.Rows(targetRow).RowHeight = 150
+    FitInvoiceRow ws, targetRow
 End Sub
 
 Public Sub WriteNoRelativeInvoiceData(ByVal loaiHD As Long, ByVal targetRow As Long)
@@ -891,6 +891,7 @@ Sub ghiExcel_ChiTiet(jsonText As String, row_ct As Long, loaiHD As String)
     '/Copy thong tin chung
     If row_ct > sumRow Then
         CopyThongTinChung_CT ws.name, sumRow, row_ct - 1
+        GdtFormatCellLayout ws.Rows(CStr(sumRow) & ":" & CStr(row_ct - 1))
     End If
     Exit Sub
 

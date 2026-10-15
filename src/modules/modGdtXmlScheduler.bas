@@ -29,6 +29,10 @@ Private Declare Sub Sleep Lib "kernel32" (ByVal milliseconds As Long)
 
 Public Sub GdtPumpWait()
     DoEvents
+    'Giu dong ho "Thoi gian xu ly" tren form chay lien tuc trong moi vong cho
+    On Error Resume Next
+    frmTaiHoaDon.TickElapsedTime
+    On Error GoTo 0
     Sleep 10
 End Sub
 

@@ -1,10 +1,10 @@
 {
-  "version": "6.7.6",
-  "releaseDate": "2026-10-08",
-  "downloadUrl": "https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.6/TaiHoaDonDienTu_v6.7.6.xlsm",
+  "version": "6.7.7",
+  "releaseDate": "2026-10-15",
+  "downloadUrl": "https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.7/TaiHoaDonDienTu_v6.7.7.xlsm",
   "releaseNote": [
-    "Tải song song chi tiết và thông tin liên quan với tối đa 4 kết nối, XML với tối đa 6 kết nối",
-    "Tự giảm tải khi gặp 429/503/504 ở bước JSON, giữ thứ tự chi tiết và đúng dòng thông tin liên quan",
-    "Sửa ngày UTC+7, ghi dữ liệu, retry và báo cáo lỗi; giữ nguyên endpoint và luồng đăng nhập"
+    "Sửa phản hồi HTTP 200 trả HTML: thử lại và báo đúng nguyên nhân thay vì lỗi parse JSON",
+    "Tắt Wrap Text và căn giữa theo chiều dọc trên các sheet, giữ định dạng khi ghi dữ liệu mới",
+    "Cải thiện tiến độ phân trang, nhật ký, bộ lọc nguồn và tải bổ sung; phục hồi chi tiết khi XML lỗi 500/504"
   ]
 }
