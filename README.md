@@ -2,9 +2,9 @@
 
 File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondientu.gdt.gov.vn`.
 
-**Phiên bản đã phát hành mới nhất: v6.7.6**
+**Phiên bản đã phát hành mới nhất: v6.7.7**
 
-[Tải TaiHoaDonDienTu_v6.7.6.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.6.xlsm)
+[Tải TaiHoaDonDienTu_v6.7.7.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.7.xlsm)
 
 > 💡 **Không có Excel hoặc muốn chạy tự động theo lịch?** Dùng bản PowerShell
 > [hddt-downloader-windows](https://github.com/dieutx/hddt-downloader-windows) —
@@ -26,12 +26,17 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 ## Cách sử dụng
 
 1. Chọn đơn vị và loại hóa đơn **Mua vào** hoặc **Bán ra**.
+   **Nguồn hóa đơn**: **Tất cả** (mặc định), **Hóa đơn thông thường**, hoặc **Hóa đơn từ máy tính tiền**, áp dụng cho cả hai chiều mua/bán.
 2. Chọn ngày bằng lịch hoặc nhập theo định dạng `dd/mm/yyyy`.
 3. Chọn dữ liệu cần tải: tổng hợp, chi tiết hoặc XML/HTML.
 4. Chọn trạng thái hóa đơn và kết quả kiểm tra nếu cần lọc.
-5. Bấm **Tải hóa đơn** và theo dõi kỳ, nguồn API, trang, HTTP, số hóa đơn cùng thời gian phản hồi trong log.
+5. Bấm **Tải hóa đơn** và theo dõi kỳ, nguồn API, trang, HTTP, số hóa đơn cùng thời gian phản hồi trong log. Nhãn **Thời gian xử lý** chạy liên tục và đặt lại từ `00:00:00` mỗi phiên; log ghi dòng **Tổng số hóa đơn cần xử lý** và mỗi dòng chi tiết có dạng `n/N`.
 6. Có thể bấm **Tạm dừng/Tiếp tục** hoặc **Dừng**; dữ liệu đã tải trước khi dừng vẫn được giữ lại.
 7. Xem kết quả tại các sheet tổng hợp, chi tiết và `BaoCao_LoiTaiHD`.
+
+Từ v6.7.7, chọn **No** tại câu hỏi xóa dữ liệu để tải bổ sung chống trùng và bỏ phần chi tiết/XML đã xác minh hoàn tất. Lưu workbook để dùng trạng thái sau khi đóng Excel. Xem [hướng dẫn và giới hạn resume](docs/CORE_FIXES_2026-10-13.md).
+
+Khi chọn riêng một nguồn và chọn **Yes**, chỉ xóa các dòng đã xác định thuộc đúng đơn vị, chiều mua/bán và nguồn đang chọn; giữ nguồn khác và các dòng cũ chưa xác định nguồn. **Tất cả + Yes** giữ cách xóa dữ liệu của chiều đang chọn như trước. Các bản sửa mới và kiểm thử: [sửa lỗi và bộ lọc nguồn 14/10/2026](docs/FIXES_AND_SOURCE_FILTER_2026-10-14.md).
 
 ## Tính năng chính
 
@@ -40,6 +45,7 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 - Chọn ngày bằng date picker hoặc nhập trực tiếp.
 - Hiển thị tiến độ và log chi tiết từng kỳ/trang `query` và `sco-query`.
 - Tạm dừng, tiếp tục hoặc dừng an toàn sau request hiện tại.
+- Đồng hồ **Thời gian xử lý** chạy liên tục suốt phiên tải, reset theo từng lần bắt đầu; số liệu tiến độ và ETA hiển thị theo giai đoạn đang xử lý.
 - Retry khi gặp lỗi tạm thời hoặc HTTP 429/500.
 - Tải dữ liệu tổng hợp, chi tiết và ZIP XML/HTML.
 - Tải XML bằng tối đa 6 kết nối HTTP bất đồng bộ, giãn cách khởi đầu 300 ms, cooldown chung khi gặp 429 và phục hồi dần. Xem [logic tải song song](docs/XML_PARALLEL_DOWNLOAD.md).
@@ -49,6 +55,7 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 - Điền dữ liệu dùng chung cho các dòng chi tiết mà không chiếm hoặc xóa clipboard của Windows.
 - Lấy chuỗi hóa đơn thay thế/điều chỉnh và thông tin sai sót liên quan; nếu hết lượt retry, lỗi được hiển thị ngay tại cột kết quả tương ứng.
 - Báo cáo lỗi chỉ giữ những tác vụ chưa xử lý thành công.
+- Các sheet tắt **Wrap Text** và căn giữa theo chiều dọc; dữ liệu mới giữ cùng định dạng. Nội dung dài vẫn được lưu đầy đủ và có thể đọc trên thanh công thức.
 
 ## Yêu cầu
 
@@ -69,28 +76,43 @@ Source VBA nằm trong `src`, template workbook nằm trong `template` và scrip
 
 Hướng dẫn thêm thông báo cập nhật tùy chọn: [docs/UPDATE_CHECK.md](docs/UPDATE_CHECK.md).
 
+Các sửa lỗi v6.7.7 cho XML namespace, kiểu dữ liệu XML, phản hồi đăng nhập và link BKAV: [docs/COMPATIBILITY_FIXES_2026-10-13.md](docs/COMPATIBILITY_FIXES_2026-10-13.md).
+
+Bản sửa log, ghi dữ liệu, tải bổ sung/resume và Retry-After: [docs/CORE_FIXES_2026-10-13.md](docs/CORE_FIXES_2026-10-13.md).
+
+Bản sửa đồng hồ **Thời gian xử lý**, log tổng số hóa đơn và căn thanh thời gian: [docs/PROGRESS_UI_2026-10-14.md](docs/PROGRESS_UI_2026-10-14.md).
+
+Source hiện tại là **6.7.7**. Giao diện mới có bài runtime riêng cho bảng tiến độ, log 5 cột, ETA và kết quả phiên tải: [kiểm chứng giao diện 6.7.7](docs/UI_COMPLETION_2026-10-15.md).
+
+Bản chỉnh tiếp theo hiển thị số hóa đơn/trang ngay khi đang lấy danh sách, mở rộng nhật ký và cho đọc dòng được chọn; xem [sửa tiến độ phân trang và nhật ký](docs/UI_PAGINATION_2026-10-15.md).
+
+Phản hồi HTTP 200 kèm nội dung HTML (token bị chặn hoặc gateway trả trang web) không còn bị tính là tải thành công: request được thử lại, hết lượt thì vào retry cuối phiên và báo cáo lỗi ghi rõ nguyên nhân thay cho lỗi parse JSON; xem [xử lý phản hồi HTML](docs/HTML_200_RESPONSE_2026-10-15.md).
+
 Trước khi phát hành, chạy bộ kiểm tra dưới đây. Mỗi bước chạy trong tiến trình riêng; nếu có bước lỗi, toàn bộ quy trình dừng và không chạy các bước tiếp theo.
 
 ```powershell
-.\build\Test-Release.ps1 -Version '6.7.6' -OutputPath '.\dist\release-candidate\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Test-Release.ps1 -Version '6.7.7' -OutputPath '.\dist\release-candidate\TaiHoaDonDienTu_v6.7.7.xlsm'
 ```
 
 Kết quả review mở rộng và các lỗi tái hiện trước khi sửa: [review mở rộng 08/10/2026](docs/REVIEW_EXPANDED_2026-10-08.md). Các lệnh kiểm tra riêng lẻ:
 
 ```powershell
-.\build\Build-Excel.ps1 -Version '6.7.6' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Build-Excel.ps1 -Version '6.7.7' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
 .\tests\Test-RetryUiStatic.ps1
 .\tests\Test-DetailInvoiceStatic.ps1
-.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm' -RunUserFormInstantiation
-.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
-.\build\Test-DetailInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
-.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
-.\build\Test-InvoiceDateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
-.\build\Test-ReviewFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
-.\build\Test-ExtendedReviewRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
-.\build\Test-ParallelJsonRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm' -RunUserFormInstantiation
+.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-DetailInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-InvoiceDateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-ReviewFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-ExtendedReviewRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-CompatibilityFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-ProgressClockRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-ModernUiRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-ParallelJsonRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
 .\tests\Test-ReleaseGate.ps1
-.\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.6.xlsm'
+.\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
 ```
 
 Đọc [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md) trước khi gửi thay đổi.
@@ -102,3 +124,6 @@ Dự án phát triển từ ý tưởng và công cụ Excel VBA do thành viên
 [Tải hóa đơn điện tử – Giải Pháp Excel](https://www.giaiphapexcel.com/diendan/threads/t%E1%BA%A3i-h%C3%B3a-%C4%91%C6%A1n-%C4%91i%E1%BB%87n-t%E1%BB%AD-https-hoadondientu-gdt-gov-vn-excel-vba.171723/)
 
 Đây là dự án cộng đồng, không phải sản phẩm chính thức của cơ quan thuế. Repository hiện chưa công bố giấy phép phần mềm; xem thêm [NOTICE.md](NOTICE.md).
+
+Từ v6.7.7: phục hồi dữ liệu chi tiết qua API khi XML lỗi 500/504,
+giữ giãn cách cấu hình sau 429. Xem [phạm vi và kiểm thử](docs/DOWNLOADER_PARITY_2026-10-14.md).

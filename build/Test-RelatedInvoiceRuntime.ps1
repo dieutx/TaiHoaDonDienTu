@@ -21,6 +21,12 @@ try {
     $excel.EnableEvents = $false
     $excel.AutomationSecurity = 1
     $workbook = $excel.Workbooks.Open($BuiltWorkbook, 0, $false)
+    $layoutSheet = $workbook.Worksheets.Item('TongHopHD_Ban')
+    foreach ($row in @(3, 5, 6, 7)) {
+        $layoutSheet.Rows.Item($row).WrapText = $true
+        $layoutSheet.Rows.Item($row).VerticalAlignment = -4107 # xlBottom
+    }
+    Release-ComObject $layoutSheet
     $testModule = $workbook.VBProject.VBComponents.Add(1)
     $testModule.Name = 'modCodexRelatedSmokeTest'
 
@@ -207,6 +213,14 @@ try {
     Release-ComObject $sheet; $sheet = $null
 
     $workbook.VBProject.VBComponents.Remove($testModule)
+    $layoutSheet = $workbook.Worksheets.Item('TongHopHD_Ban')
+    foreach ($row in @(3, 5, 6, 7)) {
+        if ($layoutSheet.Rows.Item($row).WrapText -ne $false -or
+            $layoutSheet.Rows.Item($row).VerticalAlignment -ne -4108) {
+            throw "Related writer re-enabled wrapping or changed vertical alignment at row $row."
+        }
+    }
+    Release-ComObject $layoutSheet
     Release-ComObject $testModule; $testModule = $null
     $workbook.Close($false); Release-ComObject $workbook; $workbook = $null
 
@@ -231,12 +245,13 @@ try {
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path (Split-Path $PSScriptRoot -Parent) 'tests\related-runtime-result.json') -Encoding utf8
 
     if (-not ($ok -and $statusSixOk -and $resolvedErrorRemoved -and $relationErrorsOk -and $legacyColumnRemoved -and $detailFillDownOk)) { throw 'Related-invoice runtime smoke test failed.' }
-    Write-Host 'RELATED-INVOICE RUNTIME TEST PASSED'
 } finally {
-    if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }
-    if ($null -ne $excel) { try { $excel.Quit() } catch {} }
     Release-ComObject $reportRange; Release-ComObject $relatedRange; Release-ComObject $queryRelatedRange; Release-ComObject $scoRelatedRange
     Release-ComObject $informationHeaderRange; Release-ComObject $legacyHeaderRange; Release-ComObject $sheet
-    Release-ComObject $testModule; Release-ComObject $workbook; Release-ComObject $excel
-    [GC]::Collect(); [GC]::WaitForPendingFinalizers(); [GC]::Collect(); [GC]::WaitForPendingFinalizers()
+    Release-ComObject $testModule
+    if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }
+    if ($null -ne $excel) { try { $excel.Quit() } catch {} }
+    Release-ComObject $workbook; Release-ComObject $excel
+    # Match the detail runtime test: forced finalizer waits can deadlock STA.
 }
+Write-Host 'RELATED-INVOICE RUNTIME TEST PASSED'

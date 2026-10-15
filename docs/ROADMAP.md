@@ -2,6 +2,17 @@
 
 Roadmap chỉ ghi nhận hướng cải thiện. Không item nào được coi là đã cam kết triển khai nếu chưa có Issue và phạm vi được maintainer chấp thuận.
 
+## Core review 13/10/2026
+
+Bằng chứng trước sửa: [CORE_REVIEW_2026-10-13.md](CORE_REVIEW_2026-10-13.md). Phần đã triển khai ở source đang phát triển và giới hạn: [CORE_FIXES_2026-10-13.md](CORE_FIXES_2026-10-13.md); chưa thuộc release công khai 6.7.6.
+
+- [Đã vá] Text/số/ngày trong các writer được sửa, fallback mã trạng thái mới, rollback upsert, loại trùng và tải bổ sung chi tiết/XML.
+- [Đã vá một phần] Lỗi phiên, cursor lặp, scheduler, log và thời gian; còn thống kê đầy đủ thành công/không XML/chưa chạy theo công đoạn.
+- [Đã vá] Retry-After số giây/IMF-fixdate và overflow; chưa nhận định dạng ngày HTTP lỗi thời.
+- [Đã vá một phần] Đọc account/số dòng theo khối, chỉ renumber khi xóa, dùng JSON đã parse và cache thuế; còn benchmark/thay writer từng ô.
+- [Đã triển khai có giới hạn] Resume sau lưu/đóng Excel bằng quét lại kỳ, không lưu cursor/credential. Cần checksum và kiểm tra nội dung chi tiết đã sửa thủ công.
+- [Còn đề xuất] Tải lại riêng lỗi được chọn từ báo cáo, kể cả LIST/RELATED; dọn bản trùng lịch sử có kiểm soát.
+
 ## Pre-public security review
 
 - [Ưu tiên cao] Sanitize giá trị giống JWT tại `template/App_Template.xlsm`, sheet `MENU`, ô `D7`; thu hồi/rotate phiên liên quan và build lại release.
@@ -24,6 +35,12 @@ Roadmap chỉ ghi nhận hướng cải thiện. Không item nào được coi l
 
 ## User Experience
 
+- Review source 15/10/2026, cần fixture runtime riêng trước khi sửa:
+  - `cmdTaiHoaDon_Click`: các nhánh thoát sớm do ngày/đầu vào không hợp lệ cần trả chip trạng thái về chờ thay vì để `running`.
+  - `HandleJsonInvoiceResult`: chỉ ghi log thành công sau khi parse, kiểm tra định danh và ghi Excel thành công; hiện log được thêm trước writer.
+  - `RefreshSummary`: tách nhãn số chi tiết đã ghi với số XML đã lưu, tránh nhãn “Đã tải” dùng riêng `mDetailDone` khi chỉ chọn XML.
+  - `RefreshEta`: ghi rõ ETA của pha chi tiết, loại thời gian tạm dừng và tránh ngụ ý XML đã hoàn tất khi chi tiết xong.
+  - Đặt tên nút tải lại/báo cáo theo hành vi hiện có; triển khai tải lại riêng từ báo cáo trong task riêng.
 - Bổ sung screenshot đã sanitize cho luồng đăng nhập và tải hóa đơn.
 - Cải thiện hướng dẫn xử lý lỗi ngay trên form mà không thay đổi API flow.
 - Chuẩn hóa thông báo lỗi mạng, xác thực và parse response.

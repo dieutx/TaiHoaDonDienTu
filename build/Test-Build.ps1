@@ -11,7 +11,7 @@ $ErrorActionPreference = 'Stop'
 if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) { $RepositoryRoot = Split-Path -Parent $PSScriptRoot }
 Import-Module (Join-Path $PSScriptRoot 'ExcelBuild.Common.psm1') -Force
 if ([string]::IsNullOrWhiteSpace($BuiltWorkbook)) {
-    $BuiltWorkbook = (Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot 'dist') -Filter 'App_v*.xlsm' | Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
+    $BuiltWorkbook = (Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot 'dist') -Filter 'TaiHoaDonDienTu_v*.xlsm' | Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
 }
 if (-not (Test-Path -LiteralPath $BuiltWorkbook)) { throw "Built workbook not found: $BuiltWorkbook" }
 $BuiltWorkbook = (Resolve-Path -LiteralPath $BuiltWorkbook).Path
@@ -74,7 +74,7 @@ function Normalize-OnAction([string]$value) {
 # It is a deliberate addition, so it is reported as an expected structural
 # addition instead of failing the comparison that protects original sheets.
 $expectedAddedWorksheetNames = @('BaoCao_LoiTaiHD')
-$expectedAddedComponentNames = @('modGdtRetry', 'modGdtErrorReport', 'clsGdtRequestResult', 'clsGdtRetryItem', 'Sheet10', 'modVersion', 'modUpdate', 'frmUpdate', 'modGdtJson', 'modGdtXmlScheduler', 'clsGdtXmlTask', 'clsGdtXmlThrottle')
+$expectedAddedComponentNames = @('modGdtRetry', 'modGdtErrorReport', 'clsGdtRequestResult', 'clsGdtRetryItem', 'Sheet10', 'modVersion', 'modUpdate', 'frmUpdate', 'modGdtJson', 'modGdtXmlScheduler', 'clsGdtXmlTask', 'clsGdtXmlThrottle', 'modGdtResume', 'modUiTheme')
 $expectedAddedNamePatterns = @('^BaoCao_LoiTaiHD!')
 $originalWorksheetNames = @($original.Worksheets | ForEach-Object { $_.Name })
 $expectedAddedWorksheets = @($built.Worksheets | Where-Object { $_.Name -in $expectedAddedWorksheetNames -and $_.Name -notin $originalWorksheetNames } | ForEach-Object { $_.Name })

@@ -1,6 +1,12 @@
 Attribute VB_Name = "modParseIso"
 Option Explicit
 
+#If VBA7 Then
+Private Declare PtrSafe Sub GetSystemTime Lib "kernel32" (ByRef value As SYSTEMTIME)
+#Else
+Private Declare Sub GetSystemTime Lib "kernel32" (ByRef value As SYSTEMTIME)
+#End If
+
 Public Declare PtrSafe Function SystemTimeToFileTime Lib _
   "kernel32" (lpSystemTime As SYSTEMTIME, _
   lpFileTime As FILETIME) As Long
@@ -28,6 +34,12 @@ Public Type SYSTEMTIME
     wSecond As Integer
     wMilliseconds As Integer
 End Type
+
+Public Function GdtUtcNow() As Date
+    Dim value As SYSTEMTIME
+    GetSystemTime value
+    GdtUtcNow = DateSerial(value.wYear, value.wMonth, value.wDay) + TimeSerial(value.wHour, value.wMinute, value.wSecond)
+End Function
 
 '---------------------------------------------------------------------
 ' Invoice timestamps with an explicit zone are converted to Vietnam (UTC+7).

@@ -22,6 +22,7 @@ Public ResponseKind As String
 Public Attempts As Long
 Public TargetRow As Long
 Public ActionHeader As String
+Public NotBefore As Double
 
 Public Function UniqueKey() As String
     UniqueKey = BuildGdtErrorKey(Direction, ApiSource, SellerTaxCode, TemplateCode, _

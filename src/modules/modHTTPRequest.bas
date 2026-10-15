@@ -15,6 +15,7 @@ Public cookieHeader As String, errMsg As String
 Public LastGdtStatus As Long
 Public LastGdtAttempts As Long
 Public LastGdtRetryAfter As Long
+Public LastGdtNotBefore As Double
 Public LastGdtError As String
 Public LastGdtAuthFailed As Boolean
 Public LastGdtRetryable As Boolean
@@ -244,6 +245,7 @@ Public Function ApiGet(ByVal urlPath As String, Optional ByVal statusPrefix As S
         LastGdtStatus = 401
         LastGdtAttempts = 0
         LastGdtRetryAfter = 0
+        LastGdtNotBefore = 0
         LastGdtError = UniConvert("Token heest hajn. DDax duwfng yeeu caafu mowsi.")
         LastGdtAuthFailed = True
         LastGdtRetryable = False
@@ -266,6 +268,8 @@ Public Sub PublishLastGdtResult(ByVal requestResult As clsGdtRequestResult)
     LastGdtStatus = requestResult.StatusCode
     LastGdtAttempts = requestResult.Attempts
     LastGdtRetryAfter = requestResult.RetryAfterSeconds
+    LastGdtNotBefore = requestResult.NotBefore
+    If LastGdtNotBefore = 0 And LastGdtRetryAfter > 0 Then LastGdtNotBefore = GdtClockSeconds() + LastGdtRetryAfter
     LastGdtError = requestResult.ErrorMessage
     LastGdtAuthFailed = requestResult.AuthenticationFailure
     LastGdtRetryable = IsRetryableGdtStatus(requestResult.StatusCode)

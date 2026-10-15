@@ -51,6 +51,23 @@ try {
     }
 
     foreach ($sheet in @($workbook.Worksheets)) {
+        $cells = $sheet.Cells
+        if ($cells.WrapText -ne $false -or $cells.VerticalAlignment -ne -4108) {
+            throw "Sheet $($sheet.Name) must disable Wrap Text and use vertical center alignment."
+        }
+        Release-ComObject $cells
+        $ownerRange = switch ($sheet.Name) {
+            'TongHopHD_Mua' { 'BM3:BN1048576' }
+            'TongHopHD_Ban' { 'BM3:BN1048576' }
+            'ChiTietHD_Mua' { 'AI3:AJ1048576' }
+            'ChiTietHD_Ban' { 'AI3:AJ1048576' }
+        }
+        if ($ownerRange -and $excel.WorksheetFunction.CountA($sheet.Range($ownerRange)) -gt 0) {
+            throw "Resume account metadata remains in public workbook: $($sheet.Name)."
+        }
+        if ($sheet.Name -eq 'TrangThaiTaiHD' -and $sheet.UsedRange.Rows.Count -gt 1) {
+            if ($excel.WorksheetFunction.CountA($sheet.Range('A2:F1048576')) -gt 0) { throw 'Resume state remains in public workbook.' }
+        }
         $values = $sheet.UsedRange.Value2
         if ($values -is [Array]) {
             foreach ($value in $values) {

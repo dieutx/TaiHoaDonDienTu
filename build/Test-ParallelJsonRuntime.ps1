@@ -76,7 +76,7 @@ try {
                     foreach ($name in $expectedHeaders.Keys) {
                         if ($headers[$name] -ne $expectedHeaders[$name]) { $badHeaderKinds[$name] = [int]$badHeaderKinds[$name] + 1 }
                     }
-                    $status = 200; $extra = ''; $delay = if ($number -eq 1) { 1800 } else { 800 }
+                    $status = 200; $extra = ''; $contentType = 'application/json'; $delay = if ($number -eq 1) { 1800 } else { 800 }
                     $body = switch ($kind) {
                         'detail' { $template.Replace('"shdon":42', '"shdon":' + $number) }
                         'relative' { '[{"khmshdon":"1","khhdon":"REL-' + $number + '","shdon":' + (9000 + $number) + '}]' }
@@ -87,9 +87,24 @@ try {
                     if ($mode -eq 'mixed' -and $number -eq 4 -and $counts[$key] -eq 1) { $status=503; $body='service unavailable'; $delay=100 }
                     if ($mode -eq 'failure' -and $number -eq 2 -and $counts[$key] -le 2) { $status=500; $body='fixture failure'; $delay=100 }
                     if ($mode -eq 'invalid' -and $number -eq 2) { $body='{bad json'; $delay=100 }
+                    # HTTP 200 with a web page body: GDT answers this way when the session is
+                    # rejected or an edge/WAF serves the app instead of the API.  The first two
+                    # attempts must be retried; the final detail retry then gets real JSON.
+                    if ($mode -eq 'markup' -and $kind -eq 'detail' -and $number -eq 2 -and $counts[$key] -le 2) {
+                        $body = '<!DOCTYPE html><html><head><title>Tra cuu hoa don dien tu</title></head><body>dang nhap</body></html>'
+                        $contentType = 'text/html; charset=utf-8'
+                        $delay = 100
+                    }
+                    if ($mode -eq 'markup400sync' -or $mode -eq 'markup400async') {
+                        if ($counts[$key] -eq 1) {
+                            $body = "`r`n`t" + [char]0xFEFF + ' <!DOCTYPE html><html>fixture</html>'
+                            $contentType = 'text/html'
+                        } else { $status = 400; $body = '{"message":"fixture bad request"}' }
+                        $delay = 50
+                    }
                     if ($mode -eq 'auth' -and $number -eq 1) { $status=403; $body='login required'; $delay=150 }
                     if ($mode -eq 'buffer') { $delay = if ($number -eq 1) { 2200 } else { 100 } }
-                    [void]$pending.Add(@{ Client=$client; At=[DateTime]::UtcNow.AddMilliseconds($delay); Status=$status; Body=$body; Extra=$extra; Mode=$mode })
+                    [void]$pending.Add(@{ Client=$client; At=[DateTime]::UtcNow.AddMilliseconds($delay); Status=$status; Body=$body; Extra=$extra; Mode=$mode; ContentType=$contentType })
                     $active = @($pending | Where-Object { $_.Mode -eq $mode -and $_.At -gt [DateTime]::UtcNow }).Count
                     if (-not $peaks.ContainsKey($mode) -or $active -gt $peaks[$mode]) { $peaks[$mode] = $active }
                 }
@@ -98,7 +113,8 @@ try {
                     if ($item.At -gt [DateTime]::UtcNow) { continue }
                     try {
                         $bytes = [Text.Encoding]::UTF8.GetBytes($item.Body)
-                        $responseHeaders = [Text.Encoding]::ASCII.GetBytes("HTTP/1.1 $($item.Status) Fixture`r`n$($item.Extra)Content-Type: application/json`r`nContent-Length: $($bytes.Length)`r`nConnection: close`r`n`r`n")
+                        $contentType = if ($item.ContainsKey('ContentType')) { [string]$item.ContentType } else { 'application/json' }
+                        $responseHeaders = [Text.Encoding]::ASCII.GetBytes("HTTP/1.1 $($item.Status) Fixture`r`n$($item.Extra)Content-Type: $contentType`r`nContent-Length: $($bytes.Length)`r`nConnection: close`r`n`r`n")
                         $stream = $item.Client.GetStream()
                         $stream.Write($responseHeaders,0,$responseHeaders.Length); $stream.Write($bytes,0,$bytes.Length)
                     } catch {} finally { $item.Client.Close(); $pending.RemoveAt($i) }
@@ -158,6 +174,30 @@ Public Function ParallelHeaderBaseline() As Boolean
     Set response = ExecuteGdtRequest("GET", ParallelBaseUrl & "/baseline/api/query/invoices/related?shdon=42", _
         "fixture-snapshot", , , , False, 1, "fixture", "fixture-action")
     ParallelHeaderBaseline = response.Success
+End Function
+Public Function ParallelMarkupPolicy() As Boolean
+    Dim response As clsGdtRequestResult, task As clsGdtXmlTask
+    Dim throttle As New clsGdtXmlThrottle, deadline As Double
+    ResetGdtRequestSession: ResetGdtOperationControl
+    If Not IsGdtMarkupResponse(vbCrLf & vbTab & ChrW(&HFEFF) & " <!DOCTYPE html>") Then Exit Function
+    If IsGdtMarkupResponse("{""text"":""<html>""}") Then Exit Function
+    Set response = ExecuteGdtRequest("GET", ParallelBaseUrl & "/markup400sync/api/query/invoices/detail?shdon=42", _
+        "fixture-snapshot", , , , False, 3)
+    If response.StatusCode <> 400 Or response.Attempts <> 2 Or response.Success Or _
+        response.InvalidJsonBody Or response.ShouldQueueFinalRetry Then Exit Function
+    Set task = New clsGdtXmlTask
+    task.Configure 0, ParallelBaseUrl & "/markup400async/api/query/invoices/detail?shdon=42", _
+        "fixture-snapshot", 3, 10, False
+    throttle.Configure 1, 1
+    deadline = GdtClockSeconds() + 30
+    Do Until task.Finished
+        task.Tick throttle, 0
+        If GdtClockSeconds() > deadline Then task.Cancel: Exit Function
+        GdtPumpWait
+    Loop
+    Set response = task.Result
+    ParallelMarkupPolicy = response.StatusCode = 400 And response.Attempts = 2 And _
+        Not response.Success And Not response.InvalidJsonBody And Not response.ShouldQueueFinalRetry
 End Function
 '@)
     $module.CodeModule.AddFromString("Public Function ParallelConfigure() As Boolean`r`n ParallelBaseUrl = `"http://127.0.0.1:$port`"`r`n ParallelConfigure = True`r`nEnd Function`r`n")
@@ -248,7 +288,7 @@ Public Function ParallelFixture(ByVal mode As String, ByVal invoiceType As Long)
             If mInvoiceWorkDone <> invoiceCount Then Err.Raise 5, , "detail progress count"
             expected = 200
             For index = 1 To invoiceCount
-                If Not ((mode = "failure" Or mode = "invalid") And index = 2) Then
+                If Not ((mode = "failure" Or mode = "invalid" Or mode = "markup") And index = 2) Then
                     If CLng(detail.Cells(expected, 3).Value2) <> index Or CLng(detail.Cells(expected + 1, 3).Value2) <> index Then _
                         Err.Raise 5, , "detail order: expected " & index & " at row " & expected & "; got " & detail.Cells(expected, 3).Value2 & "/" & detail.Cells(expected + 1, 3).Value2 & "; cursor " & detailRow
                     If CStr(detail.Cells(expected, 8).Value2) <> "0000000001" Then Err.Raise 5, , "lost leading zero tax ID"
@@ -257,7 +297,7 @@ Public Function ParallelFixture(ByVal mode As String, ByVal invoiceType As Long)
                 End If
             Next index
             If detailRow <> expected Then Err.Raise 5, , "wrong detail cursor"
-            If mode = "failure" Then
+            If mode = "failure" Or mode = "markup" Then
                 If mFinalRetryQueue.Count <> 1 Then Err.Raise 5, , "exhausted failure not queued exactly once"
                 ProcessQueuedDetailRetries detailRow
                 If detailRow <> 216 Or CLng(detail.Cells(214, 3).Value2) <> 2 Then Err.Raise 5, , "final detail retry did not recover"
@@ -282,7 +322,7 @@ Failed:
     Resume CleanUp
 End Function
 '@)
-    foreach ($scenario in @(@('normal1',1),@('normal2',2),@('default',1),@('buffer',1),@('relation1',1),@('relation2',2),@('mixed',1),@('failure',1),@('invalid',1),@('pause',1),@('stop',1),@('auth',1))) {
+    foreach ($scenario in @(@('normal1',1),@('normal2',2),@('default',1),@('buffer',1),@('relation1',1),@('relation2',2),@('mixed',1),@('failure',1),@('invalid',1),@('markup',1),@('pause',1),@('stop',1),@('auth',1))) {
         $mode = [string]$scenario[0]; $invoiceType = [int]$scenario[1]
         $entry = 'Parallel_' + $mode
         $module.CodeModule.AddFromString("Public Function $entry() As String`r`n Dim form As New frmTaiHoaDon`r`n $entry = form.ParallelFixture(`"$mode`", $invoiceType)`r`n Unload form`r`nEnd Function`r`n")
@@ -297,7 +337,14 @@ End Function
         if ($headerStats.BadHeaders -ne 0 -or $headerStats.DuplicateIds -ne 0) {
             throw ('Header regression in ' + $mode + ': ' + ($headerStats.BadHeaderKinds | ConvertTo-Json -Compress) + '; duplicate IDs=' + $headerStats.DuplicateIds)
         }
+        if ($mode -eq 'markup') {
+            $markupCalls = [int](($headerStats.Counts.PSObject.Properties | Where-Object Name -eq 'markup/detail/2' | Select-Object -First 1).Value)
+            if ($markupCalls -lt 3) { throw "Web page response was not retried: $markupCalls call(s) for markup/detail/2." }
+        }
     }
+    if (-not [bool]$excel.Run("${prefix}ParallelMarkupPolicy")) { throw 'Markup BOM detection or HTML-to-400 retry policy failed.' }
+    Write-Output 'MarkupBomAnd400Policy=PASS'
+    $results['MarkupBomAnd400Policy'] = 'PASS'
     $serialSeconds = [double]$excel.Run("${prefix}ParallelSerial")
     $parallelSeconds = [double]::Parse((([string]$results['normal1'] -split '\|')[1]).Replace(',', '.'), [Globalization.CultureInfo]::InvariantCulture)
     $defaultSeconds = [double]::Parse((([string]$results['default'] -split '\|')[1]).Replace(',', '.'), [Globalization.CultureInfo]::InvariantCulture)

@@ -29,6 +29,10 @@ Private Declare Sub Sleep Lib "kernel32" (ByVal milliseconds As Long)
 
 Public Sub GdtPumpWait()
     DoEvents
+    'Giu dong ho "Thoi gian xu ly" tren form chay lien tuc trong moi vong cho
+    On Error Resume Next
+    frmTaiHoaDon.TickElapsedTime
+    On Error GoTo 0
     Sleep 10
 End Sub
 
@@ -38,4 +42,14 @@ Public Function GdtClockSeconds() As Double
     ticks = Timer
     If today <> Date Then today = Date: ticks = Timer
     GdtClockSeconds = CDbl(today) * 86400# + ticks
+End Function
+
+Public Function GdtElapsedText(ByVal seconds As Double) As String
+    Dim hours As Double, minutes As Long, remainder As Long
+    If seconds < 0 Then seconds = 0
+    seconds = Int(seconds)
+    hours = Int(seconds / 3600#)
+    remainder = CLng(seconds - hours * 3600#)
+    minutes = remainder \ 60
+    GdtElapsedText = Format$(hours, "00") & ":" & Format$(minutes, "00") & ":" & Format$(remainder Mod 60, "00")
 End Function

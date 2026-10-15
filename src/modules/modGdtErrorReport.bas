@@ -4,6 +4,7 @@ Option Explicit
 Private Const GDT_ERROR_SHEET As String = "BaoCao_LoiTaiHD"
 Private Const GDT_ERROR_COLUMN_COUNT As Long = 17
 Public GdtReportAccount As String
+Public GdtReportSession As String
 
 Public Function EnsureGdtErrorReportSheet() As Worksheet
     Dim ws As Worksheet
@@ -49,6 +50,7 @@ Public Sub UpsertGdtErrorReport( _
     Dim ws As Worksheet
     Dim targetRow As Long
     Dim rowData(1 To 1, 1 To GDT_ERROR_COLUMN_COUNT) As Variant
+    Dim textColumn As Variant
 
     Set ws = EnsureGdtErrorReportSheet()
     targetRow = FindGdtErrorRow(ws, direction, apiSource, sellerTaxCode, _
@@ -73,11 +75,21 @@ Public Sub UpsertGdtErrorReport( _
     rowData(1, 16) = finalResult
     rowData(1, 17) = RedactGdtSensitiveText(note)
     ws.Cells(targetRow, 5).Resize(1, 4).NumberFormat = "@"
+    For Each textColumn In Array(3, 4, 5, 6, 7, 8, 10, 11, 13, 16, 17)
+        ws.Cells(targetRow, CLng(textColumn)).NumberFormat = "@"
+        If Left$(CStr(rowData(1, CLng(textColumn))), 1) = "'" Then _
+            rowData(1, CLng(textColumn)) = "'" & CStr(rowData(1, CLng(textColumn)))
+    Next textColumn
     ws.Cells(targetRow, 1).Resize(1, GDT_ERROR_COLUMN_COUNT).Value2 = rowData
+    GdtFormatCellLayout ws.Rows(targetRow)
     ws.Cells(1, 18).Value2 = "Account scope"
     ws.Columns(18).Hidden = True
     ws.Cells(targetRow, 18).NumberFormat = "@"
     ws.Cells(targetRow, 18).Value2 = GdtReportAccount
+    ws.Cells(1, 19).Value2 = "Session scope"
+    ws.Columns(19).Hidden = True
+    ws.Cells(targetRow, 19).NumberFormat = "@"
+    ws.Cells(targetRow, 19).Value2 = GdtReportSession
 End Sub
 
 Public Sub MarkGdtRetrySuccess( _
@@ -96,13 +108,15 @@ Public Sub MarkGdtRetrySuccess( _
     Dim targetRow As Long
 
     Set ws = EnsureGdtErrorReportSheet()
+    Dim deleted As Boolean
     Do
         targetRow = FindGdtErrorRow(ws, direction, apiSource, sellerTaxCode, _
                                     templateCode, invoiceSeries, invoiceNumber, failureStage, endpoint)
         If targetRow = 0 Then Exit Do
         ws.Rows(targetRow).Delete Shift:=xlUp
+        deleted = True
     Loop
-    RenumberGdtErrorRows ws
+    If deleted Then RenumberGdtErrorRows ws
 End Sub
 
 Public Function BuildGdtErrorKey( _
@@ -145,11 +159,12 @@ Private Sub FormatGdtErrorReport(ByVal ws As Worksheet)
     headers(1, 17) = UniConvert("Ghi chus")
 
     With ws
+        GdtFormatCellLayout .Cells
         .Cells(1, 1).Resize(1, GDT_ERROR_COLUMN_COUNT).Value = headers
         With .Cells(1, 1).Resize(1, GDT_ERROR_COLUMN_COUNT)
             .Font.Bold = True
             .Interior.Color = RGB(217, 225, 242)
-            .WrapText = True
+            .WrapText = False
         End With
         If .AutoFilterMode Then .AutoFilterMode = False
         .Cells(1, 1).Resize(1, GDT_ERROR_COLUMN_COUNT).AutoFilter
@@ -203,12 +218,15 @@ Private Function FindGdtErrorRow( _
 
     lastRow = LastGdtErrorRow(ws)
     If lastRow < 2 Then Exit Function
-    data = ws.Cells(2, 1).Resize(lastRow - 1, GDT_ERROR_COLUMN_COUNT).Value2
+    data = ws.Cells(2, 1).Resize(lastRow - 1, 19).Value2
     expectedKey = BuildGdtErrorKey(direction, apiSource, sellerTaxCode, templateCode, _
                                    invoiceSeries, invoiceNumber, failureStage)
 
     For rowIndex = 1 To UBound(data, 1)
-        If CStr(ws.Cells(rowIndex + 1, 18).Value2) <> GdtReportAccount Then GoTo NextRow
+        If CStr(data(rowIndex, 18)) <> GdtReportAccount Then GoTo NextRow
+        If failureStage = "Parse " & UniConvert("duwx lieeju") And Len(endpoint) > 0 Then
+            If GdtParseRequestKind(CStr(data(rowIndex, 11))) <> GdtParseRequestKind(endpoint) Then GoTo NextRow
+        End If
         If Len(sellerTaxCode & templateCode & invoiceSeries & invoiceNumber) = 0 Then
             If Len(endpoint) = 0 Then GoTo NextRow
             If CStr(data(rowIndex, 11)) <> endpoint Then GoTo NextRow
@@ -235,12 +253,42 @@ End Function
 Private Sub RenumberGdtErrorRows(ByVal ws As Worksheet)
     Dim rowIndex As Long
     Dim lastRow As Long
+    Dim numbers() As Variant
 
     lastRow = LastGdtErrorRow(ws)
+    If lastRow < 2 Then Exit Sub
+    ReDim numbers(1 To lastRow - 1, 1 To 1)
     For rowIndex = 2 To lastRow
-        ws.Cells(rowIndex, 1).Value = rowIndex - 1
+        numbers(rowIndex - 1, 1) = rowIndex - 1
     Next rowIndex
+    ws.Cells(2, 1).Resize(lastRow - 1, 1).Value2 = numbers
 End Sub
+
+Public Function CountGdtSessionErrors(ByVal direction As String) As Long
+    Dim ws As Worksheet, data As Variant, r As Long, lastRow As Long
+    Set ws = EnsureGdtErrorReportSheet()
+    lastRow = LastGdtErrorRow(ws)
+    If lastRow < 2 Then Exit Function
+    data = ws.Cells(2, 1).Resize(lastRow - 1, 19).Value2
+    For r = 1 To UBound(data, 1)
+        If CStr(data(r, 18)) = GdtReportAccount And CStr(data(r, 3)) = direction Then
+            If IsNumeric(data(r, 2)) Then
+                If CStr(data(r, 19)) = GdtReportSession Then CountGdtSessionErrors = CountGdtSessionErrors + 1
+            End If
+        End If
+    Next r
+End Function
+
+Private Function GdtParseRequestKind(ByVal endpoint As String) As String
+    Dim kind As Variant
+    For Each kind In Array("detail", "relative", "related", "purchase", "sold")
+        If InStr(1, endpoint, "/invoices/" & kind & "?", vbTextCompare) > 0 Then
+            GdtParseRequestKind = CStr(kind)
+            Exit Function
+        End If
+    Next kind
+    GdtParseRequestKind = endpoint
+End Function
 
 Private Function NormalizeKeyPart(ByVal value As String) As String
     NormalizeKeyPart = UCase$(Trim$(value))

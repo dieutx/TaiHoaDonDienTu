@@ -16,7 +16,10 @@ Public ResponseBody As Variant
 Public ErrorMessage As String
 Public Attempts As Long
 Public RetryAfterSeconds As Long
+Public NotBefore As Double
 Public ShouldQueueFinalRetry As Boolean
 Public AuthenticationFailure As Boolean
 Public NoXml As Boolean
+' HTTP 2xx whose body is a web page, not the JSON API answer.
+Public InvalidJsonBody As Boolean
 

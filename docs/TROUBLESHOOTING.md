@@ -35,6 +35,14 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 - Với API `relative`/`related`, xem lỗi cuối cùng ngay tại cột **Chuỗi hóa đơn liên quan** hoặc **Thông tin liên quan**.
 - Kiểm tra `BaoCao_LoiTaiHD` và chỉ chia sẻ log đã sanitize.
 
+## HTTP 200 nhưng phản hồi là HTML (báo cáo lỗi `Parse dữ liệu`)
+
+- Hiện tượng: `BaoCao_LoiTaiHD` có dòng với **Công đoạn lỗi** `Parse dữ liệu`, **HTTP status** 200 và **Nội dung lỗi** dạng `Error parsing JSON: <!DOCTYPE h...`. Phản hồi là trang web (HTML) thay cho JSON; log này chưa đủ để kết luận nguyên nhân là phiên đăng nhập, gateway/WAF hay chuyển hướng.
+- Từ v6.7.7, phản hồi bắt đầu bằng `<` được coi là lỗi tạm thời: request được thử lại trong cùng lượt, hết lượt thì vào hàng retry cuối phiên. Báo cáo giữ HTTP thật và ghi rõ `phản hồi không phải JSON mà là trang HTML/XML` kèm `Content-Type` và đoạn đầu phản hồi. Nếu vẫn lỗi sau retry, chi tiết chưa được tải thành công.
+- Nhiều dòng lỗi liên tiếp có thể liên quan phiên đăng nhập hoặc gateway: thử đăng nhập lại rồi chạy lại. Kiểm tra `BaoCao_LoiTaiHD` khi phiên kết thúc; lỗi đã phục hồi được gỡ khỏi báo cáo.
+- Nếu lỗi lặp lại nhiều lần: tăng khoảng nghỉ trên form, thử lại vào giờ khác, hoặc kiểm tra proxy/VPN của máy.
+- Chỉ chia sẻ thông báo đã sanitize; không đăng endpoint kèm MST thật nếu không cần.
+
 ## Lỗi request-id hoặc API thay đổi
 
 - Xác nhận đang dùng release mới nhất.
@@ -56,6 +64,15 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 - Bản sửa 6.7.6 đợi giải nén hoàn tất, hỗ trợ XML/HTML trong thư mục con của ZIP và lưu tên file có MST người bán để tránh trùng số hóa đơn. Lỗi lưu/giải nén của từng hóa đơn được ghi trong `BaoCao_LoiTaiHD`; các hóa đơn khác tiếp tục được xử lý.
 - Nếu ZIP tải lại bị hỏng, ZIP hợp lệ đã có vẫn được giữ; chỉ thay ZIP đích sau khi kiểm tra giải nén thành công.
 
+## Tải bổ sung hoặc resume (từ v6.7.7)
+
+- Chọn **No** tại câu hỏi xóa dữ liệu, cùng đơn vị/chiều và kỳ cần tải. Ứng dụng lấy lại danh sách, cập nhật tổng hợp theo định danh và chỉ bỏ chi tiết/XML khi bằng chứng đã hoàn tất còn hợp lệ. Lưu workbook trước khi đóng Excel; đăng nhập lại nếu token hết hạn.
+- Có tổng hợp nhưng thiếu chi tiết/XML thì vẫn tải phần thiếu. Khác nguồn `query`/`sco-query` được giữ riêng; bản trùng lịch sử không tự bị xóa.
+- Không sửa cột ẩn `BM:BN`/`AI:AJ` hoặc sheet `TrangThaiTaiHD`. Nếu báo metadata đang được dùng hoặc schema lạ, sao lưu file và kiểm tra xung đột; không xóa dữ liệu riêng để xử lý vội.
+- Nếu đã chỉnh thủ công chi tiết hoặc file nhưng giữ nguyên số dòng/kích thước, kiểm tra lại dữ liệu; bằng chứng resume chưa phải checksum. Chọn **Yes** để tải mới chỉ khi chấp nhận xóa dữ liệu của chiều đang chọn.
+- Log hiển thị số bỏ trùng/công đoạn đã có. 100% là đã xử lý các tác vụ; thông báo còn lỗi hoặc danh sách chưa đủ cần được kiểm tra ở `BaoCao_LoiTaiHD`.
+- Workbook chứa cả JSON tổng hợp trong trạng thái ẩn. Không chia sẻ file đã có hóa đơn/tài khoản thật. Xem [chi tiết và giới hạn](CORE_FIXES_2026-10-13.md).
+
 ## Ngày nhập sai hoặc trang dữ liệu không ghi được
 
 - Nhập ngày tồn tại theo `dd/mm/yyyy` và để ngày bắt đầu không vượt ngày kết thúc. Bản sửa 6.7.6 giữ nguyên ô sai/để trống, báo lỗi và không tự chọn ngày hôm nay.
@@ -70,9 +87,21 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 
 ## Lỗi parse XML
 
+- Source đang phát triển hỗ trợ namespace mặc định/prefix của hóa đơn và namespace XMLDSIG trên đường dẫn chữ ký hiện có; giữ MST dạng Text, ngày thật của Excel và đọc số thập phân dùng dấu chấm, độc lập thiết lập vùng Windows. Các thay đổi này chưa nằm trong release công khai 6.7.6.
+- File có ngày/số không hợp lệ được ghi vào `BaoCao_LoiTaiHD`, bỏ các dòng đang ghi của file đó và tiếp tục file khác. Không tự diễn giải số như `10,5` hoặc `1,000` thành tiền; kiểm tra lại nguồn XML. Nhập lại file đã sửa sẽ xóa lỗi cũ tương ứng.
 - Không đăng file XML thật.
 - Tạo fixture tối giản bằng dữ liệu giả, giữ lại cấu trúc node gây lỗi.
 - Ghi rõ loại hóa đơn mua vào/bán ra và nhà cung cấp nếu thông tin đó không nhạy cảm.
+
+## Phản hồi đăng nhập hoặc CAPTCHA không hợp lệ
+
+- Source đang phát triển kiểm tra đối tượng JSON và các trường bắt buộc trước khi lưu token hoặc nhận CAPTCHA mới; đặt timeout riêng cho các request. Các thay đổi này chưa nằm trong release công khai 6.7.6.
+- Nếu nhận thông báo phản hồi không hợp lệ, lấy CAPTCHA mới hoặc thử lại sau. Không sao chép response đăng nhập vì có thể chứa dữ liệu phiên.
+- Nếu đăng nhập thành công nhưng không lưu được workbook, kiểm tra quyền ghi và file có đang ở chế độ chỉ đọc hay không.
+
+## Link BKAV trên sheet chi tiết
+
+- Source đang phát triển thay link chứa `[DLHDon Id]` bằng GUID từ trường `id` nếu đúng định dạng GUID. Nếu không có GUID hợp lệ, ô link hiển thị thông báo; ứng dụng không đoán mã tra cứu và không tải PDF tự động.
 
 ## File bị chặn hoặc macro không chạy
 

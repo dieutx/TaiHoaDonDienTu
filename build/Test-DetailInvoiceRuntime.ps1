@@ -99,7 +99,14 @@ Private Function RunDetailInvoiceFixture(ByVal sheetName As String, ByVal direct
         """tgtthue"":40}"
 
     writeRow = targetRow
+    ws.Rows(CStr(targetRow) & ":" & CStr(targetRow + 1)).WrapText = True
+    ws.Rows(targetRow).VerticalAlignment = xlTop
+    ws.Rows(targetRow + 1).VerticalAlignment = xlBottom
     ghiExcel_ChiTiet sampleJson, writeRow, direction
+    If IsNull(ws.Rows(CStr(targetRow) & ":" & CStr(targetRow + 1)).WrapText) Then Exit Function
+    If IsNull(ws.Rows(CStr(targetRow) & ":" & CStr(targetRow + 1)).VerticalAlignment) Then Exit Function
+    If ws.Rows(CStr(targetRow) & ":" & CStr(targetRow + 1)).WrapText <> False Then Exit Function
+    If ws.Rows(CStr(targetRow) & ":" & CStr(targetRow + 1)).VerticalAlignment <> xlCenter Then Exit Function
     RunDetailInvoiceFixture = _
         (CStr(ws.Cells(2, 1).Value2) = UniConvert("Maaxu soos hosa ddown")) And _
         (CStr(ws.Cells(2, 2).Value2) = UniConvert("Kys hieeju HDD")) And _
@@ -168,7 +175,11 @@ Private Function RunSummaryDateFixture(ByVal sheetName As String, ByVal invoiceT
 
     writeRow = targetRow
     sequenceNumber = 1
+    ws.Rows(targetRow).WrapText = True
+    ws.Rows(targetRow).VerticalAlignment = xlBottom
     ghiExcel_TongHop sampleJson, writeRow, invoiceType, sequenceNumber
+    If ws.Rows(targetRow).WrapText <> False Then Exit Function
+    If ws.Rows(targetRow).VerticalAlignment <> xlCenter Then Exit Function
     RunSummaryDateFixture = _
         (ws.Cells(targetRow, 55).Value2 = "https://lookup.example.test/member") And _
         (ws.Rows(targetRow).RowHeight >= 18) And _
@@ -302,7 +313,10 @@ End Function
     $workbook.VBProject.VBComponents.Remove($testModule)
     Release-ComObject $testModule; $testModule = $null
     $workbook.Close($false); Release-ComObject $workbook; $workbook = $null
-    if (-not $result.Pass) { throw 'Detail-invoice runtime fixture failed.' }
+    if (-not $result.Pass) {
+        Write-Host 'ReportedIssueStage=' $result.ReportedIssueStage
+        throw 'Detail-invoice runtime fixture failed.'
+    }
 } finally {
     if ($null -ne $workbook) { try { $workbook.Close($false) } catch {} }
     if ($null -ne $excel) { try { $excel.Quit() } catch {} }

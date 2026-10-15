@@ -104,7 +104,7 @@ Failed:
     Err.Raise errorNumber, "Unzip", errorText
 End Sub
 
-Private Sub CollectGdtZipFiles(ByVal folder As Object, ByVal files As Collection, ByVal depth As Long)
+Public Sub CollectGdtZipFiles(ByVal folder As Object, ByVal files As Collection, ByVal depth As Long)
     Dim entry As Object, extension As String
     If depth > 8 Then Err.Raise 5, , "ZIP nesting too deep"
     For Each entry In folder.Items
@@ -123,7 +123,7 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean, Optional ByVal showMessage
     Dim xmlDoc As Object, oHHDVu As Object, rngData As Range, rngHHDV As Range, list As Object, ttruong As String
     Dim sht As Worksheet, i As Long, j As Long, k As Long, l As Long, count As Long
     
-    On Error Resume Next
+    On Error GoTo SetupFailed
     LinkTraCuu
     tenCotTraCuu
     
@@ -165,44 +165,45 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean, Optional ByVal showMessage
     End With
     
     '/Duyet tung file XML de trich xuat du lieu chi tiet
-    Dim fileName As Variant
+    Dim fileName As Variant, failureText As String, writingRows As Long
     fileName = Dir(xmlFolder & "\")
     count = 0
     While fileName <> ""
         If LCase$(Right$(fileName, 4)) = ".xml" Then
+            On Error GoTo FileFailed
+            writingRows = 0
             If Not xmlDoc.Load(xmlFolder & "\" & fileName) Then
                 UpsertGdtErrorReport IIf(loaiHD, "mua", "ban"), "XML", "", "", CStr(fileName), "", Empty, _
                     "Parse XML", "", 0, "Invalid XML", 1, 0, "Failed"
                 GoTo NextFile
             End If
-            Set oHHDVu = xmlDoc.SelectNodes("/HDon/DLHDon/NDHDon/DSHHDVu/HHDVu")
+            Set oHHDVu = xmlDoc.SelectNodes(GdtXmlPath(xmlDoc, "/HDon/DLHDon/NDHDon/DSHHDVu/HHDVu"))
             If oHHDVu.Length = 0 Then
                 UpsertGdtErrorReport IIf(loaiHD, "mua", "ban"), "XML", "", "", CStr(fileName), "", Empty, _
                     "Parse XML", "", 0, "Missing invoice items", 1, 0, "Failed"
                 GoTo NextFile
             End If
-            count = count + 1
             ' No optional field may retain content from another file or old row.
+            writingRows = oHHDVu.Length
             rngData.Resize(oHHDVu.Length, 35).ClearContents
             With rngData
-                On Error Resume Next
-                .Offset(, 0).Value = xmlDoc.SelectSingleNode("/HDon/DLHDon").getAttribute("Id")
-                .Offset(, 1).Value = xmlDoc.SelectSingleNode("//TTChung/KHHDon").text     ' Lay ky hieu hoa don
-                .Offset(, 2).Value = xmlDoc.SelectSingleNode("//TTChung/SHDon").text    ' lay so hoa don
-                .Offset(, 3).Value = xmlDoc.SelectSingleNode("//TTChung/NLap").text    'ngay lap hoa don
-                .Offset(, 4).Value = xmlDoc.SelectSingleNode("//TTChung/DVTTe").text    'don vi tien te
-                .Offset(, 5).Value = xmlDoc.SelectSingleNode("//TTChung/TGia").text    'ty gia
-                .Offset(, 6).Value = xmlDoc.SelectSingleNode("//NBan/Ten").text    'ten nguoi ban
-                .Offset(, 7).Value = xmlDoc.SelectSingleNode("//NBan/MST").text    'ma so thue nguoi ban
-                .Offset(, 8).Value = xmlDoc.SelectSingleNode("//NBan/DChi").text    'Dia chi nguoi ban
-                .Offset(, 9).Value = xmlDoc.SelectSingleNode("/HDon/DSCKS/NBan/Signature/Object/SignatureProperties/SignatureProperty/SigningTime").text    'ngay ky so nguoi ban
-                .Offset(, 10).Value = xmlDoc.SelectSingleNode("//HDon/MCCQT").text    'Lay ma co quan thue
-                .Offset(, 11).Value = xmlDoc.SelectSingleNode("/HDon/DSCKS/CQT/Signature/Object/SignatureProperties/SignatureProperty/SigningTime").text    'Lay ngay cap ma co quan thue
-                .Offset(, 12).Value = xmlDoc.SelectSingleNode("//NMua/Ten").text    'Lay Ten nguoi mua
-                .Offset(, 13).Value = xmlDoc.SelectSingleNode("//NMua/MST").text    'Lay mst nguoi mua
-                .Offset(, 14).Value = xmlDoc.SelectSingleNode("//NMua/DChi").text    'Lay Dia chi nguoi mua
-                .Offset(, 27).Value = xmlDoc.SelectSingleNode("//NDHDon/TToan/TgTThue").text     'Tong thue tren HD
-                .Offset(, 28).Value = xmlDoc.SelectSingleNode("//TTChung/MSTTCGP").text     'MSTTCGP
+                GdtWriteTextCell .Offset(, 0), xmlDoc.SelectSingleNode(GdtXmlPath(xmlDoc, "/HDon/DLHDon")).getAttribute("Id")
+                GdtWriteTextCell .Offset(, 1), GdtXmlText(xmlDoc, "/HDon/DLHDon/TTChung/KHHDon")
+                GdtWriteTextCell .Offset(, 2), GdtXmlText(xmlDoc, "/HDon/DLHDon/TTChung/SHDon")
+                GdtWriteXmlDate .Offset(, 3), GdtXmlText(xmlDoc, "/HDon/DLHDon/TTChung/NLap")
+                GdtWriteTextCell .Offset(, 4), GdtXmlText(xmlDoc, "/HDon/DLHDon/TTChung/DVTTe")
+                GdtWriteXmlNumber .Offset(, 5), GdtXmlText(xmlDoc, "/HDon/DLHDon/TTChung/TGia"), "TGia"
+                GdtWriteTextCell .Offset(, 6), GdtXmlText(xmlDoc, "/HDon/DLHDon/NDHDon/NBan/Ten")
+                GdtWriteTextCell .Offset(, 7), GdtXmlText(xmlDoc, "/HDon/DLHDon/NDHDon/NBan/MST")
+                GdtWriteTextCell .Offset(, 8), GdtXmlText(xmlDoc, "/HDon/DLHDon/NDHDon/NBan/DChi")
+                GdtWriteXmlDate .Offset(, 9), GdtXmlText(xmlDoc, "/HDon/DSCKS/NBan/Signature/Object/SignatureProperties/SignatureProperty/SigningTime")
+                GdtWriteTextCell .Offset(, 10), GdtXmlText(xmlDoc, "/HDon/MCCQT")
+                GdtWriteXmlDate .Offset(, 11), GdtXmlText(xmlDoc, "/HDon/DSCKS/CQT/Signature/Object/SignatureProperties/SignatureProperty/SigningTime")
+                GdtWriteTextCell .Offset(, 12), GdtXmlText(xmlDoc, "/HDon/DLHDon/NDHDon/NMua/Ten")
+                GdtWriteTextCell .Offset(, 13), GdtXmlText(xmlDoc, "/HDon/DLHDon/NDHDon/NMua/MST")
+                GdtWriteTextCell .Offset(, 14), GdtXmlText(xmlDoc, "/HDon/DLHDon/NDHDon/NMua/DChi")
+                GdtWriteXmlNumber .Offset(, 27), GdtXmlText(xmlDoc, "/HDon/DLHDon/NDHDon/TToan/TgTThue"), "TgTThue"
+                GdtWriteTextCell .Offset(, 28), GdtXmlText(xmlDoc, "/HDon/DLHDon/TTChung/MSTTCGP")
                 
                 '/Lay link tra cuu
                 Dim msttcgp As String
@@ -225,7 +226,7 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean, Optional ByVal showMessage
                             .Offset(, 29).Value = "https://" & mst & "hd.easyinvoice.com.vn"
                             .Offset(, 30).Value = mst
                         Case Else
-                            .Offset(, 29).Value = dicLink.item(msttcgp)
+                            If dicLink.Exists(msttcgp) Then .Offset(, 29).Value = dicLink.item(msttcgp)
                     End Select
                 Else
                     .Offset(, 29).Value = "Khong tim thay link tra cuu"
@@ -233,12 +234,12 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean, Optional ByVal showMessage
                 
                 '/Lay ma tra cuu ----------------------------------------
                 If .Offset(, 30).Value <> "" Then GoTo Da_co_maTC
-                Set list = xmlDoc.SelectSingleNode("//DLHDon/TTKhac")   'Truong hop 1
+                Set list = xmlDoc.SelectSingleNode(GdtXmlPath(xmlDoc, "/HDon/DLHDon/TTKhac"))
                 If Not list Is Nothing Then
                 For k = 0 To list.ChildNodes.Length - 1
-                    ttruong = list.ChildNodes(k).getElementsByTagName("TTruong")(0).text
+                    ttruong = GdtXmlText(list.ChildNodes(k), "TTruong")
                     If dicTenCotTC.Exists(ttruong) Then
-                        .Offset(, 30).Value = list.ChildNodes(k).getElementsByTagName("DLieu")(0).text
+                        GdtWriteTextCell .Offset(, 30), GdtXmlText(list.ChildNodes(k), "DLieu")
                         Exit For
                         'GoTo Da_co_maTC
                     Else
@@ -246,12 +247,12 @@ Sub parseXML(xmlFolder As Variant, loaiHD As Boolean, Optional ByVal showMessage
                     End If
                 Next k
                 End If
-                Set list = xmlDoc.SelectSingleNode("//DLHDon/TTChung/TTKhac") 'Truong hop 2
+                Set list = xmlDoc.SelectSingleNode(GdtXmlPath(xmlDoc, "/HDon/DLHDon/TTChung/TTKhac"))
                 If Not list Is Nothing Then
                 For k = 0 To list.ChildNodes.Length - 1
-                    ttruong = list.ChildNodes(k).getElementsByTagName("TTruong")(0).text
+                    ttruong = GdtXmlText(list.ChildNodes(k), "TTruong")
                     If dicTenCotTC.Exists(ttruong) Then
-                        .Offset(, 30).Value = list.ChildNodes(k).getElementsByTagName("DLieu")(0).text
+                        GdtWriteTextCell .Offset(, 30), GdtXmlText(list.ChildNodes(k), "DLieu")
                         Exit For
                         'GoTo Da_co_maTC
                     Else
@@ -265,7 +266,7 @@ Da_co_maTC:
                 Set rngHHDV = .Offset(, 15)    ' O bat dau lay so thu tu
             End With
             
-            Set oHHDVu = xmlDoc.SelectNodes("/HDon/DLHDon/NDHDon/DSHHDVu/HHDVu")
+            Set oHHDVu = xmlDoc.SelectNodes(GdtXmlPath(xmlDoc, "/HDon/DLHDon/NDHDon/DSHHDVu/HHDVu"))
             
             Dim c As Long, ndong As Long, Thtien As Double, TSuat As Double
             With rngHHDV
@@ -273,7 +274,8 @@ Da_co_maTC:
                 For i = 0 To oHHDVu.Length - 1
                     Thtien = 0: TSuat = 0: tthue = 0
                     For j = 0 To oHHDVu(i).ChildNodes.Length - 1
-                        Select Case oHHDVu(i).ChildNodes(j).tagName
+                        If CStr(oHHDVu(i).ChildNodes(j).namespaceURI) <> CStr(xmlDoc.documentElement.namespaceURI) Then GoTo NextItemField
+                        Select Case oHHDVu(i).ChildNodes(j).baseName
                             Case "STT"
                                 c = 0
                             Case "MHHDVu"
@@ -292,30 +294,39 @@ Da_co_maTC:
                                 c = 7
                             Case "ThTien"
                                 c = 8
-                                Thtien = Val(oHHDVu(i).ChildNodes(j).text)
+                                Thtien = GdtXmlNumber(oHHDVu(i).ChildNodes(j).text, "ThTien")
                             Case "TSuat"
                                 c = 9
-                                TSuat = Val(oHHDVu(i).ChildNodes(j).text) / 100
+                                TSuat = GdtXmlTaxRate(oHHDVu(i).ChildNodes(j).text)
                             Case Else
                                 c = -1
                         End Select
                         If c >= 0 Then
-                            .Offset(i, c).Value = oHHDVu(i).ChildNodes(j).text
+                            If c >= 4 And c <= 8 Then
+                                GdtWriteXmlNumber .Offset(i, c), oHHDVu(i).ChildNodes(j).text, oHHDVu(i).ChildNodes(j).baseName
+                            Else
+                                GdtWriteTextCell .Offset(i, c), oHHDVu(i).ChildNodes(j).text
+                            End If
                         End If
+NextItemField:
                     Next j
                     
                     Dim hasTax As Boolean, hasTotal As Boolean
                     hasTax = False: hasTotal = False
-                    Set list = oHHDVu(i).SelectSingleNode("TTKhac")
+                    Set list = oHHDVu(i).SelectSingleNode(GdtXmlPath(oHHDVu(i), "TTKhac"))
                     If Not list Is Nothing Then
                         For k = 0 To list.ChildNodes.Length - 1
-                            ttruong = list.ChildNodes(k).getElementsByTagName("TTruong")(0).text
+                            ttruong = GdtXmlText(list.ChildNodes(k), "TTruong")
                             If isInArray(ttruong, arrTThue) Then
-                                tthue = Val(list.ChildNodes(k).getElementsByTagName("DLieu")(0).text)
-                                hasTax = True
+                                If Len(Trim$(GdtXmlText(list.ChildNodes(k), "DLieu"))) > 0 Then
+                                    tthue = GdtXmlNumber(GdtXmlText(list.ChildNodes(k), "DLieu"), "tax metadata")
+                                    hasTax = True
+                                End If
                             ElseIf isInArray(ttruong, arrThTiencoVAT) Then
-                                .Offset(i, 11).Value = list.ChildNodes(k).getElementsByTagName("DLieu")(0).text
-                                hasTotal = True
+                                If Len(Trim$(GdtXmlText(list.ChildNodes(k), "DLieu"))) > 0 Then
+                                    .Offset(i, 11).Value2 = GdtXmlNumber(GdtXmlText(list.ChildNodes(k), "DLieu"), "total metadata")
+                                    hasTotal = True
+                                End If
                             End If
                         Next k
                     End If
@@ -329,9 +340,21 @@ Da_co_maTC:
             If ndong > 1 Then
                 'Copy nhung dong du lieu chung xuong theo MHHDvu
                 With rngData
-                    .Offset(1).Resize(ndong - 1, 15).Value = .Resize(, 15).Value    '14: la so cot cuoi cung cua du lieu chung
+                    Dim textColumn As Variant
+                    For Each textColumn In Array(0, 1, 2, 4, 6, 7, 8, 10, 12, 13, 14)
+                        .Resize(ndong, 1).Offset(, CLng(textColumn)).NumberFormat = "@"
+                    Next textColumn
+                    .Resize(ndong, 1).Offset(, 7).NumberFormat = "@"
+                    .Resize(ndong, 1).Offset(, 13).NumberFormat = "@"
+                    .Resize(ndong, 1).Offset(, 28).NumberFormat = "@"
+                    .Resize(ndong, 1).Offset(, 3).NumberFormat = "dd/mm/yyyy"
+                    .Resize(ndong, 1).Offset(, 9).NumberFormat = "dd/mm/yyyy"
+                    .Resize(ndong, 1).Offset(, 11).NumberFormat = "dd/mm/yyyy"
+                    .Resize(ndong, 15).FillDown
                 End With
             End If
+            MarkGdtRetrySuccess IIf(loaiHD, "mua", "ban"), "XML", "", "", CStr(fileName), "", "Parse XML", 1
+            count = count + 1
             
             If ndong > 0 Then
                 'Thay doi gia tri rngData sau khi ghi du lieu
@@ -342,6 +365,7 @@ Da_co_maTC:
         End If
         
 NextFile:
+        On Error GoTo SetupFailed
         fileName = Dir
     Wend
     
@@ -353,10 +377,83 @@ NextFile:
     End If
     
     Set xmlDoc = Nothing
-    
-    
-    
+    Exit Sub
+
+FileFailed:
+    failureText = Err.Description
+    If writingRows > 0 Then rngData.Resize(writingRows, 35).ClearContents
+    UpsertGdtErrorReport IIf(loaiHD, "mua", "ban"), "XML", "", "", CStr(fileName), "", Empty, _
+        "Parse XML", "", 0, failureText, 1, 0, "Failed"
+    Resume NextFile
+
+SetupFailed:
+    Err.Raise Err.Number, "parseXML", Err.Description
 End Sub
+
+' Keep every path segment and restrict invoice nodes to the root namespace.
+' Signature descendants may use the XMLDSIG namespace or the legacy namespace.
+Private Function GdtXmlPath(ByVal context As Object, ByVal path As String) As String
+    Dim doc As Object, parts As Variant, part As String, ns As String, predicate As String, index As Long
+    If context.nodeType = 9 Then
+        Set doc = context
+    Else
+        Set doc = context.ownerDocument
+    End If
+    ns = CStr(doc.documentElement.namespaceURI)
+    If InStr(ns, "'") > 0 Then Err.Raise 5, , "Unsupported XML namespace"
+    parts = Split(path, "/")
+    For index = 0 To UBound(parts)
+        part = CStr(parts(index))
+        If Len(part) > 0 Then
+            predicate = "namespace-uri()='" & ns & "'"
+            Select Case CStr(part)
+                Case "Signature", "Object", "SignatureProperties", "SignatureProperty", "SigningTime"
+                    predicate = "(" & predicate & " or namespace-uri()='http://www.w3.org/2000/09/xmldsig#' or namespace-uri()='')"
+            End Select
+            parts(index) = "*[local-name()='" & part & "' and " & predicate & "]"
+        End If
+    Next index
+    GdtXmlPath = Join(parts, "/")
+End Function
+
+Private Function GdtXmlText(ByVal context As Object, ByVal path As String) As String
+    Dim node As Object
+    Set node = context.SelectSingleNode(GdtXmlPath(context, path))
+    If Not node Is Nothing Then GdtXmlText = node.text
+End Function
+
+Private Sub GdtWriteXmlDate(ByVal cell As Range, ByVal value As String)
+    If Len(Trim$(value)) = 0 Then Exit Sub
+    cell.Value2 = CDbl(ISODateValue(value))
+    cell.NumberFormat = "dd/mm/yyyy"
+End Sub
+
+' XML numeric values use a dot, independent of the Windows decimal separator.
+' Reject partial conversions (Val("invalid")=0, Val("10,5")=10).
+Public Function GdtXmlNumber(ByVal value As String, ByVal field As String) As Double
+    Static re As Object
+    value = Trim$(value)
+    If re Is Nothing Then
+        Set re = CreateObject("VBScript.RegExp")
+        re.Pattern = "^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)$"
+    End If
+    If Not re.test(value) Then Err.Raise 5, "GdtXmlNumber", "Invalid XML number: " & field
+    GdtXmlNumber = Val(value)
+End Function
+
+Private Sub GdtWriteXmlNumber(ByVal cell As Range, ByVal value As String, ByVal field As String)
+    If Len(Trim$(value)) > 0 Then cell.Value2 = GdtXmlNumber(value, field)
+End Sub
+
+Private Function GdtXmlTaxRate(ByVal value As String) As Double
+    value = Trim$(value)
+    Select Case UCase$(value)
+        Case "", "KCT", "KKKNT", "KHAC"
+            Exit Function
+    End Select
+    If Right$(value, 1) = "%" Then value = Trim$(Left$(value, Len(value) - 1))
+    GdtXmlTaxRate = GdtXmlNumber(value, "TSuat") / 100
+End Function
 
 Public Function isInArray(ByRef FindValue As Variant, ByRef vArr As Variant) As Boolean
     Dim vArrEach As Variant

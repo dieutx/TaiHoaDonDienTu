@@ -52,8 +52,8 @@ Public Sub RateLimited(ByVal retryAfter As Long, ByVal atTime As Double)
         mLastDrop = atTime
     End If
     CurrentIntervalMs = CLng(CurrentIntervalMs * 1.5)
-    If CurrentIntervalMs < BaseIntervalMs Then CurrentIntervalMs = BaseIntervalMs
     If CurrentIntervalMs > 5000 Then CurrentIntervalMs = 5000
+    If CurrentIntervalMs < BaseIntervalMs Then CurrentIntervalMs = BaseIntervalMs
     LastRateLimit = atTime
 End Sub
 
