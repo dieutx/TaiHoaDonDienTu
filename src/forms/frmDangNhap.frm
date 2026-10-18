@@ -22,6 +22,7 @@ Private Const PROFILE_URL    As String = "/profile"
 
 Dim res As String, blnCaptcha As Boolean
 Dim arrUsers
+Private mLoginBusy As Boolean
 
 Private Sub cmdDauMK_Click()
     Me.txtPass.PasswordChar = "*"
@@ -60,12 +61,6 @@ End Sub
 
 Private Sub txtPass_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     Me.lsbUsers.Visible = False
-    If layCaptcha Then
-        blnCaptcha = True
-    Else
-        blnCaptcha = False
-    End If
-    Me.cmdDangNhap.SetFocus
 End Sub
 
 Private Sub txtUser_AfterUpdate()
@@ -74,6 +69,7 @@ Private Sub txtUser_AfterUpdate()
 End Sub
 
 Private Sub txtUser_Change()
+    InvalidateCaptcha
     Me.lsbUsers.Visible = True
 End Sub
 
@@ -82,23 +78,50 @@ Private Sub UserForm_Initialize()
     Me.lblThatBai.Visible = False
     Me.cmdHienMK.Visible = True
     Me.cmdDauMK.Visible = False
+    InvalidateCaptcha
     layUserPass
 End Sub
 
-Private Sub txtPass_AfterUpdate()
-    If layCaptcha Then
-        blnCaptcha = True
-    Else
-        blnCaptcha = False
-    End If
+Private Sub txtPass_Change()
+    InvalidateCaptcha
+End Sub
+
+Private Sub InvalidateCaptcha()
+    blnCaptcha = False
+    ckey = vbNullString
+    Me.txtNhapCaptcha.Value = vbNullString
 End Sub
 
 Private Sub cmdDangNhap_Click()
-    If blnCaptcha = False Then Exit Sub
-    
     Dim http As Object, formData As String, sessionToken As String
+    Dim originalCaption As String
+    If mLoginBusy Then Exit Sub
     On Error GoTo HttpErr
+    originalCaption = Me.cmdDangNhap.Caption
+    mLoginBusy = True
+    Me.cmdDangNhap.Enabled = False
+    Me.lsbUsers.Visible = False
+    Me.lblThanhCong.Visible = False
+    Me.lblThatBai.Visible = False
+
+    If Len(Trim$(CStr(Me.txtUser.Value))) = 0 Or Len(CStr(Me.txtPass.Value)) = 0 Then
+        MsgBoxUni UniConvert("Vui lofng nhaajp teen ddawng nhaajp vaf maajt khaaru."), vbExclamation
+        GoTo CleanExit
+    End If
+
+    If Not blnCaptcha Or Len(ckey) = 0 Or Len(Trim$(CStr(Me.txtNhapCaptcha.Value))) = 0 Then
+        Me.cmdDangNhap.Caption = UniConvert("DDang laays max...")
+        Me.Repaint
+        blnCaptcha = layCaptcha()
+        If Not blnCaptcha Then GoTo CleanExit
+    End If
+
+    Me.cmdDangNhap.Caption = UniConvert("DDang ddawng nhaajp...")
+    Me.Repaint
     formData = BuildGdtLoginJson(CStr(Me.txtUser.Value), CStr(Me.txtPass.Value), CStr(Me.txtNhapCaptcha.Value), CStr(ckey))
+    ' A submitted challenge must not be reused after a rejection or timeout.
+    blnCaptcha = False
+    ckey = vbNullString
     Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
     http.setTimeouts 5000, 5000, 15000, 15000
     http.Open "POST", BASE_URL & LOGIN_URL, False
@@ -108,13 +131,12 @@ Private Sub cmdDangNhap_Click()
     http.setRequestHeader "User-Agent", "Mozilla/5.0 ExcelVBA-HDDT"
     On Error GoTo HttpErr
     http.send formData
-    On Error GoTo 0
     
     If http.Status <> 200 Then
         'LogMsg "Dang nhap that bai. HTTP " & http.Status & " - " & http.responseText
         MsgBoxUni UniConvert("DDawng nhaajp khoong thafnh coong (HTTP " & http.Status & ").") & vbCrLf & vbCrLf & _
             UniConvert("Kieerm tra MST/maajt khaaru hoawjc CAPTCHA roofi thuwr laji."), vbCritical
-        Exit Sub
+        GoTo CleanExit
     End If
     
     res = http.responseText
@@ -130,7 +152,7 @@ Private Sub cmdDangNhap_Click()
 
         Me.lblThanhCong.Visible = False
         Me.lblThatBai.Visible = True
-        Exit Sub
+        GoTo CleanExit
     Else
         sessionToken = GdtRequiredAuthText(js, "token")
         cToken = sessionToken
@@ -148,25 +170,31 @@ Private Sub cmdDangNhap_Click()
     
     Application.ScreenUpdating = True
     
-    Exit Sub
+    GoTo CleanExit
     
 HttpErr:
     'LogMsg "Loi mang khi dang nhap: " & err.Description
     MsgBox "Loi mang: " & err.Description, vbCritical
-    Exit Sub
+    GoTo CleanExit
 
 ResponseErr:
     Me.lblThanhCong.Visible = False
     Me.lblThatBai.Visible = True
     MsgBoxUni UniConvert("Pharn hoofi ddawng nhaajp khoong howjp leej. Vui lofng thuwr laji."), vbCritical
-    Exit Sub
+    GoTo CleanExit
 
 SaveErr:
     MsgBoxUni UniConvert("DDax ddawng nhaajp nhuwng khoong luwu dduwowjc file. Kieerm tra quyeen ghi vaf thuwr laji."), vbExclamation
 
+CleanExit:
+    Me.lblThatBai.Visible = Not Me.lblThanhCong.Visible
+    Me.cmdDangNhap.Caption = originalCaption
+    Me.cmdDangNhap.Enabled = True
+    mLoginBusy = False
 End Sub
 
 Function layCaptcha() As Boolean
+    InvalidateCaptcha
     layCaptcha = False
     'Kiem tra ket noi internet
     If GetInternetConnectedState = False Then
@@ -175,7 +203,7 @@ Function layCaptcha() As Boolean
         Exit Function
     End If
     
-    Dim http As Object, cContent As String, sMsg As String, newKey As String
+    Dim http As Object, cContent As String, sMsg As String, newKey As String, captchaText As String
     On Error GoTo HttpErr
     Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
     http.setTimeouts 5000, 5000, 15000, 15000
@@ -184,11 +212,10 @@ Function layCaptcha() As Boolean
     http.setRequestHeader "Request-Id", CreateRequestID
     On Error GoTo HttpErr
     http.send
-    On Error GoTo 0
     
     If http.Status <> 200 Then
         sMsg = "C" & ChrW(243) & " l" & ChrW(7895) & "i k" & ChrW(7871) & "t n" & ChrW(7889) & "i v" & ChrW(224) & " l" & ChrW(7845) & "y d" & ChrW(7919) & " li" & ChrW(7879) & "u."
-        sMsg = sMsg & vbCrLf & "Vui l" & ChrW(242) & "ng kh" & ChrW(7903) & "i " & ChrW(273) & ChrW(7897) & "ng l" & ChrW(7841) & "i " & ChrW(7913) & "ng d" & ChrW(7909) & "ng."
+        sMsg = sMsg & " (HTTP " & http.Status & ")." & vbCrLf & UniConvert("Vui lofng baasm DDawng nhaajp ddeer thuwr laji.")
         MsgBoxUni sMsg, vbCritical
         layCaptcha = False
         Exit Function
@@ -199,8 +226,12 @@ Function layCaptcha() As Boolean
     newKey = GdtRequiredAuthText(js, "key")
     cContent = GdtRequiredAuthText(js, "content")
     
-    DoEvents
-    Me.txtNhapCaptcha = detectSVGCaptcha(http.responseText)
+    captchaText = detectSVGCaptcha(http.responseText)
+    If Len(Trim$(captchaText)) <> 6 Then
+        MsgBoxUni UniConvert("Khoong nhaajn dajng dduwowjc CAPTCHA. Vui lofng baasm DDawng nhaajp ddeer laays max mowsi."), vbExclamation
+        Exit Function
+    End If
+    Me.txtNhapCaptcha = captchaText
     ckey = newKey
     layCaptcha = True
     

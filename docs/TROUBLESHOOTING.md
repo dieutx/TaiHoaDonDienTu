@@ -5,6 +5,8 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 ## Không đăng nhập được
 
 - Kiểm tra mã số thuế, mật khẩu và CAPTCHA.
+- Bản sửa luồng đăng nhập lấy CAPTCHA ngay khi bấm **Đăng nhập**, kể cả khi dùng tài khoản đã lưu và chưa sửa ô mật khẩu. Nút hiển thị trạng thái lấy mã/gửi đăng nhập, rồi bật lại nếu có lỗi; không còn thoát im lặng khi chưa có CAPTCHA.
+- Nếu báo không nhận dạng được CAPTCHA hoặc lấy mã thất bại, bấm **Đăng nhập** để thử lấy mã mới. Request đăng nhập thất bại/timeout cũng lấy mã mới ở lần bấm tiếp theo. Không gửi đăng nhập nếu CAPTCHA rỗng hoặc chỉ nhận dạng được một phần.
 - Đóng form rồi mở lại để lấy CAPTCHA mới nếu mã đã hết hiệu lực.
 - Kiểm tra kết nối đến `https://hoadondientu.gdt.gov.vn/`.
 - Không đăng credential hoặc ảnh màn hình có thông tin đăng nhập lên Issue.

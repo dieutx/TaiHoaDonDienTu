@@ -31,6 +31,7 @@ Invoke-ReleaseCheck 'build\Test-InvoiceDateRuntime.ps1' @('-BuiltWorkbook', $Out
 Invoke-ReleaseCheck 'build\Test-ReviewFixesRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-ExtendedReviewRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-CompatibilityFixesRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
+Invoke-ReleaseCheck 'build\Test-LoginFlowRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-CoreFixesRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-DownloaderParityRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-ReviewSourceRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
