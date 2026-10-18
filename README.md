@@ -78,6 +78,8 @@ Hướng dẫn thêm thông báo cập nhật tùy chọn: [docs/UPDATE_CHECK.md
 
 Các sửa lỗi v6.7.7 cho XML namespace, kiểu dữ liệu XML, phản hồi đăng nhập và link BKAV: [docs/COMPATIBILITY_FIXES_2026-10-13.md](docs/COMPATIBILITY_FIXES_2026-10-13.md).
 
+Bản sửa nút Đăng nhập thoát im lặng khi chưa có CAPTCHA, kèm kiểm thử luồng tài khoản đã lưu: [sửa luồng đăng nhập 18/10/2026](docs/LOGIN_FLOW_FIX_2026-10-18.md).
+
 Bản sửa log, ghi dữ liệu, tải bổ sung/resume và Retry-After: [docs/CORE_FIXES_2026-10-13.md](docs/CORE_FIXES_2026-10-13.md).
 
 Bản sửa đồng hồ **Thời gian xử lý**, log tổng số hóa đơn và căn thanh thời gian: [docs/PROGRESS_UI_2026-10-14.md](docs/PROGRESS_UI_2026-10-14.md).
@@ -108,6 +110,7 @@ Kết quả review mở rộng và các lỗi tái hiện trước khi sửa: [r
 .\build\Test-ReviewFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
 .\build\Test-ExtendedReviewRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
 .\build\Test-CompatibilityFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-LoginFlowRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
 .\build\Test-ProgressClockRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
 .\build\Test-ModernUiRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
 .\build\Test-ParallelJsonRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
