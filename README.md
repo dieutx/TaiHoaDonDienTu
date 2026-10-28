@@ -2,9 +2,9 @@
 
 File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondientu.gdt.gov.vn`.
 
-**Phiên bản đã phát hành mới nhất: v6.7.7**
+**Phiên bản đã phát hành mới nhất: v6.7.8**
 
-[Tải TaiHoaDonDienTu_v6.7.7.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.7.xlsm)
+[Tải TaiHoaDonDienTu_v6.7.8.xlsm](https://github.com/dieutx/TaiHoaDonDienTu/releases/latest/download/TaiHoaDonDienTu_v6.7.8.xlsm)
 
 > 💡 **Không có Excel hoặc muốn chạy tự động theo lịch?** Dùng bản PowerShell
 > [hddt-downloader-windows](https://github.com/dieutx/hddt-downloader-windows) —
@@ -33,6 +33,10 @@ File Excel VBA giúp tải, tra cứu và tổng hợp hóa đơn từ `hoadondi
 5. Bấm **Tải hóa đơn** và theo dõi kỳ, nguồn API, trang, HTTP, số hóa đơn cùng thời gian phản hồi trong log. Nhãn **Thời gian xử lý** chạy liên tục và đặt lại từ `00:00:00` mỗi phiên; log ghi dòng **Tổng số hóa đơn cần xử lý** và mỗi dòng chi tiết có dạng `n/N`.
 6. Có thể bấm **Tạm dừng/Tiếp tục** hoặc **Dừng**; dữ liệu đã tải trước khi dừng vẫn được giữ lại.
 7. Xem kết quả tại các sheet tổng hợp, chi tiết và `BaoCao_LoiTaiHD`.
+
+Bản cập nhật source 28/10/2026 chia kỳ **hóa đơn máy tính tiền** tối đa **10 ngày** và tự chia nhỏ lại khi API báo giới hạn khác (ví dụ 5 ngày). Tra cứu nguồn này gửi thêm CAPTCHA theo giao thức đã kiểm chứng từ HAR và test live; không lưu CAPTCHA trong URL báo lỗi hoặc hàng đợi retry.
+
+Chọn thêm **PDF** để dựng PDF vào cùng thư mục lưu. Ưu tiên XML gốc; nếu không có XML, dùng chi tiết API và tổng hợp đúng cùng hóa đơn để dựng PDF khi đủ dữ liệu. PDF ghi rõ nguồn API trong trường hợp này. Có thể chọn PDF riêng; XML/ZIP tải được vẫn giữ để đối chiếu. Nút **XML -> PDF** chuyển các XML có sẵn trong một thư mục, không cần đăng nhập. Máy cần **Microsoft Edge hoặc Google Chrome**; mẫu hóa đơn đã nhúng trong workbook, không cần chép HTML/CSS đi kèm. Chi tiết: [chia kỳ ngày và PDF](docs/DATE_LIMIT_AND_XML_PDF_2026-10-28.md).
 
 Từ v6.7.7, chọn **No** tại câu hỏi xóa dữ liệu để tải bổ sung chống trùng và bỏ phần chi tiết/XML đã xác minh hoàn tất. Lưu workbook để dùng trạng thái sau khi đóng Excel. Xem [hướng dẫn và giới hạn resume](docs/CORE_FIXES_2026-10-13.md).
 
@@ -84,7 +88,7 @@ Bản sửa log, ghi dữ liệu, tải bổ sung/resume và Retry-After: [docs/
 
 Bản sửa đồng hồ **Thời gian xử lý**, log tổng số hóa đơn và căn thanh thời gian: [docs/PROGRESS_UI_2026-10-14.md](docs/PROGRESS_UI_2026-10-14.md).
 
-Source hiện tại là **6.7.7**. Giao diện mới có bài runtime riêng cho bảng tiến độ, log 5 cột, ETA và kết quả phiên tải: [kiểm chứng giao diện 6.7.7](docs/UI_COMPLETION_2026-10-15.md).
+Source hiện tại là **6.7.8**. Xem [ghi chú phát hành 6.7.8](docs/RELEASE_v6.7.8.md) và [kiểm thử ngày/PDF](docs/DATE_LIMIT_AND_XML_PDF_2026-10-28.md). Kiểm thử nền giao diện: [kiểm chứng giao diện 6.7.7](docs/UI_COMPLETION_2026-10-15.md).
 
 Bản chỉnh tiếp theo hiển thị số hóa đơn/trang ngay khi đang lấy danh sách, mở rộng nhật ký và cho đọc dòng được chọn; xem [sửa tiến độ phân trang và nhật ký](docs/UI_PAGINATION_2026-10-15.md).
 
@@ -93,29 +97,32 @@ Phản hồi HTTP 200 kèm nội dung HTML (token bị chặn hoặc gateway tr�
 Trước khi phát hành, chạy bộ kiểm tra dưới đây. Mỗi bước chạy trong tiến trình riêng; nếu có bước lỗi, toàn bộ quy trình dừng và không chạy các bước tiếp theo.
 
 ```powershell
-.\build\Test-Release.ps1 -Version '6.7.7' -OutputPath '.\dist\release-candidate\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-Release.ps1 -Version '6.7.8' -OutputPath '.\dist\release-candidate\TaiHoaDonDienTu_v6.7.8.xlsm'
 ```
 
 Kết quả review mở rộng và các lỗi tái hiện trước khi sửa: [review mở rộng 08/10/2026](docs/REVIEW_EXPANDED_2026-10-08.md). Các lệnh kiểm tra riêng lẻ:
 
 ```powershell
-.\build\Build-Excel.ps1 -Version '6.7.7' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Build-Excel.ps1 -Version '6.7.8' -OutputPath '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
 .\tests\Test-RetryUiStatic.ps1
 .\tests\Test-DetailInvoiceStatic.ps1
-.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm' -RunUserFormInstantiation
-.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-DetailInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-InvoiceDateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-ReviewFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-ExtendedReviewRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-CompatibilityFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-LoginFlowRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-ProgressClockRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-ModernUiRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
-.\build\Test-ParallelJsonRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\build\Test-Build.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm' -RunUserFormInstantiation
+.\build\Test-PublicWorkbook.ps1 -WorkbookPath '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-DetailInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-RelatedInvoiceRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-InvoiceDateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-ReviewFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-ExtendedReviewRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-CompatibilityFixesRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-LoginFlowRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-ProgressClockRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-ModernUiRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-ParallelJsonRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-DatePdfRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-PdfFallbackRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
+.\build\Test-DatePdfRegression.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
 .\tests\Test-ReleaseGate.ps1
-.\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.7.xlsm'
+.\tests\Test-UpdateRuntime.ps1 -BuiltWorkbook '.\dist\TaiHoaDonDienTu_v6.7.8.xlsm'
 ```
 
 Đọc [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md) trước khi gửi thay đổi.

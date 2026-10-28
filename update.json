@@ -1,10 +1,10 @@
 {
-  "version": "6.7.7",
-  "releaseDate": "2026-10-15",
-  "downloadUrl": "https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.7/TaiHoaDonDienTu_v6.7.7.xlsm",
+  "version": "6.7.8",
+  "releaseDate": "2026-10-28",
+  "downloadUrl": "https://github.com/dieutx/TaiHoaDonDienTu/releases/download/v6.7.8/TaiHoaDonDienTu_v6.7.8.xlsm",
   "releaseNote": [
-    "Sửa phản hồi HTTP 200 trả HTML: thử lại và báo đúng nguyên nhân thay vì lỗi parse JSON",
-    "Tắt Wrap Text và căn giữa theo chiều dọc trên các sheet, giữ định dạng khi ghi dữ liệu mới",
-    "Cải thiện tiến độ phân trang, nhật ký, bộ lọc nguồn và tải bổ sung; phục hồi chi tiết khi XML lỗi 500/504"
+    "Tự chia kỳ máy tính tiền theo giới hạn ngày của API và bổ sung CAPTCHA tra cứu SCO",
+    "Dựng PDF từ XML; khi không có XML, dùng chi tiết API và tổng hợp đúng hóa đơn nếu đủ dữ liệu",
+    "Thêm XML -> PDF cho thư mục có sẵn; giữ XML gốc, ghi rõ nguồn và báo lỗi khi dữ liệu chưa đủ"
   ]
 }

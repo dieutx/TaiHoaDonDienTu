@@ -89,6 +89,27 @@ try {
     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot 'src\modules') -Filter '*.bas' | Sort-Object Name)) {
         $imported = $workbook.VBProject.VBComponents.Import((Get-StagedVbaFile $file)); Release-ComObject $imported
     }
+    # Embed the offline invoice view so the distributed XLSM needs no sidecars.
+    # HTML entities keep Vietnamese labels independent of the VBIDE ANSI page.
+    $pdfAssets = $workbook.VBProject.VBComponents.Add(1)
+    $pdfAssets.Name = 'modGdtPdfAssets'
+    $assetCode = New-Object Text.StringBuilder
+    [void]$assetCode.AppendLine('Option Explicit')
+    foreach ($asset in @(@('GdtPdfTemplate','invoice.html'), @('GdtPdfCss','invoice.css'))) {
+        $content = [IO.File]::ReadAllText((Join-Path $RepositoryRoot ('src\pdf\' + $asset[1])), [Text.Encoding]::UTF8)
+        $content = [regex]::Replace($content, '[^\x00-\x7F]', { param($m) '&#' + [int][char]$m.Value + ';' })
+        [void]$assetCode.AppendLine(('Public Function ' + $asset[0] + '() As String'))
+        foreach ($line in @($content -split '\r?\n')) {
+            for ($offset = 0; $offset -lt $line.Length; $offset += 300) {
+                $chunk = $line.Substring($offset, [Math]::Min(300, $line.Length - $offset)).Replace('"','""')
+                [void]$assetCode.AppendLine(('    ' + $asset[0] + ' = ' + $asset[0] + ' & "' + $chunk + '"'))
+            }
+            [void]$assetCode.AppendLine(('    ' + $asset[0] + ' = ' + $asset[0] + ' & vbLf'))
+        }
+        [void]$assetCode.AppendLine('End Function')
+    }
+    $pdfAssets.CodeModule.AddFromString($assetCode.ToString())
+    Release-ComObject $pdfAssets
     $versionCode = $workbook.VBProject.VBComponents.Item('modVersion').CodeModule
     $versionText = $versionCode.Lines(1, $versionCode.CountOfLines)
     if ($versionText -notmatch ('(?m)^Public Const CURRENT_VERSION As String = "' + [regex]::Escape($normalizedVersion) + '"\r?$')) {

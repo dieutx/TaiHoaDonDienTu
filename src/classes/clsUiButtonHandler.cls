@@ -12,11 +12,15 @@ Public WithEvents Button As MSForms.CommandButton
 Attribute Button.VB_VarHelpID = -1
 Public WithEvents LogList As MSForms.ListBox
 Attribute LogList.VB_VarHelpID = -1
+Public WithEvents CheckBox As MSForms.CheckBox
 Public Owner As Object
 Public ActionName As String
 Private Sub Button_Click()
     CallByName Owner, ActionName, VbMethod
 End Sub
 Private Sub LogList_Change()
+    CallByName Owner, ActionName, VbMethod
+End Sub
+Private Sub CheckBox_Click()
     CallByName Owner, ActionName, VbMethod
 End Sub

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:"><title>Hóa đơn</title><style>{{CSS}}</style></head>
+<body><div class="main-page">
+<div class="heading-content"><div class="top-content"><div class="title-heading"><h2 class="main-title">{{TITLE}}</h2><p class="day">Ngày lập: {{DATE}}</p><p class="day">{{SOURCE_NOTE}}</p></div><div class="code-content"><b>Mẫu số: {{TEMPLATE}}</b><br><b>Ký hiệu: {{SERIES}}</b><br><b>Số: {{NUMBER}}</b></div></div></div>
+<div class="vip-divide"></div><div class="content-info"><ul class="list-fill-out">
+<li><div class="data-item"><span class="di-label">Tên người bán:</span><b class="di-value">{{SELLER}}</b></div></li>
+<li><div class="data-item"><span class="di-label">Mã số thuế:</span><b class="di-value">{{SELLER_TAX}}</b></div></li>
+<li><div class="data-item"><span class="di-label">Địa chỉ:</span><span class="di-value">{{SELLER_ADDRESS}}</span></div></li>
+<li><div class="data-item"><span class="di-label">Tài khoản / ngân hàng:</span><span class="di-value">{{SELLER_BANK}}</span></div></li>
+</ul><div class="vip-divide"></div><ul class="list-fill-out">
+<li><div class="data-item"><span class="di-label">Họ tên người mua:</span><span class="di-value">{{BUYER_PERSON}}</span></div></li>
+<li><div class="data-item"><span class="di-label">Tên người mua:</span><b class="di-value">{{BUYER}}</b></div></li>
+<li><div class="data-item"><span class="di-label">Mã số thuế:</span><b class="di-value">{{BUYER_TAX}}</b></div></li>
+<li><div class="data-item"><span class="di-label">Địa chỉ:</span><span class="di-value">{{BUYER_ADDRESS}}</span></div></li>
+<li><div class="data-item"><span class="di-label">Hình thức thanh toán:</span><span class="di-value">{{PAYMENT}}</span><span>Đồng tiền: {{CURRENCY}}</span></div></li>
+</ul>
+<table class="res-tb items"><thead><tr><th>STT</th><th>Tính chất</th><th>Tên hàng hóa, dịch vụ</th><th>ĐVT</th><th>Số lượng</th><th>Đơn giá</th><th>Chiết khấu</th><th>Thuế suất</th><th>Thành tiền chưa thuế</th></tr></thead><tbody>{{ITEMS}}</tbody></table>
+<div class="table-horizontal-wrapper"><table class="res-tb taxes"><thead><tr><th>Thuế suất</th><th>Tiền chưa thuế</th><th>Tiền thuế</th></tr></thead><tbody>{{TAXES}}</tbody></table>
+<table class="res-tb totals"><tbody><tr><td>Tổng tiền chưa thuế</td><td class="tx-right">{{SUBTOTAL}}</td></tr><tr><td>Tổng tiền thuế</td><td class="tx-right">{{TAX_TOTAL}}</td></tr><tr><td>Chiết khấu thương mại</td><td class="tx-right">{{DISCOUNT}}</td></tr><tr><td>Phí, lệ phí</td><td class="tx-right">{{FEES}}</td></tr><tr><td><b>Tổng tiền thanh toán</b></td><td class="tx-right"><b>{{TOTAL}}</b></td></tr></tbody></table></div>
+<p>Số tiền viết bằng chữ: <i>{{WORDS}}</i></p><p>Mã của cơ quan thuế: {{AUTHORITY_CODE}}</p></div>
+<div class="vip-divide"></div><div class="ft-sign"><div class="sign-dx"><div><b>Người mua hàng</b><p>{{BUYER_SIGNATURE}}</p></div><div><b>Người bán hàng</b><p>{{SELLER_SIGNATURE}}</p></div><div><b>Cơ quan thuế</b><p>{{AUTHORITY_SIGNATURE}}</p></div></div><p class="fd-end">{{SIGNATURE_NOTE}}<br>{{FOOTER_NOTE}}</p></div>
+</div></body></html>
