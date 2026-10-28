@@ -1,11 +1,11 @@
 ﻿{
     "SchemaVersion":  1,
-    "CapturedAtUtc":  "2026-10-08T11:07:30.1425659Z",
+    "CapturedAtUtc":  "2026-10-28T13:21:35.4812947Z",
     "Workbook":  {
-                     "FileName":  "TaiHoaDonDienTu_v6.7.6.xlsm",
-                     "FullPath":  "C:\\Users\\dieut\\TaiHoaDonDienTu\\dist\\release-v6.7.6-20261008\\TaiHoaDonDienTu_v6.7.6.xlsm",
-                     "FileSize":  334422,
-                     "FileSha256":  "233dc90d9f5ebb3d8a844ce75b91053aa09e1adac00c9614b8f261e1d51cbb70",
+                     "FileName":  "TaiHoaDonDienTu_v6.7.8.xlsm",
+                     "FullPath":  "C:\\Users\\dieut\\TaiHoaDonDienTu\\dist\\release-v6.7.8-final\\TaiHoaDonDienTu_v6.7.8.xlsm",
+                     "FileSize":  463428,
+                     "FileSha256":  "3d302381833da8fc7fa50969203a83ec22a7f6279b9d3a062f2b619c02f526c4",
                      "ExcelVersion":  "16.0",
                      "VBProjectName":  "TaiHDDT",
                      "VBProjectProtection":  0
@@ -39,19 +39,19 @@
                                           {
                                               "Name":  "Rounded Rectangle 1",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.6.xlsm!dangnhap",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.8.xlsm!dangnhap",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 2",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.6.xlsm!TaiHoaDon",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.8.xlsm!TaiHoaDon",
                                               "FormControlType":  0
                                           },
                                           {
                                               "Name":  "Rounded Rectangle 3",
                                               "Type":  1,
-                                              "OnAction":  "TaiHoaDonDienTu_v6.7.6.xlsm!moUFTrichXuat",
+                                              "OnAction":  "TaiHoaDonDienTu_v6.7.8.xlsm!moUFTrichXuat",
                                               "FormControlType":  0
                                           }
                                       ],
@@ -363,7 +363,7 @@
                               "Type":  1,
                               "TypeName":  "StandardModule",
                               "LineCount":  1050,
-                              "CodeSha256":  "68b9cdccf78b557d30bb412722d3ebf800f8d490bb9faaa9c8515f23623371ec",
+                              "CodeSha256":  "8a23d6978bad304652d1ba55786b5933fc0d554eb08ed4d339b66caeab732432",
                               "CodeSha256IgnoringCase":  "ddf00ebc571378522daa38dc926e1f8b01101d29089e30022785f6d8da78386c"
                           },
                           {
@@ -394,49 +394,73 @@
                               "Name":  "modFunctions",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  370,
-                              "CodeSha256":  "6b86036841c05420dd33fe99f4a9c4a81d9dbc98f4bd42bf651b447512a0db06",
-                              "CodeSha256IgnoringCase":  "85917f6e6a012d61d81d2e928a6d80e83cd5e894bf7f6cb97a26b9e37b39c783"
+                              "LineCount":  467,
+                              "CodeSha256":  "ea9a1c12faccf93a049dc650dbcf0ce09b64c92391e44291a16fcc705684e8de",
+                              "CodeSha256IgnoringCase":  "8e23e751c97cc03cbbb12a94b3374e7795a4eb5a226c01dde68cbeb5f306f1e0"
+                          },
+                          {
+                              "Name":  "modGdtDatePeriods",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  68,
+                              "CodeSha256":  "61e04fcaea1ca848bba232bd348568531650921be767e5e637761cb52d0fb7af",
+                              "CodeSha256IgnoringCase":  "e086ebce9c3a8dd724b1571f48618ac2fa5d5aa275b2cbf141a0961e05bd6513"
                           },
                           {
                               "Name":  "modGdtErrorReport",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  264,
-                              "CodeSha256":  "6b93020887903b1d176ad2455af49398ac44ed4d9b09250c5874749ce179792a",
-                              "CodeSha256IgnoringCase":  "2425396c0ebcf71601278aa6a515d3d7f91f016d73745eb9c53d7c0411d81964"
+                              "LineCount":  312,
+                              "CodeSha256":  "746f210f6aa502d5f681b554736f600e7a40ee73ec3d4a5c61ae43e92d31c5b5",
+                              "CodeSha256IgnoringCase":  "d5f47d9b23da3060395f5ed02042dc96e2b2a94169668221938cdfd559c78964"
                           },
                           {
                               "Name":  "modGdtJson",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  41,
-                              "CodeSha256":  "a5806d255b17e3613b7e041681f0196ca7c08a09684f50e3e5eb13f31e68d736",
-                              "CodeSha256IgnoringCase":  "b766287a46b87549c538b4f349df9e99a2495e38c2b336faff1991f990476941"
+                              "LineCount":  109,
+                              "CodeSha256":  "c80eb047aa9f6a53f3f1b3b33f409815ec4dcac6a3cc05cd392e1f015a96f28f",
+                              "CodeSha256IgnoringCase":  "f0ff280645e2c83493cda5d683aa6a95e36e3f57b675d6b73311d79faf9710f8"
+                          },
+                          {
+                              "Name":  "modGdtPdf",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  419,
+                              "CodeSha256":  "96587cd861ee38b925f5e37ea94619472bdeaeb25f126a1c79b25441e03ba6a6",
+                              "CodeSha256IgnoringCase":  "f2cc9ad2ee91d2902fd5fdd67a34a4e0b9eb80fd2ebede4d26d13a7f407826d0"
+                          },
+                          {
+                              "Name":  "modGdtResume",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  355,
+                              "CodeSha256":  "e90aa46158962781223c5ac9964d38245e067605bd16fab9af95f982993f8b20",
+                              "CodeSha256IgnoringCase":  "d719b541144f5e9946fc3aeca3cfc5d68a6b2e631549d6c22f393cff5f9e4619"
                           },
                           {
                               "Name":  "modGdtRetry",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  404,
-                              "CodeSha256":  "03baaeff389cc5e82c71bed4364200df1cf32f8441ed134756d84fef4e87ac01",
-                              "CodeSha256IgnoringCase":  "7a0a84b606d0a9c284a930a797adefa71d0073ba7abaeaaec77d64eefdfbac76"
+                              "LineCount":  509,
+                              "CodeSha256":  "74444461c624fa46661d4acb729e4b8c8f605783f0501102afdd2b73c6cc74ad",
+                              "CodeSha256IgnoringCase":  "73ecc15d77d0c45b902058ca34447366de70d371a6cb5c0edf5534cd429a66c6"
                           },
                           {
                               "Name":  "modGdtXmlScheduler",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  40,
-                              "CodeSha256":  "a39f1cb8e084f4b216ef41d7ac3c105ebd8193f8a9d717adb462354fefbb7706",
-                              "CodeSha256IgnoringCase":  "8f39bb3ef5cee4631f55791d3cc8334c8331265e7fbaee24332c2f2e46d8664a"
+                              "LineCount":  54,
+                              "CodeSha256":  "eda56b8160d00c2292b7af844b36552d608eb1bb85789154ef79b5aba22decf4",
+                              "CodeSha256IgnoringCase":  "10ec235dd3885580c6b9d9d75014d11864066ab6c6147b3360944b4c20d3c704"
                           },
                           {
                               "Name":  "modGhiExcel",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  873,
-                              "CodeSha256":  "90a0444d332653fbe53c810453fabdf2aebe498268f2d3ac862c0f8468a2fd20",
-                              "CodeSha256IgnoringCase":  "b7e5a7a47014dd5e12ae9cdf4a3bc05d6b8a6390bef17ef8ce2d8603cf710f5d"
+                              "LineCount":  971,
+                              "CodeSha256":  "ac1de741c5b987a039ba7dbb06ba878a00eb9124df474ad64a56789b6d9f4d74",
+                              "CodeSha256IgnoringCase":  "96cc91d491d29009d016651c6094c7ec6863a0d62d07356ca2b3064d01ed6dc4"
                           },
                           {
                               "Name":  "modGlobalVariables",
@@ -450,9 +474,9 @@
                               "Name":  "modHTTPRequest",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  274,
-                              "CodeSha256":  "414ddf2f732ef4d7268b742737ea817979b49cd9421d85bb8cbda9e11da6e950",
-                              "CodeSha256IgnoringCase":  "9c090aafb57cc7f9fbdc9de58ab2fdd156eedd8806ca854c32565693b6344e79"
+                              "LineCount":  330,
+                              "CodeSha256":  "5627606ab86f89bf6f9fd8232a6e7c45d32c794ba9f896a18632c6fcfc399fa1",
+                              "CodeSha256IgnoringCase":  "14ee78cef947eaefc8479420258e538b0a1cb3fe6625e0a4b5bed4e8f8eedb03"
                           },
                           {
                               "Name":  "modMsgboxTV",
@@ -466,16 +490,24 @@
                               "Name":  "modParseIso",
                               "Type":  1,
                               "TypeName":  "StandardModule",
-                              "LineCount":  199,
-                              "CodeSha256":  "10cdb63fdef6c94cb252f3089cac87e0bc2023fb7a4e53656c481c04f0bc0e82",
-                              "CodeSha256IgnoringCase":  "619e266c01558c5994a0c1d1c6bc3b1c924db7f413d32751fe69d519146a4382"
+                              "LineCount":  211,
+                              "CodeSha256":  "daa4a638ae1edf0534eb223ce5e021c6ac944d5bc5163ab8f17bb54b6420ab29",
+                              "CodeSha256IgnoringCase":  "152df114733dbfd695423324ddfe1c457ade105829a1337147a1905de2bba18b"
+                          },
+                          {
+                              "Name":  "modUiTheme",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  64,
+                              "CodeSha256":  "8cbb700d6e2dd2dae995aaedd30b0272db55668d7adc4baee75f7476b19acdcd",
+                              "CodeSha256IgnoringCase":  "cbea85bdf1e749a8f1a3182c97e0710c25404ff20f0752861c369d37b4829050"
                           },
                           {
                               "Name":  "Module1",
                               "Type":  1,
                               "TypeName":  "StandardModule",
                               "LineCount":  212,
-                              "CodeSha256":  "89ddc281dcb76c8a2e9e07c7b3e32df499d4dd4233e3c3e5afa93afa68b5f0c7",
+                              "CodeSha256":  "5492e2886842e0501bc080c22daa2ea9d0650a94bf3b9284309c1cb0037c0287",
                               "CodeSha256IgnoringCase":  "f38ed55bab3b975ba04eef38a64338cd37a5069b7e699d2514095a866ed11eda"
                           },
                           {
@@ -483,7 +515,7 @@
                               "Type":  1,
                               "TypeName":  "StandardModule",
                               "LineCount":  67,
-                              "CodeSha256":  "7e2de8bc7bb144febfde3e3b07c835182087819d750cea9ec89ed0b7929ff4ca",
+                              "CodeSha256":  "bc65345768d1ad9d40483c7b6666c6ac10abb1d347823c0bc5bdae5df9159e1e",
                               "CodeSha256IgnoringCase":  "ffe7dbb64d2862674825d29c25ec6401379286d68a54c08446d9b66876602bb3"
                           },
                           {
@@ -491,55 +523,63 @@
                               "Type":  1,
                               "TypeName":  "StandardModule",
                               "LineCount":  6,
-                              "CodeSha256":  "f0fe3258f2489d4807631358dcc042e9437b158efea625d35c4b3c0d88e41153",
-                              "CodeSha256IgnoringCase":  "45e8af322dd9b518ac95b6eaa2661f0148cea152c43744498e976dcf2a19adcd"
+                              "CodeSha256":  "2316e2480d4350a6e59cf813d4ec08ffb54eeded14dce0d9e4f5d8e8a9181d3a",
+                              "CodeSha256IgnoringCase":  "bf913836a6bb2b21fba21ea975e714fa27ff661abd20e8721b70cd2d56ef5514"
+                          },
+                          {
+                              "Name":  "modGdtPdfAssets",
+                              "Type":  1,
+                              "TypeName":  "StandardModule",
+                              "LineCount":  77,
+                              "CodeSha256":  "6dc8784d631ecd5eac908f6112eb11a76dedd89984d695a27ede9cc1491a8495",
+                              "CodeSha256IgnoringCase":  "833e182cd9947a230d45b249aca552ccd2833813a13230ba749d5e35d80ba840"
                           },
                           {
                               "Name":  "clsGdtRequestResult",
                               "Type":  2,
                               "TypeName":  "ClassModule",
-                              "LineCount":  13,
-                              "CodeSha256":  "1f9087e86f21b551cef1c1aafdcc60867f690b9806afc628cbfeff76b6620020",
-                              "CodeSha256IgnoringCase":  "0131df73c5be81851747b0689fb4454d0549849142929c23da609524fd502dd2"
+                              "LineCount":  16,
+                              "CodeSha256":  "0ed0227474cfc36b733a0e5f0d3742bffbbb96a306cec0ef0366a3cab26ba96a",
+                              "CodeSha256IgnoringCase":  "abbe614bea4f361a50a98c2654ff41e005e39d14fad5a2e864265c271f34d227"
                           },
                           {
                               "Name":  "clsGdtRetryItem",
                               "Type":  2,
                               "TypeName":  "ClassModule",
-                              "LineCount":  20,
-                              "CodeSha256":  "f9182e649745d48c2c065cdfa5622e32651b1b7979b4202a4fbb837b58011679",
-                              "CodeSha256IgnoringCase":  "836b2c592779d60705e86dfa0b54ab516bda7134f3afb5beaa7838682441901e"
+                              "LineCount":  21,
+                              "CodeSha256":  "2d4af7d2bd30a891e84ae499ec5833121c3e657c781c495047f044ae46029848",
+                              "CodeSha256IgnoringCase":  "4d7140b539b2aa10a703157c2e1da7f63cbc8ac49f3bde622124b9c7d895d553"
                           },
                           {
                               "Name":  "clsGdtXmlTask",
                               "Type":  2,
                               "TypeName":  "ClassModule",
-                              "LineCount":  154,
-                              "CodeSha256":  "6fd32b13cce1dccb65e15949467938e20670f7bbdf1f2e5b4844b50385bb7575",
-                              "CodeSha256IgnoringCase":  "3364cea1c67259bb6bcdec5dd4609205040dacb09311fa6259d1b947c5cc6cb4"
+                              "LineCount":  174,
+                              "CodeSha256":  "ea6e3d8343a8375b409513d9a4e9f3053e6667361c6248bdf8919ad96717a01e",
+                              "CodeSha256IgnoringCase":  "48783cfd77c69eaa87f2885f25f1534b1020f3fea6802d0fea8f611290e7b8ee"
                           },
                           {
                               "Name":  "clsGdtXmlThrottle",
                               "Type":  2,
                               "TypeName":  "ClassModule",
                               "LineCount":  62,
-                              "CodeSha256":  "48b77a32e4dcd07bb7110051fa2250a88fa57e6f5c58a772554b7d23ed318b93",
-                              "CodeSha256IgnoringCase":  "e7b3a080548898d2d4b9812afcead4f04bb4978f59876890f96e9c9d1a1dcc14"
+                              "CodeSha256":  "6eed91bd86ce5300664363c0ea9a6c33bd40fb310e94cf784e2a6a25bf3cc1db",
+                              "CodeSha256IgnoringCase":  "1f14468d2c2ca931dd76ca05f5ba6d020261af9ef2c5335214d89947dbb71ce3"
                           },
                           {
                               "Name":  "clsUiButtonHandler",
                               "Type":  2,
                               "TypeName":  "ClassModule",
-                              "LineCount":  7,
-                              "CodeSha256":  "31e2b3eb5c54f9942d9e7df21695f18bedd91f5264ff047c864eadae419ecace",
-                              "CodeSha256IgnoringCase":  "43090d39ab47b52262e37fda5bb29268dc7accf8e5f5af1701e9fb9da82e13a8"
+                              "LineCount":  15,
+                              "CodeSha256":  "211d3140cb47b9026d264cbd095924adc3cb2f5da2158e758c48ecd6191d03b2",
+                              "CodeSha256IgnoringCase":  "052b138415b7bb58df5d296f43dc736f39c6997b24d35c6ee778e07af94ad3a0"
                           },
                           {
                               "Name":  "frmCapNhatMK",
                               "Type":  3,
                               "TypeName":  "UserForm",
                               "LineCount":  51,
-                              "CodeSha256":  "a953276744b2f6e6402bd388d75492962479d2e6f60e21aedc80f6d5f5100100",
+                              "CodeSha256":  "de113b05ed0417453956380fc3458e939888b9f361e3c4110aa119e05c2217c1",
                               "CodeSha256IgnoringCase":  "6f55f089459f5959ad1821c7a57d2d3af376bfec2a670b1c04583d9540a5c8bf",
                               "Caption":  "",
                               "Controls":  [
@@ -639,9 +679,9 @@
                               "Name":  "frmDangNhap",
                               "Type":  3,
                               "TypeName":  "UserForm",
-                              "LineCount":  213,
-                              "CodeSha256":  "5aeb29f0b17795abfe890087339829ea479150d23a8540b3af788a8bc3e0e8e2",
-                              "CodeSha256IgnoringCase":  "4c0a7fc1406df77b067e3162907b70d62e454ae64f438048af427a6449a1fab3",
+                              "LineCount":  268,
+                              "CodeSha256":  "d3b81f848f68f7ec8cb79647126a4c1e77b3b58e2e6585160e63091e02804d62",
+                              "CodeSha256IgnoringCase":  "1a00a6b39b9bb958e6a73406688a64788a47caa2ba8b86b229adfdd5c3f8762c",
                               "Caption":  "",
                               "Controls":  [
                                                {
@@ -741,7 +781,7 @@
                               "Type":  3,
                               "TypeName":  "UserForm",
                               "LineCount":  69,
-                              "CodeSha256":  "da13fa986daa43459488efbc71b22d8589ab352c53a80d015df4e69a2d0f9e15",
+                              "CodeSha256":  "d41914b17d96133d15968084af9c32cf7b804400e34b6a9a62219c4ebd3be357",
                               "CodeSha256IgnoringCase":  "493209274d80c952730b0e510c05c1c9fc59eedac81aea073c993877de0e3ca7",
                               "Caption":  "",
                               "Controls":  [
@@ -752,9 +792,9 @@
                               "Name":  "frmTaiHoaDon",
                               "Type":  3,
                               "TypeName":  "UserForm",
-                              "LineCount":  1794,
-                              "CodeSha256":  "852a28857cd4c9918a7a36835e700d7afa7d292e244cd30a7202ffca5023dd18",
-                              "CodeSha256IgnoringCase":  "7cec03f00d3e70ab4c7532a536eb15456d07cb4b34938cd53ad8651ca74fabbd",
+                              "LineCount":  3047,
+                              "CodeSha256":  "8050503ad389461c9cd74ecaab2d0d9bb3cc21c4eef5611befbbdd748de40df7",
+                              "CodeSha256IgnoringCase":  "b99ed8308358c35ccd812d31bd3e7e91814eb1014ad9d27fb189337b22cce864",
                               "Caption":  "",
                               "Controls":  [
                                                {
@@ -948,9 +988,9 @@
                               "Name":  "frmTrichXuatXML",
                               "Type":  3,
                               "TypeName":  "UserForm",
-                              "LineCount":  25,
-                              "CodeSha256":  "a0d6e68df34bed99b47c0d8b620645b8898e455e3be60dad62112e911202265e",
-                              "CodeSha256IgnoringCase":  "c8cd8e2478afc9a7f6344683ab5a41430e2732ec72ce688201fe61b9171df156",
+                              "LineCount":  30,
+                              "CodeSha256":  "4a8c1d223919eb097dc72add4fc98b01e61e94bcf8652428c6f0d9fdb6bae00c",
+                              "CodeSha256IgnoringCase":  "29fb9c1ae0421f9e654085f8a04adebf68052cb50e796d72cc74d4a2934cc05b",
                               "Caption":  "",
                               "Controls":  [
                                                {
@@ -1163,7 +1203,27 @@
                         },
                         {
                             "Component":  "modFunctions",
+                            "Declaration":  "Public Sub CollectGdtZipFiles",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modFunctions",
                             "Declaration":  "Sub parseXML",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modFunctions",
+                            "Declaration":  "Public Function GdtXmlPath",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modFunctions",
+                            "Declaration":  "Public Function GdtXmlText",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modFunctions",
+                            "Declaration":  "Public Function GdtXmlNumber",
                             "Name":  ""
                         },
                         {
@@ -1174,6 +1234,21 @@
                         {
                             "Component":  "modFunctions",
                             "Declaration":  "Public Function getToken",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtDatePeriods",
+                            "Declaration":  "Public Function GdtListPeriods",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtDatePeriods",
+                            "Declaration":  "Public Function GdtReportedDayLimit",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtDatePeriods",
+                            "Declaration":  "Public Function GdtSplitListPeriod",
                             "Name":  ""
                         },
                         {
@@ -1197,6 +1272,31 @@
                             "Name":  ""
                         },
                         {
+                            "Component":  "modGdtErrorReport",
+                            "Declaration":  "Public Function CountGdtSessionErrors",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Sub RequireGdtDetailIdentity",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Function GdtInvoiceStatus",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Function GdtJsonNumber",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Sub GdtWriteJsonNumberCell",
+                            "Name":  ""
+                        },
+                        {
                             "Component":  "modGdtJson",
                             "Declaration":  "Public Function GdtJsonArray",
                             "Name":  ""
@@ -1214,6 +1314,121 @@
                         {
                             "Component":  "modGdtJson",
                             "Declaration":  "Public Function BuildGdtLoginJson",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Function ParseGdtAuthObject",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtJson",
+                            "Declaration":  "Public Function GdtRequiredAuthText",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Function GdtPdfEscape",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Function GdtPdfIdentity",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Function GdtBuildInvoiceHtml",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Function GdtBuildInvoiceHtmlFromDetail",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Function GdtPdfSummaryFromRow",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Function GdtPdfBrowserPath",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Sub GdtExportXmlFolderPdf",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Function GdtIsPdfFile",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Sub GdtExportInvoicePdf",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdf",
+                            "Declaration":  "Public Sub GdtExportDetailPdf",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Function GdtResumeSessionActive",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Function GdtInvoiceIdentity",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Sub ValidateGdtResumeLayout",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Sub BeginGdtResume",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Sub EndGdtResume",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Sub PrepareGdtResumePage",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Sub CommitGdtResumePage",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Function CanResumeGdtStage",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Sub MarkGdtStageComplete",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Sub CommitGdtDetailRows",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtResume",
+                            "Declaration":  "Public Sub FinalizeGdtResumeDetails",
                             "Name":  ""
                         },
                         {
@@ -1303,12 +1518,32 @@
                         },
                         {
                             "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function ParseGdtRetryAfter",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
                             "Declaration":  "Public Function IsNoXmlResponse",
                             "Name":  ""
                         },
                         {
                             "Component":  "modGdtRetry",
                             "Declaration":  "Public Function BuildHttpErrorMessage",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function IsGdtMarkupResponse",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function ReadGdtResponseContentType",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtRetry",
+                            "Declaration":  "Public Function BuildGdtMarkupResponseMessage",
                             "Name":  ""
                         },
                         {
@@ -1319,6 +1554,21 @@
                         {
                             "Component":  "modGdtXmlScheduler",
                             "Declaration":  "Public Function GdtClockSeconds",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtXmlScheduler",
+                            "Declaration":  "Public Function GdtElapsedText",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Sub GdtWriteTextCell",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Sub GdtFormatCellLayout",
                             "Name":  ""
                         },
                         {
@@ -1334,6 +1584,11 @@
                         {
                             "Component":  "modGhiExcel",
                             "Declaration":  "Public Sub FinalizeInvoiceSheets",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Function SafeJsonText",
                             "Name":  ""
                         },
                         {
@@ -1359,6 +1614,11 @@
                         {
                             "Component":  "modGhiExcel",
                             "Declaration":  "Sub ghiExcel_ChiTiet",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGhiExcel",
+                            "Declaration":  "Public Function GdtBkavLookupUrl",
                             "Name":  ""
                         },
                         {
@@ -1418,6 +1678,11 @@
                         },
                         {
                             "Component":  "modHTTPRequest",
+                            "Declaration":  "Public Function ExecuteGdtListRequest",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modHTTPRequest",
                             "Declaration":  "Public Sub PublishLastGdtResult",
                             "Name":  ""
                         },
@@ -1429,6 +1694,11 @@
                         {
                             "Component":  "modMsgboxTV",
                             "Declaration":  "Function UniConvert",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modParseIso",
+                            "Declaration":  "Public Function GdtUtcNow",
                             "Name":  ""
                         },
                         {
@@ -1454,6 +1724,21 @@
                         {
                             "Component":  "modParseIso",
                             "Declaration":  "Sub AssertEqual",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modUiTheme",
+                            "Declaration":  "Public Function UiPercentText",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modUiTheme",
+                            "Declaration":  "Public Function UiEtaText",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modUiTheme",
+                            "Declaration":  "Public Sub UiFont",
                             "Name":  ""
                         },
                         {
@@ -1489,6 +1774,16 @@
                         {
                             "Component":  "modUpdate",
                             "Declaration":  "Public Function CompareVersions",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdfAssets",
+                            "Declaration":  "Public Function GdtPdfTemplate",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "modGdtPdfAssets",
+                            "Declaration":  "Public Function GdtPdfCss",
                             "Name":  ""
                         },
                         {
@@ -1578,6 +1873,16 @@
                         },
                         {
                             "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub RefreshPdfOptions",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub ExportExistingXmlPdf",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
                             "Declaration":  "Public Sub OpenStartDatePicker",
                             "Name":  ""
                         },
@@ -1594,6 +1899,11 @@
                         {
                             "Component":  "frmTaiHoaDon",
                             "Declaration":  "Function correctDate",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub TickElapsedTime",
                             "Name":  ""
                         },
                         {
@@ -1634,6 +1944,36 @@
                         {
                             "Component":  "frmTaiHoaDon",
                             "Declaration":  "Sub taiXML_zip",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub ToggleDownloadSummary",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub ShowSelectedLog",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub ToggleTechnicalLog",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub RetryFailedInvoices",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub OpenReconciliationReport",
+                            "Name":  ""
+                        },
+                        {
+                            "Component":  "frmTaiHoaDon",
+                            "Declaration":  "Public Sub OpenXmlFolder",
                             "Name":  ""
                         },
                         {

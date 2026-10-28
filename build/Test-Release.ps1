@@ -39,5 +39,7 @@ Invoke-ReleaseCheck 'build\Test-FinalRetryAfterRuntime.ps1' @('-BuiltWorkbook', 
 Invoke-ReleaseCheck 'build\Test-ProgressClockRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-ModernUiRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'build\Test-ParallelJsonRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
+Invoke-ReleaseCheck 'build\Test-DatePdfRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
+Invoke-ReleaseCheck 'build\Test-PdfFallbackRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Invoke-ReleaseCheck 'tests\Test-UpdateRuntime.ps1' @('-BuiltWorkbook', $OutputPath)
 Write-Output "RELEASE CHECKS PASSED: $OutputPath"

@@ -1,6 +1,6 @@
 ﻿# Bao cao kiem tra retry/UI
 
-Ngay chay: 08/10/2026 18:09:58
+Ngay chay: 28/10/2026 20:20:45
 
 | # | Tinh huong | Ket qua | Bang chung |
 |---:|---|---|---|
@@ -33,11 +33,22 @@ Ngay chay: 08/10/2026 18:09:58
 | 30 | Chi giu loi chua xu ly | PASS_STATIC | Tai thanh cong xoa dong loi cung khoa va danh lai STT; ap dung ca lan dau va retry. |
 | 31 | Log chi tiet phan trang danh sach | PASS_STATIC | Log neu ky, nguon query/sco-query, trang, HTTP, so hoa don, tong luy ke, thoi gian va chan state lap. |
 | 32 | Tam dung tiep tuc va dung an toan | PASS_STATIC | Hai nut runtime dieu khien co-operative; cac vong request va thoi gian cho deu kiem tra pause/stop. |
+| 36 | Dong ho thoi gian xu ly chay lien tuc | PASS_STATIC | Dong ho "Thoi gian xu ly" cap nhat moi vong cho qua GdtPumpWait va reset khi bat dau tai. |
+| 37 | Log hien thi tong so hoa don | PASS_STATIC | Ghi log tong so hoa don can xu ly va so thu tu dang N/tong tren moi dong DETAIL. |
+| 38 | Bang tien do gon gang va so lieu can hang | PASS_STATIC | Bon chi so tien do nam tren cung mot hang, cung be rong, tren the trang cua bang tien do. |
+| 39 | Phan tram va mau so tien do nhat quan | PASS_STATIC | Dong giai doan 2 in "n/N (p,thap phan%)" voi so thap phan dung dau phay, khong phu thuoc locale. |
+| 40 | Bang tien do co trang thai, hai giai doan va ETA | PASS_STATIC | Trang thai va hai giai doan; pha danh sach dem truc tiep trang/hoa don, chi tiet cho tong da xac dinh. |
+| 41 | ETA chi hien khi du tin cay | PASS_STATIC | ETA dung thoi gian pha chi tiet, chi tinh sau 8 muc va 10 giay; khong tinh lan thoi gian lay danh sach. |
+| 42 | Nhat ky dang bang thay vi chuoi ky thuat | PASS_STATIC | Nam cot can theo cung luoi; chon dong de doc chi tiet, nhat ky mo rong khi chua co ket qua. |
+| 43 | Bang tom tat hoan tat va ba nut | PASS_STATIC | Tom tat tong tim thay/da tai/khong co XML/tai that bai/thoi gian xu ly va ba nut noi vao hanh vi san co. |
+| 44 | Phan biet khong co XML, tai loi va chua xu ly | PASS_STATIC | Hoa don khong co XML, tai loi va chua xu ly duoc dem rieng; thieu XML khong bi coi la loi phan mem. |
+| 45 | Thong bao XML thay dong canh bao do | PASS_STATIC | Dong canh bao do dai duoc thay bang mot khoi thong tin nho, chi hien khi nguoi dung chon du lieu XML. |
+| 46 | Giao dien moi khong dung den designer payload | PASS_STATIC | Khong them khoi dieu khien vao FRM/FRX, khong doi ten control; moi control moi deu tao luc chay va dung chung bang mau/font. |
 | 15 | Tieu de bao cao dung tieng Viet | PASS_STATIC | UniConvert duoc tai tao tu modMsgboxTV.bas; 17 tieu de khop retry-ui-expected-text.json |
-| 16 | Literal Telex khong con sai | PASS_STATIC | Da decode 184 literal UniConvert; khong con chuoi sai da biet. |
+| 16 | Literal Telex khong con sai | PASS_STATIC | Da decode 355 literal UniConvert; khong con chuoi sai da biet. |
 | 17 | Script build parse duoc | PASS_STATIC | Moi script build parse duoc va khong co literal non-ASCII thieu BOM. |
-| 18 | Khoi VBA can bang | PASS_STATIC | Khoi Sub/Function/If/With/Select/For/Do can bang trong 27 file nguon. |
-| 13 | Mo lai khong repair | PASS_RUNTIME | Build da mo lai workbook trong Excel COM instance moi: PASS, 21 check, 0 check loi, file TaiHoaDonDienTu_v6.7.6.xlsm. |
+| 18 | Khoi VBA can bang | PASS_STATIC | Khoi Sub/Function/If/With/Select/For/Do can bang trong 31 file nguon. |
+| 13 | Mo lai khong repair | PASS_RUNTIME | Build da mo lai workbook trong Excel COM instance moi: PASS, 21 check, 0 check loi, file TaiHoaDonDienTu_v6.7.8.xlsm. |
 | 14 | Compile VBAProject | PASS_RUNTIME | Excel khong co API compile; bang chung runtime: 6 UserForm instantiate thanh cong trong tien trinh rieng (frmCapNhatMK, frmDangNhap, frmDatePicker, frmTaiHoaDon, frmTrichXuatXML, frmUpdate). |
 
 Luu y: `PASS_STATIC` chi xac nhan nhanh code va cau hinh hien dien; `PASS_RUNTIME` lay tu tests/comparison-report.json do build/Build-Excel.ps1 tao ra. Muc 13 va 14 la bang chung Excel; muc 17 va 18 la bang chung tinh khong can Excel.

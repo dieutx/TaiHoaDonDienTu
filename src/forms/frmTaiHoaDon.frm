@@ -102,8 +102,8 @@ Private Sub cboDonVi_Change()
 End Sub
 
 Private Sub chkXmlZip_Click()
-    Me.txtXMLFolderPath.Enabled = Me.chkXmlZip
-    Me.cmdChonFolder.Enabled = Me.chkXmlZip
+    Me.txtXMLFolderPath.Enabled = Me.chkXmlZip Or PdfSelected()
+    Me.cmdChonFolder.Enabled = Me.chkXmlZip Or PdfSelected()
     Me.cmdChiTietXML.Enabled = Me.chkXmlZip
     SetNoticeVisible CBool(Me.chkXmlZip.Value)
     If Me.chkXmlZip = True Then
@@ -111,6 +111,21 @@ Private Sub chkXmlZip_Click()
                 "n th" & ChrW(432) & " m" & ChrW(7909) & "c " & ChrW(273) & ChrW(7875) & " l" & ChrW(432) & "u file zip ho" & ChrW(7863) & "c d" & ChrW(249) & _
                 "ng " & ChrW(273) & ChrW(432) & ChrW(7903) & "ng d" & ChrW(7851) & "n m" & ChrW(7863) & "c " & ChrW(273) & ChrW(7883) & "nh.", vbInformation, UniConvert("Thoong baso")
     End If
+End Sub
+
+Private Function PdfSelected() As Boolean
+    PdfSelected = CBool(Me.fraLoaiDuLieu.Controls("chkPdf").Value)
+End Function
+
+Public Sub RefreshPdfOptions()
+    Me.txtXMLFolderPath.Enabled = CBool(Me.chkXmlZip.Value) Or PdfSelected()
+    Me.cmdChonFolder.Enabled = Me.txtXMLFolderPath.Enabled
+    SetNoticeVisible CBool(Me.chkXmlZip.Value) Or PdfSelected()
+End Sub
+
+Public Sub ExportExistingXmlPdf()
+    If mDownloadRunning Or mDownloadEntering Then Exit Sub
+    GdtExportXmlFolderPdf
 End Sub
 
 Private Sub cmdChiTietXML_Click()
@@ -128,7 +143,8 @@ End Sub
 
 Private Sub PrepareXmlDestination()
     Dim fso As Object, folder As String
-    If Not Me.chkXmlZip.Value Then Exit Sub
+    If Not Me.chkXmlZip.Value And Not PdfSelected() Then Exit Sub
+    If PdfSelected() Then GdtPdfBrowserPath
     folder = Trim$(CStr(Me.txtXMLFolderPath.Value))
     If Len(folder) = 0 Then Err.Raise 76, , "Missing XML destination"
     Set fso = CreateObject("Scripting.FileSystemObject")
@@ -453,8 +469,7 @@ Private Sub ProcessQueuedListRetries( _
                 SetProgress 9, UniConvert("Thuwr laji danh sasch ") & queued.ApiSource & _
                     UniConvert(" - trang ") & retryPageNumber, True
                 retryStarted = Timer
-                Set requestResult = ExecuteGdtRequest("GET", currentEndpoint, RunToken(), _
-                    vbNullString, "application/json", "application/json, text/plain, */*", False, 1, "LIST")
+                Set requestResult = ExecuteGdtListRequest(currentEndpoint, RunToken(), 1, "LIST")
                 PublishLastGdtResult requestResult
                 If requestResult.Success Then
                     If Not TryParseGdtJson(requestResult.ResponseText, parsed, queued.ApiSource, currentEndpoint, _
@@ -1049,7 +1064,7 @@ Private Sub ResetProgressUI()
     Me.Controls("txtSimpleLog").Value = vbNullString
     If mUiReady Then
         UiCtl("lstLog").Clear
-        SetNoticeVisible CBool(Me.chkXmlZip.Value)
+        SetNoticeVisible CBool(Me.chkXmlZip.Value) Or PdfSelected()
         SetRunState UI_STATE_IDLE
         RefreshDashboard
         RefreshSummary
@@ -1083,7 +1098,8 @@ Private Sub BeginInvoiceProgress(ByVal invoiceCount As Long, Optional ByVal rela
     Dim workKinds As Long
     workKinds = 0
     If Me.chkCT.Value = True Then workKinds = workKinds + 1
-    If Me.chkXmlZip.Value = True Then workKinds = workKinds + 1
+    If Me.chkXmlZip.Value = True Or PdfSelected() Then workKinds = workKinds + 1
+    If PdfSelected() Then workKinds = workKinds + 1
     mInvoiceCount = invoiceCount
     mListComplete = True
     mListRowsReceived = invoiceCount
@@ -1352,6 +1368,17 @@ Private Sub EnsureRuntimeControls()
     ctl.ControlTipText = UniConvert("Chojn ngafy keest thusc")
     ctl.ZOrder 0
     Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me: handler.ActionName = "OpenEndDatePicker": mUiHandlers.Add handler
+
+    Set ctl = Me.fraLoaiDuLieu.Controls.Add("Forms.CheckBox.1", "chkPdf", True)
+    ctl.Caption = "PDF": ctl.Value = False: ctl.BackStyle = 0
+    ctl.ControlTipText = UniConvert("Tari XML vaf taoj PDF tuwf XML, luwu cufng thuw mujc")
+    Set handler = New clsUiButtonHandler: Set handler.CheckBox = ctl: Set handler.Owner = Me
+    handler.ActionName = "RefreshPdfOptions": mUiHandlers.Add handler
+    Set ctl = Me.Controls.Add("Forms.CommandButton.1", "cmdXmlToPdf", True)
+    ctl.Caption = "XML -> PDF"
+    ctl.ControlTipText = UniConvert("Taoj PDF tuwf casc file XML ddax cos trong thuw mujc")
+    Set handler = New clsUiButtonHandler: Set handler.Button = ctl: Set handler.Owner = Me
+    handler.ActionName = "ExportExistingXmlPdf": mUiHandlers.Add handler
 
     Set ctl = Me.Controls.Add("Forms.Label.1", "lblInvoiceSource", True)
     ctl.caption = UniConvert("Nguoofn hosa ddown"): ctl.Left = Me.cboTTHD.Left: ctl.Top = Me.Label22.Top: ctl.Width = Me.cboTTHD.Width: ctl.Height = Me.Label22.Height
@@ -1649,7 +1676,7 @@ Sub taiHoaDon_Total(Optional rowTotalstart As Long = 3, Optional rowDetailStart 
     Dim k As Long, j As Long, i As Long, loaiHD As Long, ret As Boolean
     Dim batchStartRow As Long, pageIndex As Long, relatedCallCount As Long
     Dim queryPageNumber As Long, scoPageNumber As Long
-    Dim queryCount As Long, scoCount As Long
+    Dim queryCount As Long, scoCount As Long, periodSource As String
     Dim requestStarted As Double, hasNextPage As Boolean, nextState As String
     Dim seenQueryStates As Object, seenScoStates As Object
     Dim item As Object
@@ -1694,7 +1721,11 @@ Sub taiHoaDon_Total(Optional rowTotalstart As Long = 3, Optional rowDetailStart 
     n = 0   'n: so luong HD
     mListStarted = True
     'Duyet tung khoan thoi gian de trich xuat hoa don
-    For k = 1 To UBound(arrDate)
+    If mDownloadRunning Then periodSource = mRunSource Else periodSource = SelectedInvoiceSource()
+    arrDate = GdtListPeriods(arrDate, periodSource)
+    k = 1
+    Do While k <= UBound(arrDate)
+retryDatePeriod:
         If Not WaitForGdtControl() Then GoTo cleanup
         SetProgress 4 + CLng((k / UBound(arrDate)) * 5), _
             UniConvert("Chuaarn bij kyf ") & k & "/" & UBound(arrDate) & " (" & _
@@ -1720,7 +1751,7 @@ Sub taiHoaDon_Total(Optional rowTotalstart As Long = 3, Optional rowDetailStart 
             End If
         End If
         url2 = url & sort & "&size=" & size & "&search=" & search
-        If Not IncludesInvoiceSource("query") Then GoTo startSco
+        If arrDate(k, 3) <> "query" Then GoTo startSco
         
 nextPage:
         If Not WaitForGdtControl() Then GoTo cleanup
@@ -1728,6 +1759,9 @@ nextPage:
         requestStarted = Timer
         res = ApiGet(url2, ListPageLabel(k, UBound(arrDate), "query", queryPageNumber), RunToken())
         If Len(res) = 0 Then
+            If queryPageNumber = 1 Then
+                If AdaptRejectedDatePeriod(k) Then GoTo retryDatePeriod
+            End If
             ReportListPageFailure k, UBound(arrDate), "query", queryPageNumber, requestStarted
             If GdtStopRequested Then GoTo cleanup
             errMsg = errMsg & UniConvert("Looxi tari hoas ddown toorng howjp ngafy: ") & arrDate(k, 1) & " - " & arrDate(k, 2) & vbCrLf
@@ -1781,7 +1815,7 @@ nextPage:
            '******************************************
         '// Chay sco query de lay hd tu may tinh tien
 startSco:
-        If Not IncludesInvoiceSource("sco-query") Then GoTo nextDatePeriod
+        If arrDate(k, 3) <> "sco-query" Then GoTo nextDatePeriod
         url2 = url_sco & sort & "&size=" & size & "&search=" & search
 nextPage_sco:
         If Not WaitForGdtControl() Then GoTo cleanup
@@ -1789,6 +1823,9 @@ nextPage_sco:
         requestStarted = Timer
         res = ApiGet(url2, ListPageLabel(k, UBound(arrDate), "sco-query", scoPageNumber), RunToken())
         If Len(res) = 0 Then
+            If scoPageNumber = 1 Then
+                If AdaptRejectedDatePeriod(k) Then GoTo retryDatePeriod
+            End If
             ReportListPageFailure k, UBound(arrDate), "sco-query", scoPageNumber, requestStarted
             If GdtStopRequested Then GoTo cleanup
             errMsg = errMsg & UniConvert("Looxi tari hoas ddown toorng howjp - Tuwf masy tisnh tieefn ngafy: ") & arrDate(k, 1) & " - " & arrDate(k, 2) & vbCrLf
@@ -1844,7 +1881,8 @@ nextDatePeriod: 'arrDate ke tiep
         AppendSimpleLog UniConvert("Hoafn taast kyf ") & k & "/" & UBound(arrDate) & _
             ": query=" & queryCount & ", sco-query=" & scoCount & _
             UniConvert(", toorng ddax ghi=") & n
-    Next k
+        k = k + 1
+    Loop
 
     If GdtStopRequested Then GoTo cleanup
     ProcessQueuedListRetries arrHDChiTiet_tmp, n, row, stt, loaiHD
@@ -1876,13 +1914,14 @@ nextDatePeriod: 'arrDate ke tiep
     If GdtStopRequested Then GoTo cleanup
     
 taiXML:
-    If Me.chkXmlZip = True Then
+    If Me.chkXmlZip = True Or PdfSelected() Then
         ShowInvoiceWork UniConvert("DDang tari vaf giari ne_sn XML/HTML..."), True
         AppendSimpleLog "B" & ChrW(7855) & "t " & ChrW(273) & ChrW(7847) & "u t" & ChrW(7843) & "i file XML/HTML v" & ChrW(224) & " gi" & ChrW(7843) & "i n" & ChrW(233) & "n..."
         
         DoEvents
         taiXML_zip n
     End If
+    If PdfSelected() And Not GdtStopRequested And Not GdtAuthenticationFailed Then ProcessInvoicePdfs n
 
 errLog:
     If errMsg <> "" Then
@@ -1899,6 +1938,69 @@ cleanup:
     Erase arrDate
     Erase arrHDChiTiet
     'Unload Me
+End Sub
+
+Private Function AdaptRejectedDatePeriod(ByVal index As Long) As Boolean
+    Dim days As Long
+    days = GdtReportedDayLimit(LastGdtStatus, LastGdtError)
+    If Not GdtSplitListPeriod(arrDate, index, days) Then Exit Function
+    AppendSimpleLog "API date limit: " & arrDate(index, 3) & " = " & days & " days; splitting window"
+    AdaptRejectedDatePeriod = True
+End Function
+
+Private Sub ProcessInvoicePdfs(ByVal count As Long)
+    Dim index As Long, fso As Object, base As String, xmlPath As String, pdfPath As String
+    Dim source As String, identity As String
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    For index = 0 To count - 1
+        If Not WaitForGdtControl() Then Exit Sub
+        source = IIf(arrHDChiTiet(index, 4) = 1, "query", "sco-query")
+        base = GdtInvoiceFileBase(CStr(arrHDChiTiet(index, 0)), CStr(arrHDChiTiet(index, 3)), _
+            CStr(arrHDChiTiet(index, 1)), CStr(arrHDChiTiet(index, 2)))
+        xmlPath = fso.BuildPath(CStr(oSaveUnzipFolder), base & ".xml")
+        pdfPath = fso.BuildPath(CStr(oSaveUnzipFolder), base & ".pdf")
+        identity = GdtPdfIdentity(CStr(arrHDChiTiet(index, 0)), CStr(arrHDChiTiet(index, 3)), _
+            CStr(arrHDChiTiet(index, 1)), CStr(arrHDChiTiet(index, 2)))
+        ShowInvoiceWork "PDF " & (index + 1) & "/" & count, True
+        On Error GoTo PdfFailed
+        ' Rebuild from the current XML even when its download was resumed.
+        ' A previous PDF cannot prove that it matches a newer XML.
+        If fso.FileExists(xmlPath) Then
+            GdtExportInvoicePdf xmlPath, pdfPath, identity
+        Else
+            ExportInvoicePdfFromApi index, pdfPath, identity
+            AppendLogRow "PDF " & (index + 1) & "/" & count, UniConvert("DDax duwng tuwf API; khoong cos XML"), vbNullString, vbNullString
+        End If
+        MarkGdtRetrySuccess CurrentDirectionName(), source, CStr(arrHDChiTiet(index, 0)), _
+            CStr(arrHDChiTiet(index, 3)), CStr(arrHDChiTiet(index, 1)), CStr(arrHDChiTiet(index, 2)), "PDF", 1
+        AppendLogRow "PDF " & (index + 1) & "/" & count, UniConvert("DDax luwu PDF"), vbNullString, vbNullString
+NextPdf:
+        AdvanceInvoiceWork "PDF " & (index + 1) & "/" & count, True
+        On Error GoTo 0
+    Next index
+    Exit Sub
+PdfFailed:
+    UpsertGdtErrorReport CurrentDirectionName(), source, CStr(arrHDChiTiet(index, 0)), _
+        CStr(arrHDChiTiet(index, 3)), CStr(arrHDChiTiet(index, 1)), CStr(arrHDChiTiet(index, 2)), _
+        arrHDChiTiet(index, 5), "PDF", vbNullString, 0, Err.Description, 1, 0, "PDF build failed; XML retained"
+    AppendLogRow "PDF " & (index + 1) & "/" & count, UniConvert("Looxi taoj PDF; giuwx XML"), vbNullString, vbNullString
+    Resume NextPdf
+End Sub
+
+Private Sub ExportInvoicePdfFromApi(ByVal index As Long, ByVal pdfPath As String, ByVal identity As String)
+    Dim endpoint As String, source As String, result As clsGdtRequestResult, summaryJson As String, ws As Worksheet
+    source = IIf(arrHDChiTiet(index, 4) = 1, "query", "sco-query")
+    Set ws = ThisWorkbook.Worksheets(IIf(mRunPurchase, "TongHopHD_Mua", "TongHopHD_Ban"))
+    summaryJson = GdtPdfSummaryFromRow(ws, CLng(arrHDChiTiet(index, 6)), identity)
+    endpoint = BuildRelationEndpoint(source, "detail", CStr(arrHDChiTiet(index, 0)), CStr(arrHDChiTiet(index, 3)), _
+        CStr(arrHDChiTiet(index, 1)), CStr(arrHDChiTiet(index, 2)))
+    WaitGdtMilliseconds GetSleepDelayMs()
+    If Not WaitForGdtControl() Or GdtAuthenticationFailed Then Err.Raise 5, , "PDF API fallback stopped"
+    Set result = ExecuteGdtRequest("GET", endpoint, RunToken(), vbNullString, "application/json", _
+        "application/json, text/plain, */*", False, GDT_MAX_RETRIES, "PDF DETAIL")
+    PublishLastGdtResult result
+    If Not result.Success Then Err.Raise 5, , "PDF API detail HTTP " & result.StatusCode
+    GdtExportDetailPdf result.ResponseText, pdfPath, summaryJson, identity
 End Sub
 
 Function lietKeThoiGian() As Boolean
@@ -2503,18 +2605,20 @@ Private Sub ApplyModernLayout()
     PlaceUi "Label17", UL_LEFT, 270, UL_COL_A, 14
     StyleUiLabel "Label17", 8.5, False, UI_MUTED
     PlaceUi "fraLoaiDuLieu", UL_LEFT, 285, UL_COL_A, 30
-    PlaceInside "fraLoaiDuLieu", "chkTH", 0, 6, 108, 20
+    PlaceInside "fraLoaiDuLieu", "chkTH", 0, 6, 87, 20
     Me.chkTH.Caption = UniConvert("Toorng howjp")
     Me.chkTH.BackStyle = 0
     UiFont Me.chkTH, 9, False, UI_TEXT
-    PlaceInside "fraLoaiDuLieu", "chkCT", 112, 6, 120, 20
+    PlaceInside "fraLoaiDuLieu", "chkCT", 89, 6, 78, 20
     Me.chkCT.Caption = UniConvert("Chi tieest")
     Me.chkCT.BackStyle = 0
     UiFont Me.chkCT, 9, False, UI_TEXT
-    PlaceInside "fraLoaiDuLieu", "chkXmlZip", 236, 6, 104, 20
+    PlaceInside "fraLoaiDuLieu", "chkXmlZip", 170, 6, 100, 20
     Me.chkXmlZip.Caption = "XML/HTML"
     Me.chkXmlZip.BackStyle = 0
     UiFont Me.chkXmlZip, 9, False, UI_TEXT
+    PlaceInside "fraLoaiDuLieu", "chkPdf", 276, 6, 60, 20
+    UiFont Me.fraLoaiDuLieu.Controls("chkPdf"), 9, False, UI_TEXT
     PlaceUi "Label16", UL_COL_BX, 270, UL_COL_B, 14
     StyleUiLabel "Label16", 8.5, False, UI_MUTED
     PlaceUi "txtXMLFolderPath", UL_COL_BX, 291, 148, UL_INPUT_H
@@ -2526,8 +2630,11 @@ Private Sub ApplyModernLayout()
     ' Action column -------------------------------------------------------
     PlaceUi "cmdTaiHoaDon", UL_COL_CX, 255, UL_COL_C, 38
     StyleUiButton "cmdTaiHoaDon", UI_BLUE, UI_CARD, 10, True
-    PlaceUi "cmdChiTietXML", UL_COL_CX, 301, UL_COL_C, 32
+    PlaceUi "cmdChiTietXML", UL_COL_CX, 301, 99, 32
+    Me.cmdChiTietXML.Caption = UniConvert("Trisch xuaast XML")
     StyleUiButton "cmdChiTietXML", UI_BLUE_SOFT, UI_BLUE_DARK, 9, False
+    PlaceUi "cmdXmlToPdf", UL_COL_CX + 105, 301, 99, 32
+    StyleUiButton "cmdXmlToPdf", UI_BLUE_SOFT, UI_BLUE_DARK, 9, False
     PlaceUi "cmdPauseResume", UL_COL_CX, 339, 99, 30
     StyleUiButton "cmdPauseResume", UI_BLUE_SOFT, UI_BLUE_DARK, 9, False
     PlaceUi "cmdStopDownload", UL_COL_CX + 105, 339, 99, 30
@@ -2814,7 +2921,7 @@ Private Sub RefreshSummary()
     UiCtl("lblSumElapsed").caption = IIf(hasRun, UiElapsedText(), UI_EMPTY_VALUE)
     UiCtl("cmdRetryFailed").Enabled = hasRun And Not mDownloadRunning And mFailedCount > 0
     UiCtl("cmdExportReport").Enabled = Not mDownloadRunning
-    UiCtl("cmdOpenFolder").Enabled = (Not mDownloadRunning) And CBool(Me.chkXmlZip.Value)
+    UiCtl("cmdOpenFolder").Enabled = (Not mDownloadRunning) And (CBool(Me.chkXmlZip.Value) Or PdfSelected())
 End Sub
 
 '------------------------- structured log ------------------------------

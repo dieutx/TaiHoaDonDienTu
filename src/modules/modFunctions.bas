@@ -392,7 +392,7 @@ End Sub
 
 ' Keep every path segment and restrict invoice nodes to the root namespace.
 ' Signature descendants may use the XMLDSIG namespace or the legacy namespace.
-Private Function GdtXmlPath(ByVal context As Object, ByVal path As String) As String
+Public Function GdtXmlPath(ByVal context As Object, ByVal path As String) As String
     Dim doc As Object, parts As Variant, part As String, ns As String, predicate As String, index As Long
     If context.nodeType = 9 Then
         Set doc = context
@@ -416,7 +416,7 @@ Private Function GdtXmlPath(ByVal context As Object, ByVal path As String) As St
     GdtXmlPath = Join(parts, "/")
 End Function
 
-Private Function GdtXmlText(ByVal context As Object, ByVal path As String) As String
+Public Function GdtXmlText(ByVal context As Object, ByVal path As String) As String
     Dim node As Object
     Set node = context.SelectSingleNode(GdtXmlPath(context, path))
     If Not node Is Nothing Then GdtXmlText = node.text

@@ -253,15 +253,67 @@ Public Function ApiGet(ByVal urlPath As String, Optional ByVal statusPrefix As S
         Exit Function
     End If
 
-    Set requestResult = ExecuteGdtRequest("GET", urlPath, token, _
-                                          vbNullString, "application/json", _
-                                          "application/json, text/plain, */*", False, _
-                                          GDT_MAX_RETRIES, statusPrefix)
+    Set requestResult = ExecuteGdtListRequest(urlPath, token, GDT_MAX_RETRIES, statusPrefix)
     PublishLastGdtResult requestResult
 
     If requestResult.AuthenticationFailure Then GdtAuthenticationFailed = True
     If requestResult.Success Then ApiGet = requestResult.ResponseText
 
+End Function
+
+Public Function ExecuteGdtListRequest(ByVal endpoint As String, ByVal token As String, _
+    Optional ByVal maxAttempts As Long = GDT_MAX_RETRIES, Optional ByVal statusPrefix As String = "LIST") As clsGdtRequestResult
+    Dim result As clsGdtRequestResult, challenge As clsGdtRequestResult, payload As Object
+    Dim prepared As String, captchaKey As String, captcha As String, apiAt As Long
+    On Error GoTo CaptchaFailed
+    prepared = endpoint
+    ' Only the SCO list endpoints changed. Detail/export and ordinary query
+    ' requests keep their existing flow. The caller retains a credential-free URL.
+    If InStr(1, endpoint, "/api/sco-query/invoices/purchase?", vbTextCompare) > 0 Or _
+        InStr(1, endpoint, "/api/sco-query/invoices/sold?", vbTextCompare) > 0 Then
+        apiAt = InStr(1, endpoint, "/api/", vbTextCompare)
+        Set challenge = ExecuteGdtRequest("GET", Left$(endpoint, apiAt - 1) & "/api/captcha", token, _
+            vbNullString, "application/json", "application/json, text/plain, */*", False, maxAttempts, "LIST CAPTCHA")
+        If Not challenge.Success Then
+            challenge.ErrorMessage = "Search CAPTCHA request failed; HTTP " & challenge.StatusCode
+            challenge.ResponseText = vbNullString
+            Set ExecuteGdtListRequest = challenge
+            Exit Function
+        End If
+        Set payload = ParseGdtAuthObject(challenge.ResponseText)
+        captchaKey = GdtRequiredAuthText(payload, "key")
+        captcha = detectSVGCaptcha(challenge.ResponseText)
+        If Len(captcha) <> 6 Then Err.Raise 5, , "Search CAPTCHA recognition unavailable"
+        prepared = endpoint & "&ckey=" & GdtSearchUrlValue(captchaKey) & "&cvalue=" & GdtSearchUrlValue(captcha)
+    End If
+    Set result = ExecuteGdtRequest("GET", prepared, token, vbNullString, "application/json", _
+        "application/json, text/plain, */*", False, maxAttempts, statusPrefix)
+    ' API errors can echo a request URL; never retain challenge values there.
+    If Len(captchaKey) > 0 Then
+        result.ErrorMessage = Replace$(result.ErrorMessage, GdtSearchUrlValue(captchaKey), "[REDACTED]")
+        result.ErrorMessage = Replace$(result.ErrorMessage, captchaKey, "[REDACTED]")
+    End If
+    If Len(captcha) > 0 Then result.ErrorMessage = Replace$(result.ErrorMessage, captcha, "[REDACTED]")
+    Set ExecuteGdtListRequest = result
+    Exit Function
+CaptchaFailed:
+    Set result = New clsGdtRequestResult
+    result.ErrorMessage = "Search CAPTCHA unavailable; retry the download"
+    result.Attempts = 1: result.ShouldQueueFinalRetry = True
+    Set ExecuteGdtListRequest = result
+End Function
+
+Private Function GdtSearchUrlValue(ByVal value As String) As String
+    Dim index As Long, ch As String, code As Long
+    For index = 1 To Len(value)
+        ch = Mid$(value, index, 1): code = AscW(ch)
+        If ch Like "[A-Za-z0-9]" Or InStr(1, "-._~", ch, vbBinaryCompare) > 0 Then
+            GdtSearchUrlValue = GdtSearchUrlValue & ch
+        Else
+            If code < 0 Or code > 127 Then Err.Raise 5, , "Unexpected search CAPTCHA encoding"
+            GdtSearchUrlValue = GdtSearchUrlValue & "%" & Right$("0" & Hex$(code), 2)
+        End If
+    Next index
 End Function
 
 Public Sub PublishLastGdtResult(ByVal requestResult As clsGdtRequestResult)

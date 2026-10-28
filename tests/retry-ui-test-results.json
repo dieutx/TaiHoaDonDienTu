@@ -174,6 +174,72 @@
         "evidence":  "Hai nut runtime dieu khien co-operative; cac vong request va thoi gian cho deu kiem tra pause/stop."
     },
     {
+        "id":  36,
+        "name":  "Dong ho thoi gian xu ly chay lien tuc",
+        "status":  "PASS_STATIC",
+        "evidence":  "Dong ho \"Thoi gian xu ly\" cap nhat moi vong cho qua GdtPumpWait va reset khi bat dau tai."
+    },
+    {
+        "id":  37,
+        "name":  "Log hien thi tong so hoa don",
+        "status":  "PASS_STATIC",
+        "evidence":  "Ghi log tong so hoa don can xu ly va so thu tu dang N/tong tren moi dong DETAIL."
+    },
+    {
+        "id":  38,
+        "name":  "Bang tien do gon gang va so lieu can hang",
+        "status":  "PASS_STATIC",
+        "evidence":  "Bon chi so tien do nam tren cung mot hang, cung be rong, tren the trang cua bang tien do."
+    },
+    {
+        "id":  39,
+        "name":  "Phan tram va mau so tien do nhat quan",
+        "status":  "PASS_STATIC",
+        "evidence":  "Dong giai doan 2 in \"n/N (p,thap phan%)\" voi so thap phan dung dau phay, khong phu thuoc locale."
+    },
+    {
+        "id":  40,
+        "name":  "Bang tien do co trang thai, hai giai doan va ETA",
+        "status":  "PASS_STATIC",
+        "evidence":  "Trang thai va hai giai doan; pha danh sach dem truc tiep trang/hoa don, chi tiet cho tong da xac dinh."
+    },
+    {
+        "id":  41,
+        "name":  "ETA chi hien khi du tin cay",
+        "status":  "PASS_STATIC",
+        "evidence":  "ETA dung thoi gian pha chi tiet, chi tinh sau 8 muc va 10 giay; khong tinh lan thoi gian lay danh sach."
+    },
+    {
+        "id":  42,
+        "name":  "Nhat ky dang bang thay vi chuoi ky thuat",
+        "status":  "PASS_STATIC",
+        "evidence":  "Nam cot can theo cung luoi; chon dong de doc chi tiet, nhat ky mo rong khi chua co ket qua."
+    },
+    {
+        "id":  43,
+        "name":  "Bang tom tat hoan tat va ba nut",
+        "status":  "PASS_STATIC",
+        "evidence":  "Tom tat tong tim thay/da tai/khong co XML/tai that bai/thoi gian xu ly va ba nut noi vao hanh vi san co."
+    },
+    {
+        "id":  44,
+        "name":  "Phan biet khong co XML, tai loi va chua xu ly",
+        "status":  "PASS_STATIC",
+        "evidence":  "Hoa don khong co XML, tai loi va chua xu ly duoc dem rieng; thieu XML khong bi coi la loi phan mem."
+    },
+    {
+        "id":  45,
+        "name":  "Thong bao XML thay dong canh bao do",
+        "status":  "PASS_STATIC",
+        "evidence":  "Dong canh bao do dai duoc thay bang mot khoi thong tin nho, chi hien khi nguoi dung chon du lieu XML."
+    },
+    {
+        "id":  46,
+        "name":  "Giao dien moi khong dung den designer payload",
+        "status":  "PASS_STATIC",
+        "evidence":  "Khong them khoi dieu khien vao FRM/FRX, khong doi ten control; moi control moi deu tao luc chay va dung chung bang mau/font."
+    },
+    {
         "id":  15,
         "name":  "Tieu de bao cao dung tieng Viet",
         "status":  "PASS_STATIC",
@@ -183,7 +249,7 @@
         "id":  16,
         "name":  "Literal Telex khong con sai",
         "status":  "PASS_STATIC",
-        "evidence":  "Da decode 184 literal UniConvert; khong con chuoi sai da biet."
+        "evidence":  "Da decode 355 literal UniConvert; khong con chuoi sai da biet."
     },
     {
         "id":  17,
@@ -195,13 +261,13 @@
         "id":  18,
         "name":  "Khoi VBA can bang",
         "status":  "PASS_STATIC",
-        "evidence":  "Khoi Sub/Function/If/With/Select/For/Do can bang trong 27 file nguon."
+        "evidence":  "Khoi Sub/Function/If/With/Select/For/Do can bang trong 31 file nguon."
     },
     {
         "id":  13,
         "name":  "Mo lai khong repair",
         "status":  "PASS_RUNTIME",
-        "evidence":  "Build da mo lai workbook trong Excel COM instance moi: PASS, 21 check, 0 check loi, file TaiHoaDonDienTu_v6.7.6.xlsm."
+        "evidence":  "Build da mo lai workbook trong Excel COM instance moi: PASS, 21 check, 0 check loi, file TaiHoaDonDienTu_v6.7.8.xlsm."
     },
     {
         "id":  14,

@@ -134,3 +134,7 @@ Trước khi gửi Issue, ghi lại phiên bản project, Windows, Excel, bướ
 - Kết quả mong đợi và thực tế.
 - Error message/log đã sanitize.
 - Xác nhận không có credential hoặc dữ liệu hóa đơn thật.
+
+## PDF từ XML và giới hạn ngày tra cứu
+
+Nếu SCO báo giới hạn ngày, bản cập nhật 6.7.8 tự chia kỳ và gửi CAPTCHA tra cứu. Chọn **PDF** để tạo bản thể hiện từ XML; không có XML thì chương trình lấy chi tiết API và ghép tổng hợp đúng hóa đơn để dựng PDF nếu đủ dữ liệu. Cần Edge/Chrome. Nếu dữ liệu API chưa đủ, XML có sẵn bị lỗi hoặc trình duyệt không dựng được PDF, xem bước `PDF` trong `BaoCao_LoiTaiHD`. Dùng **XML -> PDF** để chuyển lại thư mục XML đã có. Xem [hướng dẫn và kiểm thử](DATE_LIMIT_AND_XML_PDF_2026-10-28.md).
